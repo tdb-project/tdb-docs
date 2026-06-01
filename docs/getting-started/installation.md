@@ -1,98 +1,65 @@
 # Installation
 
+TDB Enterprise ships as a **Docker image**. You do not build it from source —
+you receive a ready-to-run image as part of your license (a trial image, or a
+pull from our private registry for commercial customers).
+
 ## Requirements
 
 | Requirement | Version |
 |---|---|
-| Python | 3.12 or later |
-| [uv](https://docs.astral.sh/uv/) | latest |
-| PostgreSQL | 12 or later (your existing database — TDB connects to it) |
+| Docker | 20.10 or later (or any OCI runtime) |
+| PostgreSQL / MySQL / SQL Server / Snowflake | Your existing database — TDB connects to it |
 
-TDB Enterprise does not require Docker to run. `uv` manages the Python environment and dependencies.
+That's it. Python, `uv`, and the source tree are **not** required to run TDB —
+everything is inside the image.
 
 ---
 
-## Install uv
+## Get the image
 
-=== "macOS / Linux"
+=== "Trial (delivered image)"
+
+    Your trial is a dedicated image with a time-limited license already baked in.
+    You receive it as a compressed tarball. Load it:
 
     ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    docker load < tdb-enterprise-trial.tar.gz
+    # Loaded image: tdb-enterprise:trial-acme-20260701
     ```
 
-=== "Windows"
+    Nothing else to configure for the license — it travels inside the image.
 
-    ```powershell
-    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+=== "Commercial (private registry)"
+
+    Commercial customers pull from our private registry using the credentials
+    issued with your license:
+
+    ```bash
+    docker login registry.tdb.jiracorp.co.in   # use your issued token
+    docker pull registry.tdb.jiracorp.co.in/tdb/tdb-enterprise:latest
     ```
 
 ---
 
-## Install TDB Enterprise
-
-You will receive a copy of the `tdb-enterprise` source repository as part of your license. Clone or unzip it to a local directory, then install:
+## Run the server
 
 ```bash
-cd tdb-enterprise
-uv sync
+docker run -d --name tdb \
+  -p 8000:8000 \
+  -e TDB_API_KEYS=your-secret-key-here \
+  -e TDB_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))") \
+  -e TDB_ADMIN_USER=admin \
+  -e TDB_ADMIN_PASSWORD=your-strong-password \
+  -v "$(pwd)/data:/app/data" \
+  tdb-enterprise:trial-acme-20260701
 ```
 
-This installs all dependencies into `.venv` inside the project directory. The `uv sync` command is idempotent — safe to run on updates.
-
-Verify the install:
-
-```bash
-uv run python -c "import tdb_enterprise; print('ok')"
-```
-
----
-
-## Configure environment variables
-
-TDB is configured entirely through environment variables. Create a `.env` file in the `tdb-enterprise` directory:
-
-```bash title=".env"
-# --- Required ---
-TDB_API_KEYS=your-secret-key-here         # Comma-separated; used for the initial setup
-
-# --- Required for JWT + OAuth ---
-TDB_JWT_SECRET=<64-char hex>              # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
-TDB_ADMIN_USER=admin
-TDB_ADMIN_PASSWORD=<strong-password>
-
-# --- Optional ---
-TDB_LOG_LEVEL=INFO                        # DEBUG | INFO | WARNING | ERROR
-TDB_LOG_FILE=tdb_audit.jsonl              # Audit log output path
-TDB_REGISTRY_DB=data/tdb_registry.db     # Source registry SQLite path
-TDB_DEFAULT_RATE_LIMIT=60                 # Default requests per minute per API key
-```
-
-!!! warning "Never use the default dev key in production"
-    The default `TDB_API_KEYS` value is `dev-insecure-key-change-me`. TDB prints a
-    warning on startup if it detects this key. Always set a strong key before exposing
-    TDB to any network.
-
-Generate a secure JWT secret:
-
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
----
-
-## Start the server
-
-```bash
-uv run uvicorn tdb.main:app --host 0.0.0.0 --port 8000
-```
-
-You should see output similar to:
+Check the logs — you should see the license confirmed and the server start:
 
 ```
-INFO:     Started server process [12345]
-INFO:     Waiting for application startup.
+INFO:     license_ok customer=ACME Corp edition=trial expires=2026-07-01T00:00:00+00:00 days_left=30
 INFO:     tdb_startup version=0.4.0 dev_mode=False
-INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 
@@ -103,6 +70,58 @@ curl http://localhost:8000/health
 # {"status":"ok"}
 ```
 
+!!! warning "Never use the default dev key in production"
+    If `TDB_API_KEYS` is unset, TDB falls back to `dev-insecure-key-change-me`
+    and prints a warning on startup. Always pass a strong `-e TDB_API_KEYS=...`
+    before exposing TDB to any network.
+
+---
+
+## Configuration
+
+TDB is configured entirely through environment variables, passed with `-e` (or an
+`--env-file`). The essentials:
+
+```bash title="tdb.env  (use with: docker run --env-file tdb.env ...)"
+# --- Required ---
+TDB_API_KEYS=your-secret-key-here         # Comma-separated; used for initial setup
+
+# --- Required for JWT + OAuth ---
+TDB_JWT_SECRET=<64-char hex>              # python -c "import secrets; print(secrets.token_hex(32))"
+TDB_ADMIN_USER=admin
+TDB_ADMIN_PASSWORD=<strong-password>
+
+# --- Optional ---
+TDB_LOG_LEVEL=INFO                        # DEBUG | INFO | WARNING | ERROR
+TDB_DEFAULT_RATE_LIMIT=60                 # Default requests per minute per API key
+```
+
+See the [Environment Variables reference](../reference/environment-variables.md) for
+the full list, including the **License** variables.
+
+---
+
+## Licensing & expiry
+
+TDB Enterprise requires a valid, signed license to serve data.
+
+- **Trial images** carry the license inside the image (at `/app/license.jwt`) — no
+  setup needed.
+- **Commercial deployments** can instead supply the token at runtime with
+  `-e TDB_LICENSE=<token>`, which takes precedence over any baked file. This lets
+  you drop in a renewed license without pulling a new image.
+
+**What happens at expiry:** TDB keeps running and `/health` stays green (so your
+orchestrator does not kill the container), but every data and API request returns:
+
+```json
+HTTP 403
+{ "error": "license_expired", "reason": "expired", "expired_at": "..." }
+```
+
+To extend a trial or renew, [contact us](mailto:hello@tdb.jiracorp.co.in) for a new
+image or token.
+
 ---
 
 ## Running behind a reverse proxy
@@ -111,22 +130,23 @@ If you put TDB behind nginx, Caddy, or a load balancer, set `TDB_SERVER_URL` to 
 public base URL. This is required for OAuth 2.1 discovery endpoints to return correct URLs:
 
 ```bash
-TDB_SERVER_URL=https://tdb.yourcompany.com
+-e TDB_SERVER_URL=https://tdb.yourcompany.com
 ```
 
 ---
 
 ## Data directories
 
-TDB writes two files on first startup (created automatically):
+TDB writes two files (created automatically). Mount a volume so they persist across
+container restarts:
 
-| Path | Contents |
+| Path (in container) | Contents |
 |---|---|
-| `data/tdb_registry.db` | SQLite registry of registered sources |
-| `tdb_audit.jsonl` | NDJSON audit log — one entry per query |
+| `/app/data/tdb_registry.db` | SQLite registry of registered sources |
+| `/app/tdb_audit.jsonl` | NDJSON audit log — one entry per query |
 
-Both paths are configurable via environment variables. Make sure the process has write
-access to these locations.
+The `-v "$(pwd)/data:/app/data"` flag in the run command above persists the registry.
+Both paths are configurable (`TDB_REGISTRY_DB`, `TDB_LOG_FILE`).
 
 ---
 

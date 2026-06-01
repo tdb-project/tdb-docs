@@ -16,6 +16,21 @@ file in the project directory, or pass them directly to the process.
 
 ---
 
+## License
+
+TDB Enterprise requires a valid, signed license to serve data. Trial images have the
+license baked in, so you normally set nothing here. See [Licensing & expiry](../getting-started/installation.md#licensing-expiry).
+
+| Variable | Default | Description |
+|---|---|---|
+| `TDB_LICENSE` | *(empty)* | A signed license token. Takes precedence over the baked file — use it to drop in a renewed license without rebuilding the image. |
+| `TDB_LICENSE_FILE` | `/app/license.jwt` | Path to the license token baked into the image. Read only when `TDB_LICENSE` is unset. |
+
+When the license is missing, invalid, or expired, the server keeps running and
+`/health` stays `200`, but all data/API requests return `403 license_expired`.
+
+---
+
 ## JWT Authentication
 
 | Variable | Default | Description |
