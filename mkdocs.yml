@@ -1,0 +1,89 @@
+site_name: TDB Enterprise
+site_description: The Data-Bridge — secure, auditable API layer over your data sources
+site_author: TDB Project
+site_url: https://docs.tdb.jiracorp.co.in
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quickstart: getting-started/quickstart.md
+  - Connectors:
+    - PostgreSQL: connectors/postgresql.md
+    - MySQL: connectors/mysql.md
+    - SQL Server: connectors/sqlserver.md
+    - Snowflake: connectors/snowflake.md
+  - Authentication:
+    - Overview: auth/overview.md
+    - API Keys: auth/api-keys.md
+    - JWT: auth/jwt.md
+    - OAuth 2.1 (MCP): auth/oauth.md
+  - API Reference:
+    - Sources: api/sources.md
+    - Query: api/query.md
+    - MCP: api/mcp.md
+    - Views: api/views.md
+  - Security:
+    - RBAC: security/rbac.md
+    - Audit Log: security/audit.md
+  - Observability:
+    - Prometheus Metrics: observability/metrics.md
+  - Integrations:
+    - Splunk HEC: integrations/splunk.md
+  - Reference:
+    - Environment Variables: reference/environment-variables.md
+  - Pricing: pricing.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/tdb-project/tdb-community
