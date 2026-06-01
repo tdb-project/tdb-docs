@@ -4,6 +4,8 @@
 
 Register a data source once. Query it from REST, SQL, or any MCP-compatible AI tool. Every query is logged.
 
+Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, and CSV files — and every team now wants AI agents to query it. TDB makes that **existing, multi-source** data safely accessible **on your own infrastructure**, without moving it into a single cloud warehouse or routing it through a SaaS copilot, and with a tamper-evident audit log you own. → [Why TDB](why-tdb.md)
+
 ---
 
 ## What's in this release
