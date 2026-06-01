@@ -18,26 +18,31 @@ everything is inside the image.
 
 ## Get the image
 
-=== "Trial (delivered image)"
+Your image — trial or commercial — is a dedicated build with your license already
+baked in. The license travels inside the image; there is nothing else to configure
+for it.
 
-    Your trial is a dedicated image with a time-limited license already baked in.
-    You receive it as a compressed tarball. Load it:
+=== "Private registry (recommended)"
+
+    We deliver via a **customer-scoped private registry**: you receive a pull token
+    that is scoped to your own repository path and can see only your images. Log in
+    with that token and pull:
 
     ```bash
-    docker load < tdb-enterprise-trial.tar.gz
-    # Loaded image: tdb-enterprise:trial-acme-20260701
+    docker login registry.tdb.jiracorp.co.in        # use your issued pull token
+    docker pull registry.tdb.jiracorp.co.in/tdb-customers/acme/tdb-enterprise:trial-20260701
     ```
 
-    Nothing else to configure for the license — it travels inside the image.
+    Your welcome e-mail contains your exact repository path and tag.
 
-=== "Commercial (private registry)"
+=== "Tarball (air-gapped)"
 
-    Commercial customers pull from our private registry using the credentials
-    issued with your license:
+    If your environment cannot reach our registry, we provide the same image as a
+    compressed tarball instead. Load it:
 
     ```bash
-    docker login registry.tdb.jiracorp.co.in   # use your issued token
-    docker pull registry.tdb.jiracorp.co.in/tdb/tdb-enterprise:latest
+    docker load < trial-acme-20260701.tar.gz
+    # Loaded image: tdb-enterprise:trial-acme-20260701
     ```
 
 ---
