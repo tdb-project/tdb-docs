@@ -54,6 +54,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Why TDB: why-tdb.md
   - Getting Started:
     - Community Edition (CSV, free): getting-started/community.md
     - Installation: getting-started/installation.md
