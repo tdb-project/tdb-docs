@@ -8,62 +8,42 @@ Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, 
 
 ---
 
-## What's in this release
-
-TDB Enterprise ships the following features. Everything listed here is live and tested.
+## Features
 
 **Connectors**
 
-| Feature | Status |
-|---|---|
-| PostgreSQL connector | ✅ Shipped |
-| MySQL connector | ✅ Shipped |
-| SQL Server connector | ✅ Shipped |
-| Snowflake connector | ✅ Shipped |
-| Multiple simultaneous registered sources | ✅ Shipped |
+- PostgreSQL, MySQL, SQL Server, and Snowflake connectors
+- Multiple simultaneous registered sources
 
 **Auth & API**
 
-| Feature | Status |
-|---|---|
-| Static API key auth | ✅ Shipped |
-| DB-managed API keys (create / rotate / revoke) | ✅ Shipped |
-| Role-based access control (read / readwrite / admin) | ✅ Shipped |
-| JWT authentication | ✅ Shipped |
-| OAuth 2.1 with PKCE on MCP | ✅ Shipped |
-| Rate limiting per API key | ✅ Shipped |
-| CORS configuration | ✅ Shipped |
+- Static API keys, plus DB-managed keys (create / rotate / revoke)
+- Role-based access control (read / readwrite / admin)
+- JWT authentication
+- OAuth 2.1 with PKCE on MCP
+- Per-API-key rate limiting
+- CORS configuration
 
 **Query & MCP**
 
-| Feature | Status |
-|---|---|
-| REST query endpoint (SELECT only) | ✅ Shipped |
-| MCP `query_source` tool | ✅ Shipped |
-| MCP `schema_source`, `preview_source`, `filter_source`, `aggregate_source` tools | ✅ Shipped |
-| YAML-defined named views with typed parameters | ✅ Shipped |
-| Prompt injection filtering (input + output) | ✅ Shipped |
-| MCP tool-level allow-lists per API key | ✅ Shipped |
-| Auto schema detection | ✅ Shipped |
+- REST query endpoint (SELECT only)
+- MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`
+- YAML-defined named views with typed parameters
+- Prompt-injection filtering (input + output)
+- MCP tool-level allow-lists per API key
+- Auto schema detection
 
 **Audit & Compliance**
 
-| Feature | Status |
-|---|---|
-| Audit log (NDJSON, every query) | ✅ Shipped |
-| Signed hash-chained audit log (tamper-evident) | ✅ Shipped |
-| Audit log integrity verification (`GET /v1/audit/verify`) | ✅ Shipped |
-| Splunk HEC export (`POST /v1/audit/export`) | ✅ Shipped |
+- Audit log (NDJSON) on every query
+- Signed, hash-chained audit log (tamper-evident), with integrity verification via `GET /v1/audit/verify`
+- Splunk HEC export via `POST /v1/audit/export`
 
 **Observability**
 
-| Feature | Status |
-|---|---|
-| Prometheus metrics (`GET /metrics`) | ✅ Shipped |
-| Schema caching with configurable TTL | ✅ Shipped |
-| Health check (`GET /health`) | ✅ Shipped |
-
-**Wave 5 (launch):** Public launch in progress — Show HN · GHAS on community repo.
+- Prometheus metrics (`GET /metrics`)
+- Schema caching with configurable TTL
+- Health check (`GET /health`)
 
 ---
 

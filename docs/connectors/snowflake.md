@@ -70,8 +70,7 @@ POST /v1/sources  →  { "name": "orders",   "connection": { ..., "table": "ORDE
 POST /v1/sources  →  { "name": "products", "connection": { ..., "table": "PRODUCTS" } }
 ```
 
-Cross-table JOINs and multi-table queries will be supported via **typed YAML views**
-in Wave 3.
+Cross-table JOINs and multi-table queries are supported via [**typed YAML views**](../api/views.md).
 
 ---
 

@@ -22,7 +22,8 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 !!! warning "Single admin user"
     The current release supports one admin identity (`TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD`).
-    Multi-user support with individual logins will be added alongside RBAC in Wave 4.
+    Multi-user support with individual logins is planned for a future release. For
+    role-scoped access today, use [DB-managed API keys with RBAC](../security/rbac.md).
 
 ---
 
@@ -108,8 +109,9 @@ The JWT payload contains:
 }
 ```
 
-`role` is always `"admin"` in the current release. Per-user roles will be added with
-RBAC in Wave 4.
+JWT tokens currently carry the `"admin"` role. For fine-grained, role-scoped access,
+use [DB-managed API keys with RBAC](../security/rbac.md) (read / readwrite / admin);
+per-user JWT roles are planned for a future release.
 
 ---
 
