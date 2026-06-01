@@ -1,8 +1,8 @@
-# Pricing
+# Editions
 
-TDB is an open-core product. The community edition is free, forever. Paid tiers add the connectors, auth, and compliance features you need to run TDB in production for a real team.
+TDB is an open-core product. The community edition is **free, forever** under AGPLv3. The paid editions add the connectors, auth, and compliance features you need to run TDB in production for a real team.
 
-**Pricing is published transparently. No "contact sales for pricing."**
+This page shows exactly what each edition includes. **For pricing and a free 30-day evaluation, [email us](mailto:hello@tdb.jiracorp.co.in)** — we'll tailor a quote to your deployment and get you set up.
 
 ---
 
@@ -44,7 +44,7 @@ TDB is an open-core product. The community edition is free, forever. Paid tiers 
 
     [Get started →](getting-started/installation.md){ .md-button }
 
-=== "SMB — $499 / month"
+=== "SMB"
 
     **Commercial license. Self-hosted.**
 
@@ -91,7 +91,7 @@ TDB is an open-core product. The community edition is free, forever. Paid tiers 
 
     [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
 
-=== "Mid-Market — $1,999 / month"
+=== "Mid-Market"
 
     **Commercial license. Self-hosted.**
 
@@ -121,19 +121,13 @@ TDB is an open-core product. The community edition is free, forever. Paid tiers 
 
 ---
 
-## Annual pricing
+## Discounts
 
-Save 15% on any paid tier with an annual subscription.
-
-| Tier | Monthly | Annual (15% off) |
-|---|---|---|
-| Community | Free | Free |
-| SMB | $499 / month | $5,091 / year |
-| Mid-Market | $1,999 / month | $20,389 / year |
+Annual subscriptions and larger / multi-seat deployments qualify for discounts. [Email us](mailto:hello@tdb.jiracorp.co.in) to discuss terms for your team.
 
 ---
 
-## Tier comparison
+## Edition comparison
 
 | Feature | Community | SMB | Mid-Market |
 |---|---|---|---|
@@ -154,7 +148,7 @@ Save 15% on any paid tier with an annual subscription.
 | CORS configuration | ❌ | ✅ | ✅ |
 | **Query & MCP** | | | |
 | REST query endpoint (SELECT) | ✅ | ✅ | ✅ |
-| Row limit | 1,000 | 1,000 | 1,000 |
+| Row limit per response † | 1,000 | 1,000 | 1,000 |
 | MCP tools | `query_source` | All 5 | All 5 |
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |
 | Prompt injection filtering | ❌ | ✅ | ✅ |
@@ -177,6 +171,8 @@ Save 15% on any paid tier with an annual subscription.
 | SLA-backed (next business day) | ❌ | ❌ | ✅ |
 | Onboarding call | ❌ | ❌ | ✅ |
 
+† All editions currently cap responses at 1,000 rows — a deliberate safety default that keeps an AI agent from pulling an entire table. Push work down with aggregates and named views; pagination beyond 1,000 rows is on the roadmap.
+
 ---
 
 ## The open-source guarantee
@@ -193,8 +189,11 @@ Yes. TDB is self-hosted by design. The commercial license covers your on-premise
 **How do evaluations work, and what happens when mine ends?**
 [Email us](mailto:hello@tdb.jiracorp.co.in) and we'll issue a **30-day evaluation licence** at no charge — a dedicated, self-hosted image with the licence baked in, running entirely on your own infrastructure (no data reaches us). When it expires, TDB keeps running and `/health` stays healthy, but data and API requests return a clear `license_expired` response until you renew or convert. Need longer to evaluate? Just ask.
 
-**Do you offer volume discounts beyond the 15% annual?**
-Yes, for deployments with more than 10 seats or custom support requirements. [Get in touch](mailto:hello@tdb.jiracorp.co.in).
+**Do you offer annual or volume discounts?**
+Yes — annual subscriptions and larger / multi-seat deployments qualify for discounts. [Email us](mailto:hello@tdb.jiracorp.co.in) to discuss terms.
+
+**How much does it cost?**
+Paid editions are a flat self-hosted license (no per-query or per-row metering). We share pricing by email so we can match the right edition to your deployment and include a free 30-day evaluation — [get in touch](mailto:hello@tdb.jiracorp.co.in).
 
 **Is the source code for the enterprise tier available?**
 No. The enterprise tier is a closed-source commercial product. The community edition is fully open under AGPLv3.

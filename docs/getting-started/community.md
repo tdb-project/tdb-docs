@@ -7,7 +7,7 @@ query. No database, no build step — just Docker.
 !!! info "Community vs Enterprise"
     Community is CSV-only, one source at a time, single static API key, 1,000-row cap,
     one MCP tool (`query_source`), and a local NDJSON audit log. Need SQL databases,
-    multiple sources, OAuth, RBAC, or tamper-evident audit export? See [Pricing](../pricing.md).
+    multiple sources, OAuth, RBAC, or tamper-evident audit export? See [Editions](../pricing.md).
 
 ---
 
@@ -129,5 +129,5 @@ and a UTC timestamp:
 ## Next steps
 
 - Full README & source: [github.com/tdb-project/tdb-community](https://github.com/tdb-project/tdb-community)
-- Outgrown one CSV? [Compare tiers](../pricing.md) — Enterprise adds Postgres/MySQL/SQL
+- Outgrown one CSV? [Compare editions](../pricing.md) — Enterprise adds Postgres/MySQL/SQL
   Server/Snowflake, multiple sources, OAuth, RBAC, and tamper-evident audit export.

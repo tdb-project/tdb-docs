@@ -89,7 +89,7 @@ TDB never modifies your data. Every connector enforces read-only access at the c
 - [Prometheus metrics →](observability/metrics.md)
 - [Splunk HEC integration →](integrations/splunk.md)
 - [All environment variables →](reference/environment-variables.md)
-- [Pricing →](pricing.md)
+- [Editions & feature comparison →](pricing.md)
 
 ---
 
