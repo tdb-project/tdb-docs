@@ -58,4 +58,4 @@ vendor or consolidating everything into a single cloud warehouse.
 
 Ready to try it? → [Quickstart](getting-started/quickstart.md) ·
 [Community Edition (free)](getting-started/community.md) ·
-[Pricing](pricing.md)
+[Compare editions](pricing.md)

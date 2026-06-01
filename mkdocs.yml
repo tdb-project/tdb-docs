@@ -83,7 +83,7 @@ nav:
     - Splunk HEC: integrations/splunk.md
   - Reference:
     - Environment Variables: reference/environment-variables.md
-  - Pricing: pricing.md
+  - Editions: pricing.md
 
 extra:
   social:
