@@ -190,8 +190,8 @@ Features in the community edition are free forever under AGPLv3. We will never m
 **Can I run the enterprise tier on-premises?**
 Yes. TDB is self-hosted by design. The commercial license covers your on-premises deployment. There is no SaaS-only restriction.
 
-**What happens when my trial ends?**
-We don't run time-limited trials. [Email us](mailto:hello@tdb.jiracorp.co.in) and we'll arrange a 30-day evaluation licence at no charge.
+**How do evaluations work, and what happens when mine ends?**
+[Email us](mailto:hello@tdb.jiracorp.co.in) and we'll issue a **30-day evaluation licence** at no charge — a dedicated, self-hosted image with the licence baked in, running entirely on your own infrastructure (no data reaches us). When it expires, TDB keeps running and `/health` stays healthy, but data and API requests return a clear `license_expired` response until you renew or convert. Need longer to evaluate? Just ask.
 
 **Do you offer volume discounts beyond the 15% annual?**
 Yes, for deployments with more than 10 seats or custom support requirements. [Get in touch](mailto:hello@tdb.jiracorp.co.in).
