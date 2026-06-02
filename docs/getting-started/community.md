@@ -41,7 +41,13 @@ The image is published to GHCR and is multi-arch (Intel + Apple Silicon). You on
 The `-d` flag runs TDB **detached** (in the background), so this same terminal stays free for
 Steps 2–5 — and the `TDB_API_KEYS` you just set stays available to them. Naming the container
 `tdb` lets the later commands refer to it by name. Put your CSV in a `data/` folder next to
-where you run the command. To pin a version, use `:0.4.1` instead of `:latest`.
+where you run the command.
+
+!!! tip "Image tags"
+    `:latest` always points to the newest **stable release** (not the tip of `main`). For
+    production, pin an immutable release tag like `:0.4.2` — or a `@sha256:` digest;
+    `:0.4` floats to the newest patch within a minor. Pull `:edge` to try the latest
+    unreleased `main` build.
 
 Verify it's up (use `curl.exe` on Windows — see the note below):
 
