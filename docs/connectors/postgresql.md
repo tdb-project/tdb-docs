@@ -120,14 +120,16 @@ The default query limit is **100 rows**. The hard cap is **1,000 rows**.
 ```json
 {
   "source_id": "...",
-  "sql": "SELECT * FROM data",
+  "sql": "SELECT * FROM orders",
   "limit": 500
 }
 ```
 
-The `limit` field in the query request sets the per-query maximum. TDB appends
-`LIMIT <n>` to your SQL if no `LIMIT` clause is present. If your SQL already
-contains a `LIMIT` clause, TDB uses it as-is.
+Write your SQL against the **registered table name** (`orders` here) — your SQL is sent to
+Postgres as-is, so there is no `data` alias for database sources (that's CSV-only). The
+`limit` field in the query request sets the per-query maximum. TDB appends `LIMIT <n>` to
+your SQL if no `LIMIT` clause is present. If your SQL already contains a `LIMIT` clause, TDB
+uses it as-is.
 
 ---
 

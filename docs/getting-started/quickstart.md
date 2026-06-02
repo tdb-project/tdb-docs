@@ -185,7 +185,7 @@ curl -X POST http://localhost:8000/v1/mcp \
     "params": {
       "name": "query_source",
       "arguments": {
-        "sql": "SELECT COUNT(*) AS total FROM data",
+        "sql": "SELECT COUNT(*) AS total FROM customers",
         "source_name": "customers"
       }
     }
@@ -193,9 +193,10 @@ curl -X POST http://localhost:8000/v1/mcp \
 ```
 
 !!! note "Table name in MCP queries"
-    Use `data` as the table alias in MCP SQL queries (same as in the REST query
-    endpoint). Pass `source_name` to target a specific registered source when you
-    have multiple sources registered.
+    Use the **registered table name** in your SQL — the same name you use at the REST
+    query endpoint (here, `customers`). SQL is passed straight through to the database, so
+    there is no `data` alias for database sources (that's CSV-only). Pass `source_name` to
+    target a specific registered source when you have multiple registered.
 
 ---
 

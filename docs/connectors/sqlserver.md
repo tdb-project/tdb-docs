@@ -177,14 +177,16 @@ The default query limit is **100 rows**. The hard cap is **1,000 rows**.
 ```json
 {
   "source_id": "...",
-  "sql": "SELECT * FROM data",
+  "sql": "SELECT * FROM orders",
   "limit": 500
 }
 ```
 
-SQL Server uses `TOP n` rather than `LIMIT`. TDB injects `SELECT TOP <n>` into your
-query automatically if no `TOP` clause is present. If your SQL already includes `TOP`,
-TDB leaves it unchanged.
+Write your SQL against the **registered table name** (`orders` here) — your SQL is sent to
+SQL Server as-is, so there is no `data` alias for database sources (that's CSV-only). SQL
+Server uses `TOP n` rather than `LIMIT`. TDB injects `SELECT TOP <n>` into your query
+automatically if no `TOP` clause is present. If your SQL already includes `TOP`, TDB leaves
+it unchanged.
 
 Note: **do not use `LIMIT` in hand-written SQL for this connector** — SQL Server does
 not support that syntax. Use `TOP n` instead:

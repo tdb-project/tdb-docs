@@ -270,3 +270,8 @@ curl -X POST http://localhost:8000/v1/auth/keys/<key_id>/rotate \
 curl -X DELETE http://localhost:8000/v1/auth/keys/<key_id> \
   -H "Authorization: Bearer <YOUR_ADMIN_KEY>"
 ```
+
+!!! note "Table name in the query above"
+    The `FROM data` in step 4 is illustrative. The table name depends on the connector —
+    CSV sources use `data`, database sources use the registered table name. See
+    [Query API → Table name in queries](../api/query.md#table-name-in-queries).
