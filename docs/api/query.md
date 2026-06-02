@@ -49,15 +49,22 @@ Requires authentication (`Authorization: Bearer <token>`).
 
 ## Table name in queries
 
-For the PostgreSQL connector, write your SQL against the **registered table name**,
-or use `data` as a universal alias — TDB resolves it to the correct table.
+The table name to use in your SQL depends on the connector — there is **no universal
+`data` alias** across connector types:
+
+- **CSV** (Community): always use `data`. TDB loads the file into an in-memory table
+  registered under that fixed name, so `data` is the only valid table name.
+- **PostgreSQL / MySQL / SQL Server / Snowflake**: use the **actual table name** from the
+  source's `connection.table`. Your SQL is passed through to the database unchanged (apart
+  from an appended `LIMIT`), so the table must exist by that name. `data` is **not** a valid
+  table name for these connectors unless the underlying table is literally named `data`.
 
 ```sql
--- Using the actual table name
-SELECT * FROM orders WHERE status = 'shipped' LIMIT 20
-
--- Using the 'data' alias (works for all connector types)
+-- CSV source — always 'data'
 SELECT COUNT(*) AS total FROM data
+
+-- Database source registered with "table": "orders" — use the real table name
+SELECT * FROM orders WHERE status = 'shipped' LIMIT 20
 ```
 
 ---

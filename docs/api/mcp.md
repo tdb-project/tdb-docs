@@ -150,6 +150,10 @@ Response:
 
 Executes a SQL query against a registered source. Requires auth.
 
+Use the table name that matches the source: CSV sources are queried as `data`, while
+database sources use their **registered table name** (the examples below query a `customers`
+source). There is no `data` alias for database sources.
+
 **With a single registered source (source_name optional):**
 
 ```bash
@@ -163,7 +167,7 @@ curl -X POST http://localhost:8000/v1/mcp \
     "params": {
       "name": "query_source",
       "arguments": {
-        "sql": "SELECT country, COUNT(*) AS n FROM data GROUP BY country ORDER BY n DESC LIMIT 10"
+        "sql": "SELECT country, COUNT(*) AS n FROM customers GROUP BY country ORDER BY n DESC LIMIT 10"
       }
     }
   }'
@@ -182,7 +186,7 @@ curl -X POST http://localhost:8000/v1/mcp \
     "params": {
       "name": "query_source",
       "arguments": {
-        "sql": "SELECT * FROM data WHERE status = '\''active'\'' LIMIT 20",
+        "sql": "SELECT * FROM customers WHERE status = '\''active'\'' LIMIT 20",
         "source_name": "customers"
       }
     }

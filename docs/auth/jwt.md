@@ -94,6 +94,11 @@ curl -X POST http://localhost:8000/v1/query \
   }'
 ```
 
+!!! note "Table name in the query above"
+    The `FROM data` here is illustrative. The table name depends on the connector —
+    CSV sources use `data`, database sources use the registered table name. See
+    [Query API → Table name in queries](../api/query.md#table-name-in-queries).
+
 ---
 
 ## Token contents
