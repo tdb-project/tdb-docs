@@ -21,7 +21,7 @@ The image is published to GHCR and is multi-arch (Intel + Apple Silicon). You on
     ```bash
     export TDB_API_KEYS=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
-    docker run --rm -p 8000:8000 \
+    docker run -d --rm --name tdb -p 8000:8000 \
       -e TDB_API_KEYS \
       -v "$PWD/data:/data:ro" \
       ghcr.io/tdb-project/tdb-community:latest
@@ -32,16 +32,18 @@ The image is published to GHCR and is multi-arch (Intel + Apple Silicon). You on
     ```powershell
     $env:TDB_API_KEYS = (python3 -c "import secrets; print(secrets.token_hex(32))")
 
-    docker run --rm -p 8000:8000 `
+    docker run -d --rm --name tdb -p 8000:8000 `
       -e TDB_API_KEYS `
       -v "${PWD}\data:/data:ro" `
       ghcr.io/tdb-project/tdb-community:latest
     ```
 
-Put your CSV in a `data/` folder next to where you run the command. To pin a version, use
-`:0.4.1` instead of `:latest`.
+The `-d` flag runs TDB **detached** (in the background), so this same terminal stays free for
+Steps 2–5 — and the `TDB_API_KEYS` you just set stays available to them. Naming the container
+`tdb` lets the later commands refer to it by name. Put your CSV in a `data/` folder next to
+where you run the command. To pin a version, use `:0.4.1` instead of `:latest`.
 
-Verify it's up:
+Verify it's up (use `curl.exe` on Windows — see the note below):
 
 ```bash
 curl http://localhost:8000/health
@@ -49,17 +51,44 @@ curl http://localhost:8000/health
 ```
 
 Open [http://localhost:8000/docs](http://localhost:8000/docs) for the interactive Swagger UI.
+Tail the container logs any time with `docker logs -f tdb`.
+
+!!! warning "Windows: use `curl.exe`, not `curl`"
+    In PowerShell, `curl` is an **alias for `Invoke-WebRequest`**, which does not understand
+    `-X`, `-H`, or `-d`. Type `curl.exe` explicitly in Steps 1–5 (the Windows tabs below already
+    do this) so you get the real curl.
+
+!!! note "Stopping TDB"
+    When you're done, stop the container from the same terminal:
+
+    ```bash
+    docker stop tdb
+    ```
+
+    Because it was started with `--rm`, stopping also **removes** it — the ephemeral registry
+    and audit log are discarded. For a setup that survives restarts, see the tip at the end.
 
 ---
 
 ## Step 2 — Register your CSV
 
-```bash
-curl -X POST http://localhost:8000/v1/sources \
-  -H "Authorization: Bearer $TDB_API_KEYS" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"sales","source_type":"csv","connection":{"file_path":"/data/sales.csv"}}'
-```
+=== "macOS / Linux"
+
+    ```bash
+    curl -X POST http://localhost:8000/v1/sources \
+      -H "Authorization: Bearer $TDB_API_KEYS" \
+      -H "Content-Type: application/json" \
+      -d '{"name":"sales","source_type":"csv","connection":{"file_path":"/data/sales.csv"}}'
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    curl.exe -X POST http://localhost:8000/v1/sources `
+      -H "Authorization: Bearer $env:TDB_API_KEYS" `
+      -H "Content-Type: application/json" `
+      -d '{\"name\":\"sales\",\"source_type\":\"csv\",\"connection\":{\"file_path\":\"/data/sales.csv\"}}'
+    ```
 
 Schema (column names + types) is auto-detected. The table is always queryable as `data`.
 
@@ -67,12 +96,23 @@ Schema (column names + types) is auto-detected. The table is always queryable as
 
 ## Step 3 — Query it (REST)
 
-```bash
-curl -X POST http://localhost:8000/v1/query \
-  -H "Authorization: Bearer $TDB_API_KEYS" \
-  -H "Content-Type: application/json" \
-  -d '{"source_id":"<id-from-step-2>","sql":"SELECT country, SUM(units) AS total FROM data GROUP BY country ORDER BY total DESC","limit":100}'
-```
+=== "macOS / Linux"
+
+    ```bash
+    curl -X POST http://localhost:8000/v1/query \
+      -H "Authorization: Bearer $TDB_API_KEYS" \
+      -H "Content-Type: application/json" \
+      -d '{"source_id":"<id-from-step-2>","sql":"SELECT country, SUM(units) AS total FROM data GROUP BY country ORDER BY total DESC","limit":100}'
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    curl.exe -X POST http://localhost:8000/v1/query `
+      -H "Authorization: Bearer $env:TDB_API_KEYS" `
+      -H "Content-Type: application/json" `
+      -d '{\"source_id\":\"<id-from-step-2>\",\"sql\":\"SELECT country, SUM(units) AS total FROM data GROUP BY country ORDER BY total DESC\",\"limit\":100}'
+    ```
 
 Read-only is enforced: `INSERT` / `UPDATE` / `DELETE` / `DROP` are rejected at the API
 level. Responses are capped at **1,000 rows** — even if your SQL has a larger `LIMIT`.
@@ -108,9 +148,17 @@ block works for **Cursor** (`.cursor/mcp.json`) and **VS Code** (`mcp.json`).
 Every query — REST or from an AI tool — is appended to a local NDJSON file
 (`tdb_audit.jsonl`) inside the container:
 
-```bash
-docker exec <container> cat /app/tdb_audit.jsonl | tail -3
-```
+=== "macOS / Linux"
+
+    ```bash
+    docker exec tdb cat /app/tdb_audit.jsonl | tail -3
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    docker exec tdb cat /app/tdb_audit.jsonl | Select-Object -Last 3
+    ```
 
 Each line records the SQL, the row count, a **truncated** key hint (never the raw key),
 and a UTC timestamp:
