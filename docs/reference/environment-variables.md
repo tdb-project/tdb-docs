@@ -20,12 +20,12 @@ file in the project directory, or pass them directly to the process.
 
 | Variable | Default | Description |
 |---|---|---|
-| `TDB_ALLOWED_DATA_DIR` | *(unset — no restriction)* | Confines registered CSV `file_path` values to this directory. When set, a `file_path` that resolves (symlinks and `..` are expanded first) to a location **outside** this directory is rejected with `403` at register, schema, and query time. When unset, paths are accepted as-is. **The Community Docker image sets this to `/data` by default**, so the bundled deployment is confined out of the box. For a bare `tdb serve`, set it to the directory holding your CSVs. |
+| `TDB_ALLOWED_DATA_DIR` | *(unset — no restriction)* | Confines registered CSV `file_path` values to this directory. When set, a `file_path` that resolves (symlinks and `..` are expanded first) to a location **outside** this directory is rejected with `403` at register, schema, and query time. When unset, paths are accepted as-is. Applies to the **CSV connector in both editions**; database connectors take a table name (not a path) and are unaffected. **The Docker images set this to `/data` by default**, so the bundled deployment is confined out of the box. For a bare `tdb serve`, set it to the directory holding your CSVs. |
 
 !!! warning "Set this for any non-Docker CSV deployment exposed beyond localhost"
     Without `TDB_ALLOWED_DATA_DIR`, the CSV connector reads any path the server
     process can access — a client with the API key could register
-    `file_path: /etc/passwd` and read it back. The Docker image is confined to
+    `file_path: /etc/passwd` and read it back. The Docker images are confined to
     `/data`; a source-installed `tdb serve` is **not** until you set this.
 
 ---
