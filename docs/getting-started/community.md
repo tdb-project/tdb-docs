@@ -53,10 +53,12 @@ curl http://localhost:8000/health
 Open [http://localhost:8000/docs](http://localhost:8000/docs) for the interactive Swagger UI.
 Tail the container logs any time with `docker logs -f tdb`.
 
-!!! warning "Windows: use `curl.exe`, not `curl`"
-    In PowerShell, `curl` is an **alias for `Invoke-WebRequest`**, which does not understand
-    `-X`, `-H`, or `-d`. Type `curl.exe` explicitly in Steps 1–5 (the Windows tabs below already
-    do this) so you get the real curl.
+!!! warning "Windows: `curl.exe` for the GET, `Invoke-RestMethod` for JSON POSTs"
+    In PowerShell, `curl` is an **alias for `Invoke-WebRequest`**, so type `curl.exe` explicitly
+    for the Step 1 health check to get the real curl. For the POST requests that send a JSON body
+    (Steps 2–3), PowerShell mangles quoted JSON when handing it to `curl.exe` — the spaces in your
+    SQL get split into separate arguments — so the Windows tabs use the native `Invoke-RestMethod`
+    cmdlet instead. It's the reliable approach across PowerShell 5.1 and 7.x.
 
 !!! note "Stopping TDB"
     When you're done, stop the container from the same terminal:
@@ -84,10 +86,15 @@ Tail the container logs any time with `docker logs -f tdb`.
 === "Windows (PowerShell)"
 
     ```powershell
-    curl.exe -X POST http://localhost:8000/v1/sources `
-      -H "Authorization: Bearer $env:TDB_API_KEYS" `
-      -H "Content-Type: application/json" `
-      -d '{\"name\":\"mydata\",\"source_type\":\"csv\",\"connection\":{\"file_path\":\"/data/your_file.csv\"}}'
+    $body = @{
+      name        = "mydata"
+      source_type = "csv"
+      connection  = @{ file_path = "/data/your_file.csv" }
+    } | ConvertTo-Json
+
+    Invoke-RestMethod -Method Post -Uri http://localhost:8000/v1/sources `
+      -Headers @{ Authorization = "Bearer $env:TDB_API_KEYS" } `
+      -ContentType "application/json" -Body $body
     ```
 
 Fill in the two placeholders: **`name`** (`mydata`) is any label you choose for the source,
@@ -116,10 +123,15 @@ CSV header row, and the response returns the new source's `id` — copy it for S
 === "Windows (PowerShell)"
 
     ```powershell
-    curl.exe -X POST http://localhost:8000/v1/query `
-      -H "Authorization: Bearer $env:TDB_API_KEYS" `
-      -H "Content-Type: application/json" `
-      -d '{\"source_id\":\"<id-from-step-2>\",\"sql\":\"SELECT * FROM data\",\"limit\":10}'
+    $body = @{
+      source_id = "<id-from-step-2>"
+      sql       = "SELECT * FROM data"
+      limit     = 10
+    } | ConvertTo-Json
+
+    Invoke-RestMethod -Method Post -Uri http://localhost:8000/v1/query `
+      -Headers @{ Authorization = "Bearer $env:TDB_API_KEYS" } `
+      -ContentType "application/json" -Body $body
     ```
 
 `SELECT * FROM data` works on any CSV — swap it for any read-only query you like. The
