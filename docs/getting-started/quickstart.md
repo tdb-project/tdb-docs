@@ -158,7 +158,7 @@ Expected response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-community", "version": "0.4.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.0.0"}
   }
 }
 ```
@@ -202,11 +202,18 @@ curl -X POST http://localhost:8000/v1/mcp \
 
 ## Step 6 — Check the audit log
 
-Every query writes a line to the audit log:
+Every query writes a line to the audit log. The log lives **inside the container**
+at `/app/tdb_audit.jsonl` (configurable via `TDB_LOG_FILE`) — read it with
+`docker exec`:
 
 ```bash
-tail -n 5 tdb_audit.jsonl | python -m json.tool
+docker exec tdb tail -n 5 /app/tdb_audit.jsonl | python -m json.tool
 ```
+
+!!! tip "Persist the audit log on the host"
+    Mount a volume (e.g. `-v "$(pwd)/logs:/app/logs"` and set
+    `TDB_LOG_FILE=/app/logs/tdb_audit.jsonl`) so the audit trail survives
+    container restarts and can be tailed directly from the host.
 
 You'll see an entry for each query executed, including timestamp, source ID, SQL,
 rows returned, and the API key used.
