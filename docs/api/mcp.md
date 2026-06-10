@@ -108,7 +108,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-community", "version": "0.4.0"}
+    "serverInfo": {"name": "tdb-community", "version": "0.4.2"}
   }
 }
 ```
