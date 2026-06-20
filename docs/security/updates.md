@@ -37,28 +37,31 @@ TDB is **self-hosted** — it never calls home and nothing auto-updates, so you 
 in control (including in air-gapped environments). When we publish a fix, you update
 to the patched image. The steps depend on how you receive TDB:
 
-=== "Registry (default)"
+=== "Image tarball (current)"
 
-    Your license is supplied at runtime, and the image is generic and versioned, so
-    updating never touches your license:
-
-    ```bash
-    docker pull <your-registry>/tdb-enterprise:vX.Y.Z
-    # restart your container — your existing -e TDB_LICENSE is unchanged
-    ```
-
-=== "Air-gapped (tarball)"
-
-    We deliver the patched version as a image tarball:
+    We deliver the patched version as a versioned image tarball. The image is generic
+    and your license is supplied at runtime, so updating never touches your license:
 
     ```bash
     docker load < tdb-enterprise-vX.Y.Z.tar.gz
-    # restart your container with your existing -e TDB_LICENSE
+    # restart your container — your existing -e TDB_LICENSE is unchanged
+    ```
+
+    This works the same way for air-gapped deployments.
+
+=== "Registry pull (future)"
+
+    As we grow we'll offer registry-based updates, so you can pull a new version
+    directly:
+
+    ```bash
+    docker pull <registry>/tdb-enterprise:vX.Y.Z
+    # restart your container — your token is unchanged
     ```
 
 === "Trial image"
 
-    We re-issue your trial image on the patched version; pull or load it and restart.
+    We re-issue your trial image on the patched version; load it and restart.
 
 We notify the contact on your account when an update affecting you is available,
 with the exact version and steps.
