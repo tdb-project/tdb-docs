@@ -1,8 +1,41 @@
 # API Key Management
 
-DB-managed API keys are stored as SHA-256 hashes in the TDB registry. The raw key
-value is shown **once** — at creation or rotation time — and cannot be retrieved
-afterwards. Keep it safe.
+## Your initial admin key
+
+When TDB first starts it has no DB-managed keys. To create your first key (or make
+any authenticated request), you need the **static env key** — the value you set for
+`TDB_API_KEYS` when starting the container:
+
+```bash
+Authorization: Bearer <value-of-TDB_API_KEYS>
+```
+
+If you started the container without setting `TDB_API_KEYS` (e.g. via Docker Desktop),
+the fallback key is `dev-insecure-key-change-me`. Use it to bootstrap, then replace it:
+
+```bash
+# Bootstrap: create a real admin key using the dev fallback
+curl -X POST http://localhost:8000/v1/auth/keys \
+  -H "Authorization: Bearer dev-insecure-key-change-me" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"admin","role":"admin"}'
+
+# Save the raw_key from the response — that is now your permanent admin key.
+# Then restart the container with TDB_API_KEYS set to a strong value:
+#   docker run ... -e TDB_API_KEYS=your-strong-key-here ...
+```
+
+!!! warning
+    `dev-insecure-key-change-me` is a public default. Replace it before exposing
+    TDB to any network outside your local machine.
+
+---
+
+## DB-managed keys
+
+DB-managed keys are stored as SHA-256 hashes in the TDB registry. The raw key value
+is shown **once** — at creation or rotation time — and cannot be retrieved afterwards.
+Keep it safe.
 
 All key management endpoints require **admin** role. See [RBAC →](../security/rbac.md).
 
