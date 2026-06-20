@@ -7,7 +7,13 @@ your first query — REST and MCP. Estimated time: **5 minutes**.
 
 - TDB is running on `http://localhost:8000` (see [Installation](installation.md))
 - You have a PostgreSQL database with at least one table
-- `TDB_API_KEYS` is set to a key you know (used as `<YOUR_KEY>` below)
+- You know your Bearer token — used as `<YOUR_KEY>` throughout this guide
+
+!!! tip "Finding your Bearer token"
+    Your token is the value you passed to `TDB_API_KEYS` when starting the container.
+    If you started TDB via Docker Desktop without setting that variable, the fallback
+    token is `dev-insecure-key-change-me` — use that to complete this guide, then
+    replace it with a real key before going to production.
 
 ---
 

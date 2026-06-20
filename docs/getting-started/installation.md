@@ -49,16 +49,38 @@ for it.
 
 ## Run the server
 
-```bash
-docker run -d --name tdb \
-  -p 8000:8000 \
-  -e TDB_API_KEYS=your-secret-key-here \
-  -e TDB_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))") \
-  -e TDB_ADMIN_USER=admin \
-  -e TDB_ADMIN_PASSWORD=your-strong-password \
-  -v "$(pwd)/data:/app/data" \
-  tdb-enterprise:trial-acme-20260701
-```
+=== "Terminal (recommended)"
+
+    ```bash
+    docker run -d --name tdb \
+      -p 8000:8000 \
+      -e TDB_API_KEYS=your-secret-key-here \
+      -e TDB_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))") \
+      -e TDB_ADMIN_USER=admin \
+      -e TDB_ADMIN_PASSWORD=your-strong-password \
+      -v "$(pwd)/data:/app/data" \
+      tdb-enterprise:trial-acme-20260701
+    ```
+
+    Your Bearer token for all API requests is the value you set for `TDB_API_KEYS`
+    (here: `your-secret-key-here`). Use it as:
+
+    ```
+    Authorization: Bearer your-secret-key-here
+    ```
+
+=== "Docker Desktop"
+
+    If you started the container from Docker Desktop without setting environment
+    variables, TDB falls back to a built-in development key:
+
+    ```
+    Authorization: Bearer dev-insecure-key-change-me
+    ```
+
+    Use this key to complete the Quickstart. Before exposing TDB to any network,
+    stop the container and re-run it with `-e TDB_API_KEYS=<your-own-key>` (or set
+    it in Docker Desktop's **Optional settings → Environment variables**).
 
 Check the logs — you should see the license confirmed and the server start:
 
@@ -76,9 +98,8 @@ curl http://localhost:8000/health
 ```
 
 !!! warning "Never use the default dev key in production"
-    If `TDB_API_KEYS` is unset, TDB falls back to `dev-insecure-key-change-me`
-    and prints a warning on startup. Always pass a strong `-e TDB_API_KEYS=...`
-    before exposing TDB to any network.
+    Always set a strong `TDB_API_KEYS` value before exposing TDB to any network.
+    The fallback key (`dev-insecure-key-change-me`) is for local evaluation only.
 
 ---
 
