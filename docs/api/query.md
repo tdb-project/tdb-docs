@@ -16,28 +16,33 @@ Requires authentication (`Authorization: Bearer <token>`).
 
 ```json
 {
-  "source_id": "a1b2c3d4-e5f6-...",
-  "sql": "SELECT id, email, country FROM data WHERE country = 'US'",
+  "source_id": "orders",
+  "sql": "SELECT id, status, total FROM orders WHERE status = 'shipped'",
   "limit": 100
 }
 ```
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `source_id` | string (UUID) | Yes | — | ID returned when the source was registered |
+| `source_id` | string | Yes | — | Registered source **name** (e.g. `orders`) or UUID |
 | `sql` | string (1–10,000 chars) | Yes | — | SQL SELECT statement |
 | `limit` | integer (1–1,000) | No | `100` | Maximum rows to return |
+
+!!! tip "Use the source name"
+    `source_id` accepts either the source's registered **name** (e.g. `orders`) or its
+    UUID. Names are easier to read, write, and remember for daily operations.
+    UUIDs remain useful in automation scripts and audit-trail lookups.
 
 **Response (200):**
 
 ```json
 {
   "source_id": "a1b2c3d4-...",
-  "sql": "SELECT id, email, country FROM data WHERE country = 'US'",
-  "columns": ["id", "email", "country"],
+  "sql": "SELECT id, status, total FROM orders WHERE status = 'shipped'",
+  "columns": ["id", "status", "total"],
   "rows": [
-    {"id": 1, "email": "alice@example.com", "country": "US"},
-    {"id": 2, "email": "bob@example.com", "country": "US"}
+    {"id": 1001, "status": "shipped", "total": 149.99},
+    {"id": 1002, "status": "shipped", "total": 59.00}
   ],
   "rows_returned": 2,
   "truncated": false,
@@ -53,17 +58,16 @@ The table name to use in your SQL depends on the connector — there is **no uni
 `data` alias** across connector types:
 
 - **CSV** (Community): always use `data`. TDB loads the file into an in-memory table
-  registered under that fixed name, so `data` is the only valid table name.
+  under that fixed name.
 - **PostgreSQL / MySQL / SQL Server / Snowflake**: use the **actual table name** from the
   source's `connection.table`. Your SQL is passed through to the database unchanged (apart
-  from an appended `LIMIT`), so the table must exist by that name. `data` is **not** a valid
-  table name for these connectors unless the underlying table is literally named `data`.
+  from an appended `LIMIT`).
 
 ```sql
 -- CSV source — always 'data'
 SELECT COUNT(*) AS total FROM data
 
--- Database source registered with "table": "orders" — use the real table name
+-- Database source registered with "table": "orders"
 SELECT * FROM orders WHERE status = 'shipped' LIMIT 20
 ```
 
@@ -86,14 +90,29 @@ post-launch feature.
 
 TDB rejects SQL that is not a `SELECT` or `WITH` statement:
 
-```bash
-curl -X POST http://localhost:8000/v1/query \
-  -H "Authorization: Bearer <KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{"source_id":"...","sql":"DELETE FROM orders"}'
+=== "Bash"
 
-# HTTP 400
-# {"detail":"SQL validation failed: Only SELECT statements are allowed"}
+    ```bash
+    curl -X POST http://localhost:8000/v1/query \
+      -H "Authorization: Bearer <YOUR_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{"source_id":"orders","sql":"DELETE FROM orders"}'
+    ```
+
+=== "PowerShell"
+
+    ```powershell
+    Invoke-RestMethod -Uri "http://localhost:8000/v1/query" `
+      -Method POST `
+      -ContentType "application/json" `
+      -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
+      -Body '{"source_id":"orders","sql":"DELETE FROM orders"}'
+    ```
+
+Expected response (HTTP 400):
+
+```json
+{"detail": "SQL validation failed: Only SELECT statements are allowed"}
 ```
 
 Even if the SQL validator is somehow bypassed, the Postgres connection is opened
@@ -127,7 +146,7 @@ but do not write a `query` audit event.
 |---|---|
 | 400 | SQL validation failed (not a SELECT) |
 | 401 | Missing or invalid auth token |
-| 404 | `source_id` not found |
+| 404 | `source_id` (name or UUID) not found |
 | 429 | Rate limit exceeded (DB-managed keys only) |
 | 500 | Query execution error — check that the source is reachable |
 
@@ -135,37 +154,95 @@ but do not write a `query` audit event.
 
 ## Examples
 
-**Count rows:**
+**Count rows (by source name):**
 
-```bash
-curl -X POST http://localhost:8000/v1/query \
-  -H "Authorization: Bearer <KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{"source_id":"<ID>","sql":"SELECT COUNT(*) AS total FROM data"}'
+=== "Bash"
+
+    ```bash
+    curl -X POST http://localhost:8000/v1/query \
+      -H "Authorization: Bearer <YOUR_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{"source_id": "orders", "sql": "SELECT COUNT(*) AS total FROM orders"}'
+    ```
+
+=== "PowerShell"
+
+    ```powershell
+    Invoke-RestMethod -Uri "http://localhost:8000/v1/query" `
+      -Method POST `
+      -ContentType "application/json" `
+      -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
+      -Body '{"source_id": "orders", "sql": "SELECT COUNT(*) AS total FROM orders"}'
+    ```
+
+Expected response:
+
+```json
+{
+  "source_id": "a1b2c3d4-...",
+  "sql": "SELECT COUNT(*) AS total FROM orders",
+  "columns": ["total"],
+  "rows": [{"total": 4821}],
+  "rows_returned": 1,
+  "truncated": false,
+  "executed_at": "2026-05-22T09:15:00Z"
+}
 ```
 
 **Aggregate with GROUP BY:**
 
-```bash
-curl -X POST http://localhost:8000/v1/query \
-  -H "Authorization: Bearer <KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source_id": "<ID>",
-    "sql": "SELECT country, COUNT(*) AS n FROM data GROUP BY country ORDER BY n DESC",
-    "limit": 20
-  }'
-```
+=== "Bash"
+
+    ```bash
+    curl -X POST http://localhost:8000/v1/query \
+      -H "Authorization: Bearer <YOUR_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "source_id": "orders",
+        "sql": "SELECT status, COUNT(*) AS n FROM orders GROUP BY status ORDER BY n DESC",
+        "limit": 20
+      }'
+    ```
+
+=== "PowerShell"
+
+    ```powershell
+    Invoke-RestMethod -Uri "http://localhost:8000/v1/query" `
+      -Method POST `
+      -ContentType "application/json" `
+      -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
+      -Body '{
+        "source_id": "orders",
+        "sql": "SELECT status, COUNT(*) AS n FROM orders GROUP BY status ORDER BY n DESC",
+        "limit": 20
+      }'
+    ```
 
 **Filter with a date range:**
 
-```bash
-curl -X POST http://localhost:8000/v1/query \
-  -H "Authorization: Bearer <KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source_id": "<ID>",
-    "sql": "SELECT * FROM data WHERE created_at >= '\''2026-01-01'\'' AND created_at < '\''2026-02-01'\''",
-    "limit": 500
-  }'
-```
+=== "Bash"
+
+    ```bash
+    curl -X POST http://localhost:8000/v1/query \
+      -H "Authorization: Bearer <YOUR_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "source_id": "orders",
+        "sql": "SELECT * FROM orders WHERE created_at >= '\''2026-01-01'\'' AND created_at < '\''2026-02-01'\''",
+        "limit": 500
+      }'
+    ```
+
+=== "PowerShell"
+
+    ```powershell
+    Invoke-RestMethod -Uri "http://localhost:8000/v1/query" `
+      -Method POST `
+      -ContentType "application/json" `
+      -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
+      -Body '{
+        "source_id": "orders",
+        "sql": "SELECT * FROM orders WHERE created_at >= ''2026-01-01'' AND created_at < ''2026-02-01''",
+        "limit": 500
+      }'
+    ```
