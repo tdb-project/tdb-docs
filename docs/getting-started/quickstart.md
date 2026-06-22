@@ -51,7 +51,11 @@ Expected response:
 
 **Why:** TDB needs to know about your database before it can query it. You register
 the connection once — after that you refer to the source by its friendly name
-(`customers` in this example) instead of typing connection details every time.
+(`production_db` in this example) instead of typing connection details every time.
+
+**Database-wide registration (recommended):** Omit `table` to register your entire
+database as a single source. You can then query any table — or write JOINs across
+tables — using standard SQL. One registration covers all tables.
 
 === "Bash"
 
@@ -60,17 +64,16 @@ the connection once — after that you refer to the source by its friendly name
       -H "Authorization: Bearer <YOUR_KEY>" \
       -H "Content-Type: application/json" \
       -d '{
-        "name": "customers",
+        "name": "production_db",
         "source_type": "postgres",
         "connection": {
           "host": "host.docker.internal",
           "port": 5432,
           "dbname": "your_database",
           "user": "your_user",
-          "password": "your_password",
-          "table": "customers"
+          "password": "your_password"
         },
-        "description": "Customer records"
+        "description": "Production Postgres — all tables"
       }'
     ```
 
@@ -82,17 +85,16 @@ the connection once — after that you refer to the source by its friendly name
       -ContentType "application/json" `
       -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
       -Body '{
-        "name": "customers",
+        "name": "production_db",
         "source_type": "postgres",
         "connection": {
           "host": "host.docker.internal",
           "port": 5432,
           "dbname": "your_database",
           "user": "your_user",
-          "password": "your_password",
-          "table": "customers"
+          "password": "your_password"
         },
-        "description": "Customer records"
+        "description": "Production Postgres - all tables"
       }'
     ```
 
@@ -101,10 +103,10 @@ Expected response (HTTP 201):
 ```json
 {
   "id": "a1b2c3d4-...",
-  "name": "customers",
+  "name": "production_db",
   "source_type": "postgres",
-  "connection": { "host": "host.docker.internal", "port": 5432, "dbname": "...", "table": "customers" },
-  "description": "Customer records",
+  "connection": { "host": "host.docker.internal", "port": 5432, "dbname": "your_database" },
+  "description": "Production Postgres — all tables",
   "tags": [],
   "registered_by": "<YOUR_KEY>",
   "registered_at": "2026-05-22T09:00:00Z",
@@ -117,10 +119,11 @@ Expected response (HTTP 201):
     Windows or Mac host machine (or in WSL). Inside Docker, `localhost` resolves to the
     container itself — `host.docker.internal` always routes back to the host.
 
-!!! tip "Registering multiple sources"
-    TDB Enterprise supports multiple simultaneous registered sources. Run the same
-    `POST /v1/sources` call with different names and connection details for each table
-    or database you want to expose.
+!!! tip "Single-table registration"
+    To scope a source to one specific table, add `"table": "customers"` to the
+    `connection` object. The schema endpoint will then return only that table's columns.
+    This can be useful when you want to grant different API keys access to different
+    tables as separate named sources.
 
 ---
 
@@ -150,9 +153,9 @@ Expected response:
 [
   {
     "id": "a1b2c3d4-...",
-    "name": "customers",
+    "name": "production_db",
     "source_type": "postgres",
-    "description": "Customer records",
+    "description": "Production Postgres — all tables",
     "tags": [],
     "registered_at": "2026-05-22T09:00:00Z"
   }
@@ -167,64 +170,92 @@ Step 2 did not succeed — re-check your connection details and the
 
 ## Step 4 — Inspect the schema
 
-**Why:** See what columns are available before writing your first query.
-This avoids trial-and-error SQL errors caused by misremembered column names.
-You can use the source **name** (`customers`) instead of the UUID.
+**Why:** See what tables and columns are available before writing your first query.
+This avoids trial-and-error SQL errors caused by misremembered table or column names.
+AI agents also call this endpoint to understand the shape of your data before generating SQL.
+You can use the source **name** (`production_db`) instead of the UUID.
 
 === "Bash"
 
     ```bash
-    curl http://localhost:8000/v1/sources/customers/schema \
+    curl http://localhost:8000/v1/sources/production_db/schema \
       -H "Authorization: Bearer <YOUR_KEY>"
     ```
 
 === "PowerShell"
 
     ```powershell
-    Invoke-RestMethod -Uri "http://localhost:8000/v1/sources/customers/schema" `
+    Invoke-RestMethod -Uri "http://localhost:8000/v1/sources/production_db/schema" `
       -Headers @{ Authorization = "Bearer <YOUR_KEY>" }
     ```
 
-Expected response:
+Expected response (database-wide source — all tables in the `public` schema):
 
 ```json
 {
   "source_id": "a1b2c3d4-...",
-  "source_name": "customers",
-  "columns": [
-    {"name": "id", "type": "integer"},
-    {"name": "email", "type": "character varying"},
-    {"name": "country", "type": "character varying"},
-    {"name": "created_at", "type": "timestamp without time zone"}
+  "source_name": "production_db",
+  "columns": [],
+  "tables": [
+    {
+      "name": "customers",
+      "columns": [
+        {"name": "id", "type": "integer"},
+        {"name": "email", "type": "character varying"},
+        {"name": "country", "type": "character varying"},
+        {"name": "created_at", "type": "timestamp without time zone"}
+      ]
+    },
+    {
+      "name": "orders",
+      "columns": [
+        {"name": "id", "type": "integer"},
+        {"name": "customer_id", "type": "integer"},
+        {"name": "total", "type": "numeric"},
+        {"name": "status", "type": "character varying"}
+      ]
+    }
   ],
   "inspected_at": "2026-05-22T09:00:10Z"
 }
 ```
 
 Schema is introspected live from `information_schema.columns` — always reflects the
-current table structure.
+current database structure.
 
 ---
 
 ## Step 5 — Run a SQL query
 
 **Why:** Verify that TDB can retrieve actual data from your source end-to-end.
-Use the source **name** in `source_id` — the UUID also works but the name is easier
-to type and read. Use the real table name in your SQL (here, `customers`).
+Use the source **name** in `source_id`. With a database-wide source, you can query
+any table — or JOIN across tables — using real table names in your SQL.
 
-=== "Bash"
+=== "Bash (single table)"
 
     ```bash
     curl -X POST http://localhost:8000/v1/query \
       -H "Authorization: Bearer <YOUR_KEY>" \
       -H "Content-Type: application/json" \
       -d '{
-        "source_id": "customers",
+        "source_id": "production_db",
         "sql": "SELECT id, email, country FROM customers WHERE country = '\''US'\'' LIMIT 5"
       }'
     ```
 
-=== "PowerShell"
+=== "Bash (JOIN across tables)"
+
+    ```bash
+    curl -X POST http://localhost:8000/v1/query \
+      -H "Authorization: Bearer <YOUR_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "source_id": "production_db",
+        "sql": "SELECT c.email, o.total, o.status FROM customers c JOIN orders o ON o.customer_id = c.id WHERE o.status = '\''pending'\'' LIMIT 10"
+      }'
+    ```
+
+=== "PowerShell (single table)"
 
     ```powershell
     Invoke-RestMethod -Uri "http://localhost:8000/v1/query" `
@@ -232,8 +263,21 @@ to type and read. Use the real table name in your SQL (here, `customers`).
       -ContentType "application/json" `
       -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
       -Body '{
-        "source_id": "customers",
+        "source_id": "production_db",
         "sql": "SELECT id, email, country FROM customers WHERE country = ''US'' LIMIT 5"
+      }'
+    ```
+
+=== "PowerShell (JOIN across tables)"
+
+    ```powershell
+    Invoke-RestMethod -Uri "http://localhost:8000/v1/query" `
+      -Method POST `
+      -ContentType "application/json" `
+      -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
+      -Body '{
+        "source_id": "production_db",
+        "sql": "SELECT c.email, o.total, o.status FROM customers c JOIN orders o ON o.customer_id = c.id WHERE o.status = ''pending'' LIMIT 10"
       }'
     ```
 

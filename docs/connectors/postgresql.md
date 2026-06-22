@@ -1,14 +1,12 @@
 # PostgreSQL Connector
 
-The PostgreSQL connector provides read-only SQL access to a single Postgres table
-per registered source. Multiple sources can point to different tables in the same
-or different databases.
+The PostgreSQL connector provides read-only SQL access to a Postgres database.
+A source can be registered in two modes: **database-wide** (all tables) or **single-table**
+(scoped to one specific table).
 
 ---
 
 ## Connection configuration
-
-When registering a PostgreSQL source, the `connection` object requires:
 
 | Key | Type | Required | Default | Description |
 |---|---|---|---|---|
@@ -17,10 +15,55 @@ When registering a PostgreSQL source, the `connection` object requires:
 | `dbname` | string | Yes | — | Database name |
 | `user` | string | Yes | — | Database user |
 | `password` | string | Yes | — | Database password |
-| `table` | string | Yes | — | Table name this source maps to |
+| `table` | string | No | — | Omit to register the whole database; set to scope to one table |
 | `schema` | string | No | `"public"` | Postgres schema name |
 
-### Registration example
+---
+
+## Registration modes
+
+### Database-wide (recommended)
+
+Omit `table` to register an entire database as a single source. One registration
+covers all tables. Users can query any table or write JOINs across tables using
+standard SQL.
+
+```bash
+curl -X POST http://localhost:8000/v1/sources \
+  -H "Authorization: Bearer <YOUR_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "production_db",
+    "source_type": "postgres",
+    "connection": {
+      "host": "db.internal",
+      "port": 5432,
+      "dbname": "production",
+      "user": "tdb_reader",
+      "password": "s3cret",
+      "schema": "public"
+    },
+    "description": "Production database — all tables"
+  }'
+```
+
+The schema endpoint returns all tables and their columns:
+
+```json
+{
+  "source_name": "production_db",
+  "columns": [],
+  "tables": [
+    { "name": "customers", "columns": [{"name": "id", "type": "integer"}, ...] },
+    { "name": "orders",    "columns": [{"name": "id", "type": "integer"}, ...] }
+  ]
+}
+```
+
+### Single-table
+
+Include `table` to scope the source to one specific table. Useful when you want
+different API keys to access different tables as separate named sources.
 
 ```bash
 curl -X POST http://localhost:8000/v1/sources \
@@ -38,26 +81,11 @@ curl -X POST http://localhost:8000/v1/sources \
       "table": "orders",
       "schema": "public"
     },
-    "description": "Order records from the production database",
-    "tags": ["production", "finance"]
+    "description": "Order records only"
   }'
 ```
 
----
-
-## One source = one table
-
-Each registered source maps to exactly one table. This is by design — it matches the
-CSV connector's model and keeps the permission surface predictable. To expose multiple
-tables, register multiple sources:
-
-```bash
-# Register two tables from the same database
-POST /v1/sources  →  { "name": "orders",   "connection": { ..., "table": "orders" } }
-POST /v1/sources  →  { "name": "products", "connection": { ..., "table": "products" } }
-```
-
-Cross-table JOINs and multi-table queries are supported via [**typed YAML views**](../api/views.md).
+The schema endpoint returns that table's columns in the `columns` field (`tables` is null).
 
 ---
 
@@ -86,8 +114,15 @@ Schema is pulled live from `information_schema.columns`:
 GET /v1/sources/<source_id>/schema
 ```
 
-Returns column names and their Postgres data types in `ordinal_position` order.
-The introspection query runs on demand — it always reflects the current table definition.
+The response shape depends on the registration mode:
+
+- **Database-wide:** `tables` array is populated; `columns` is empty.
+  Each element names a table and lists its columns in `ordinal_position` order.
+- **Single-table:** `columns` array is populated; `tables` is null.
+  Lists the registered table's columns in `ordinal_position` order.
+
+The introspection query runs on demand — it always reflects the current live
+database structure.
 
 ---
 
@@ -125,9 +160,11 @@ The default query limit is **100 rows**. The hard cap is **1,000 rows**.
 }
 ```
 
-Write your SQL against the **registered table name** (`orders` here) — your SQL is sent to
-Postgres as-is, so there is no `data` alias for database sources (that's CSV-only). The
-`limit` field in the query request sets the per-query maximum. TDB appends `LIMIT <n>` to
+Write your SQL using real database table names — your SQL is sent to Postgres as-is.
+There is no `data` alias for database sources (that's CSV-only). For database-wide
+sources you can JOIN across any tables in the schema.
+
+The `limit` field in the query request sets the per-query maximum. TDB appends `LIMIT <n>` to
 your SQL if no `LIMIT` clause is present. If your SQL already contains a `LIMIT` clause, TDB
 uses it as-is.
 
