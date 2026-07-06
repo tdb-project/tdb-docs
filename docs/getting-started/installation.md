@@ -1,5 +1,10 @@
 # Installation
 
+!!! info "TDB Enterprise"
+    This guide covers the **commercial enterprise edition** (licensed Docker image,
+    SQL database connectors). For the free, open-source CSV edition, see the
+    [Community Edition quickstart](community.md).
+
 TDB Enterprise ships as a **Docker image**. You do not build it from source —
 you receive a ready-to-run image as part of your license (a trial image, or a
 pull from our private registry for commercial customers).
@@ -86,7 +91,7 @@ Check the logs — you should see the license confirmed and the server start:
 
 ```
 INFO:     license_ok customer=ACME Corp edition=trial expires=2026-07-01T00:00:00+00:00 days_left=30
-INFO:     tdb_startup version=0.0.0 dev_mode=False
+INFO:     tdb_startup version=0.1.0 dev_mode=False
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 

@@ -57,8 +57,8 @@ nav:
   - Why TDB: why-tdb.md
   - Getting Started:
     - Community Edition (CSV, free): getting-started/community.md
-    - Installation: getting-started/installation.md
-    - Quickstart: getting-started/quickstart.md
+    - Enterprise — Installation: getting-started/installation.md
+    - Enterprise — Quickstart: getting-started/quickstart.md
   - Connectors:
     - PostgreSQL: connectors/postgresql.md
     - MySQL: connectors/mysql.md

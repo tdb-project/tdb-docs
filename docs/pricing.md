@@ -42,7 +42,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     - Docker Compose one-liner
     - CLI (`tdb serve`, `tdb register`, `tdb query`)
 
-    [Get started →](getting-started/installation.md){ .md-button }
+    [Get started →](getting-started/community.md){ .md-button }
 
 === "SMB"
 
@@ -70,7 +70,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **MCP**
 
-    - All 5 MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`
+    - All 7 MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view`
     - Prompt injection filtering (input + output)
     - Per-key MCP tool allow-lists
 
@@ -149,7 +149,7 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 | **Query & MCP** | | | |
 | REST query endpoint (SELECT) | ✅ | ✅ | ✅ |
 | Row limit per response † | 1,000 | 1,000 | 1,000 |
-| MCP tools | `query_source` | All 5 | All 5 |
+| MCP tools | `query_source` | All 7 | All 7 |
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |
 | Prompt injection filtering | ❌ | ✅ | ✅ |
 | YAML named views | ❌ | ✅ | ✅ |

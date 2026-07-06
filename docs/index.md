@@ -13,6 +13,7 @@ Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, 
 **Connectors**
 
 - PostgreSQL, MySQL, SQL Server, and Snowflake connectors
+- Database-wide or single-table registration per source
 - Multiple simultaneous registered sources
 
 **Auth & API**
@@ -27,7 +28,7 @@ Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, 
 **Query & MCP**
 
 - REST query endpoint (SELECT only)
-- MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`
+- MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view`
 - YAML-defined named views with typed parameters
 - Prompt-injection filtering (input + output)
 - MCP tool-level allow-lists per API key

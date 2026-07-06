@@ -1,6 +1,10 @@
 # Quickstart
 
-This guide walks through registering a PostgreSQL table as a TDB source and running
+!!! info "TDB Enterprise"
+    This guide covers the **commercial enterprise edition**. For the free,
+    open-source CSV edition, see the [Community Edition quickstart](community.md).
+
+This guide walks through registering a PostgreSQL database as a TDB source and running
 your first query — REST and MCP. Estimated time: **5 minutes**.
 
 **Prerequisites:**
@@ -342,7 +346,7 @@ Expected response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.0.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.1.0"}
   }
 }
 ```

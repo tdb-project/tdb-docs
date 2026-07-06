@@ -21,32 +21,34 @@ the handshake before presenting credentials, per the MCP spec.
 
 ---
 
-## The `query_source` tool
+## Available tools
 
-The current release exposes one tool: **`query_source`**.
+TDB Enterprise exposes **seven tools**:
 
-**Tool schema:**
+| Tool | What it does | Works with |
+|---|---|---|
+| [`query_source`](#toolscall-query_source) | Run a SQL SELECT against a source | All sources, including database-wide |
+| [`schema_source`](#toolscall-schema_source) | Column names and types, no SQL required | CSV and single-table sources |
+| [`preview_source`](#toolscall-preview_source) | First N rows, no SQL required | CSV and single-table sources |
+| [`filter_source`](#toolscall-filter_source) | Rows matching one column condition | CSV and single-table sources |
+| [`aggregate_source`](#toolscall-aggregate_source) | COUNT / SUM / AVG / MIN / MAX with optional GROUP BY | CSV and single-table sources |
+| [`list_views`](#toolscall-list_views-and-run_view) | List the available [YAML views](views.md) | Requires `TDB_VIEWS_DIR` |
+| [`run_view`](#toolscall-list_views-and-run_view) | Execute a named view with typed parameters | Requires `TDB_VIEWS_DIR` |
 
-```json
-{
-  "name": "query_source",
-  "description": "Run a SQL SELECT query against the registered TDB data source. Use 'data' as the table name. Maximum 1,000 rows returned.",
-  "inputSchema": {
-    "type": "object",
-    "properties": {
-      "sql": {
-        "type": "string",
-        "description": "SQL SELECT statement. Use 'data' as the table name."
-      },
-      "source_name": {
-        "type": "string",
-        "description": "Optional. Name of the registered source. Defaults to the only registered source."
-      }
-    },
-    "required": ["sql"]
-  }
-}
-```
+!!! note "Database-wide sources and the no-SQL tools"
+    The four no-SQL convenience tools (`schema_source`, `preview_source`,
+    `filter_source`, `aggregate_source`) operate on the source's registered table.
+    For a **database-wide** source (registered without `table`), there is no single
+    table to target, so these tools return a tool-level error. Use `query_source`
+    and name real tables in your SQL instead — or register the tables you want AI
+    tools to browse as [single-table sources](../connectors/postgresql.md#registration-modes).
+    Database-wide schema is available over REST via
+    [`GET /v1/sources/<ref>/schema`](sources.md).
+
+Tools that return rows pass their output through the
+[prompt-injection filter](#prompt-injection-filtering) before the result reaches
+the MCP client. API keys can be restricted to a subset of tools — see
+[Tool allow-lists per key](#tool-allow-lists-per-api-key).
 
 ---
 
@@ -108,7 +110,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-community", "version": "0.4.2"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.1.0"}
   }
 }
 ```
@@ -126,7 +128,7 @@ curl -X POST http://localhost:8000/v1/mcp \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
 ```
 
-Response:
+Response (abbreviated — one entry per tool, seven in total):
 
 ```json
 {
@@ -134,27 +136,42 @@ Response:
   "id": 2,
   "result": {
     "tools": [
-      {
-        "name": "query_source",
-        "description": "Run a SQL SELECT query against the registered TDB data source...",
-        "inputSchema": { ... }
-      }
+      { "name": "query_source",     "description": "...", "inputSchema": { ... } },
+      { "name": "schema_source",    "description": "...", "inputSchema": { ... } },
+      { "name": "preview_source",   "description": "...", "inputSchema": { ... } },
+      { "name": "filter_source",    "description": "...", "inputSchema": { ... } },
+      { "name": "aggregate_source", "description": "...", "inputSchema": { ... } },
+      { "name": "list_views",       "description": "...", "inputSchema": { ... } },
+      { "name": "run_view",         "description": "...", "inputSchema": { ... } }
     ]
   }
 }
 ```
 
+`tools/list` always advertises all seven tools. A key with a
+[tool allow-list](#tool-allow-lists-per-api-key) still sees the full list but is
+rejected at call time for tools outside its allow-list.
+
 ---
 
 ### `tools/call` — `query_source`
 
-Executes a SQL query against a registered source. Requires auth.
+Executes a SQL query against a registered source. Maximum 1,000 rows returned.
 
-Use the table name that matches the source: CSV sources are queried as `data`, while
-database sources use their **registered table name** (the examples below query a `customers`
-source). There is no `data` alias for database sources.
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `sql` | string | Yes | — | SQL SELECT statement |
+| `source_name` | string | No | First registered source | Registered source name (exact match) |
 
-**With a single registered source (source_name optional):**
+Use the table name that matches the source: CSV sources are queried as `data`;
+database sources use **real table names**. Database-wide sources can JOIN across
+any tables in the database.
+
+!!! tip "Always pass `source_name` when more than one source is registered"
+    Without it, the query runs against the **first** registered source, which may
+    not be the one the AI tool intended.
+
+**Single-table source:**
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \
@@ -167,13 +184,14 @@ curl -X POST http://localhost:8000/v1/mcp \
     "params": {
       "name": "query_source",
       "arguments": {
-        "sql": "SELECT country, COUNT(*) AS n FROM customers GROUP BY country ORDER BY n DESC LIMIT 10"
+        "sql": "SELECT country, COUNT(*) AS n FROM customers GROUP BY country ORDER BY n DESC LIMIT 10",
+        "source_name": "customers"
       }
     }
   }'
 ```
 
-**With multiple registered sources (source_name required):**
+**Database-wide source (cross-table JOIN):**
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \
@@ -186,8 +204,8 @@ curl -X POST http://localhost:8000/v1/mcp \
     "params": {
       "name": "query_source",
       "arguments": {
-        "sql": "SELECT * FROM customers WHERE status = '\''active'\'' LIMIT 20",
-        "source_name": "customers"
+        "sql": "SELECT c.name, SUM(o.total) AS spend FROM customers c JOIN orders o ON o.customer_id = c.id GROUP BY c.name ORDER BY spend DESC LIMIT 10",
+        "source_name": "production_db"
       }
     }
   }'
@@ -228,16 +246,229 @@ and can present it as a table or process it programmatically.
 
 ---
 
+### `tools/call` — `schema_source`
+
+Returns column names and data types for a source's registered table — the tool an
+AI assistant calls before writing a query. No SQL required.
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `source_name` | string | No | First registered source | Registered source name (exact match) |
+
+```bash
+curl -X POST http://localhost:8000/v1/mcp \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "tools/call",
+    "params": {"name": "schema_source", "arguments": {"source_name": "customers"}}
+  }'
+```
+
+Result payload (inside `content[0].text`):
+
+```json
+{
+  "source": "customers",
+  "columns": [
+    {"name": "id", "type": "integer"},
+    {"name": "country", "type": "text"}
+  ]
+}
+```
+
+Schema results are served from the [schema cache](../reference/environment-variables.md)
+when caching is enabled.
+
+---
+
+### `tools/call` — `preview_source`
+
+Returns the first N rows of a source's registered table. No SQL required.
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `limit` | integer | No | 10 | Rows to return (1–100) |
+
+```bash
+curl -X POST http://localhost:8000/v1/mcp \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 6,
+    "method": "tools/call",
+    "params": {"name": "preview_source", "arguments": {"source_name": "customers", "limit": 5}}
+  }'
+```
+
+Result payload: `{"source": ..., "columns": [...], "rows": [...], "rows_returned": N}`.
+
+---
+
+### `tools/call` — `filter_source`
+
+Returns rows matching a single column condition, without the AI tool writing SQL.
+The column name is validated against the source schema and the operator against a
+fixed allow-list, so the model cannot inject arbitrary SQL through this tool.
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `column` | string | Yes | — | Column to filter on (must exist in the schema) |
+| `value` | string | Yes | — | Comparison value (interpreted by column type) |
+| `operator` | string | No | `=` | One of `=`, `!=`, `>`, `<`, `>=`, `<=`, `LIKE` |
+| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `limit` | integer | No | 100 | Max rows to return (1–1,000) |
+
+```bash
+curl -X POST http://localhost:8000/v1/mcp \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 7,
+    "method": "tools/call",
+    "params": {
+      "name": "filter_source",
+      "arguments": {"source_name": "customers", "column": "country", "value": "US", "limit": 50}
+    }
+  }'
+```
+
+Result payload: `{"source": ..., "columns": [...], "rows": [...], "rows_returned": N}`.
+An unknown column returns a tool error listing the valid column names.
+
+---
+
+### `tools/call` — `aggregate_source`
+
+Runs a single aggregate over a column, optionally grouped. Column names are
+validated against the source schema; the function is restricted to the five
+listed below.
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `function` | string | Yes | — | One of `COUNT`, `SUM`, `AVG`, `MIN`, `MAX` |
+| `column` | string | Yes | — | Column to aggregate; `*` is allowed for `COUNT(*)` |
+| `group_by` | string | No | — | Column to group results by |
+| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `limit` | integer | No | 100 | Max groups to return (1–1,000) |
+
+```bash
+curl -X POST http://localhost:8000/v1/mcp \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 8,
+    "method": "tools/call",
+    "params": {
+      "name": "aggregate_source",
+      "arguments": {"source_name": "customers", "function": "COUNT", "column": "*", "group_by": "country"}
+    }
+  }'
+```
+
+Result payload: `{"source": ..., "function": "COUNT", "column": "*", "group_by": "country",
+"columns": [...], "rows": [...], "rows_returned": N}`.
+
+---
+
+### `tools/call` — `list_views` and `run_view`
+
+Expose [YAML named views](views.md) to AI tools. Views are administrator-approved,
+pre-defined queries — the safest way to give an AI assistant multi-table access,
+because the SQL is fixed and only typed parameters vary. Both tools require views
+to be configured (`TDB_VIEWS_DIR`); with no views loaded, `list_views` returns an
+empty list.
+
+**`list_views`** takes no arguments and returns every view with its description,
+source, and parameter definitions.
+
+**`run_view`:**
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `view_name` | string | Yes | — | Name of the view to execute |
+| `parameters` | object | No | `{}` | Parameter values required by the view |
+| `limit` | integer | No | 1,000 | Max rows to return (1–1,000) |
+
+```bash
+curl -X POST http://localhost:8000/v1/mcp \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 9,
+    "method": "tools/call",
+    "params": {
+      "name": "run_view",
+      "arguments": {"view_name": "daily_signups", "parameters": {"country": "US"}}
+    }
+  }'
+```
+
+Result payload: `{"view": ..., "source": ..., "columns": [...], "rows": [...], "rows_returned": N}`.
+
+---
+
+## Tool allow-lists per API key
+
+DB-managed API keys can carry an `allowed_tools` list that restricts which MCP
+tools the key may call — for example, a reporting agent's key limited to
+`["schema_source", "run_view", "list_views"]`. Keys without an allow-list can call
+every tool.
+
+A disallowed call returns a tool-level error (HTTP 200, `isError: true`) so MCP
+clients handle it gracefully:
+
+```json
+{
+  "content": [{"type": "text", "text": "Tool 'query_source' is not permitted for this API key."}],
+  "isError": true
+}
+```
+
+See [API Keys → tool allow-lists](../auth/api-keys.md) for how to set
+`allowed_tools` when creating or updating a key.
+
+---
+
+## Prompt-injection filtering
+
+Two filters protect the MCP path:
+
+- **Input:** the `sql` argument of `query_source` is screened before validation.
+  A flagged input is rejected with a tool error
+  (`Input rejected: potential prompt injection detected.`) and logged.
+- **Output:** rows returned by any tool are screened before the response is
+  serialised. Cells that contain injection patterns (e.g. instructions embedded in
+  data that try to steer the AI model) are redacted, and the redaction count is
+  written to the server log.
+
+The filters run server-side on every call — there is nothing to configure on the
+MCP client.
+
+---
+
 ## Error codes
 
 | HTTP status | JSON-RPC error code | Meaning |
 |---|---|---|
 | 200 | — | Success (check `isError` for tool-level errors) |
-| 400 | -32700 | Parse error — invalid JSON |
-| 400 | -32600 | Invalid JSON-RPC version |
-| 400 | -32601 | Method not found |
+| 200 | -32700 | Parse error — invalid JSON |
+| 200 | -32600 | Invalid JSON-RPC version |
+| 200 | -32601 | Method not found / unknown tool |
 | 401 | -32001 | Unauthorized (missing/invalid token) |
 | 429 | -32000 | Rate limit exceeded |
+
+Protocol-level errors (parse, version, unknown method) follow JSON-RPC-over-HTTP
+convention and are returned with HTTP 200 and an `error` object; only auth and
+rate-limit failures use HTTP status codes, so MCP clients can react to them at the
+transport layer.
 
 ---
 
@@ -251,6 +482,8 @@ HTTP 429 is returned with `X-RateLimit-*` headers when the limit is exceeded.
 
 ## Audit log
 
-Every successful `tools/call` writes a line to `tdb_audit.jsonl`, same format as
-the REST query endpoint. Failed calls (auth failures, SQL validation errors) are
-logged as warnings only.
+Every successful `tools/call` that touches data (`query_source`, `preview_source`,
+`filter_source`, `aggregate_source`, `run_view`) writes a line to `tdb_audit.jsonl`,
+same format as the REST query endpoint — including the SQL that the no-SQL tools
+generated on the caller's behalf (`run_view` entries record `<view:name>`). Failed
+calls (auth failures, SQL validation errors) are logged as warnings only.
