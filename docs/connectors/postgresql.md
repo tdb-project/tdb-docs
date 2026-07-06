@@ -88,6 +88,10 @@ curl -X POST http://localhost:8000/v1/sources \
 
 The schema endpoint returns that table's columns in the `columns` field (`tables` is null).
 
+Either mode pairs well with [**typed YAML views**](../api/views.md): pre-approved,
+named queries — including cross-table JOINs — that consumers call by name instead
+of writing raw SQL.
+
 ---
 
 ## Registering the same database more than once
