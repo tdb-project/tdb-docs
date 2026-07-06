@@ -1,8 +1,8 @@
 # MySQL Connector
 
-The MySQL connector provides read-only SQL access to a single MySQL table
-per registered source. Multiple sources can point to different tables in the same
-or different databases.
+The MySQL connector provides read-only SQL access to a MySQL database.
+A source can be registered in two modes: **database-wide** (all tables) or **single-table**
+(scoped to one specific table).
 
 ---
 
@@ -17,13 +17,58 @@ When registering a MySQL source, the `connection` object requires:
 | `database` | string | Yes | — | Database name |
 | `user` | string | Yes | — | Database user |
 | `password` | string | Yes | — | Database password |
-| `table` | string | Yes | — | Table name this source maps to |
+| `table` | string | No | — | Omit to register the whole database; set to scope to one table |
 
 Note: MySQL uses `database` (not `dbname`) for the database name, matching
 MySQL's own terminology. There is no separate schema field — MySQL databases
 are their own namespace.
 
-### Registration example
+---
+
+## Registration modes
+
+### Database-wide (recommended)
+
+Omit `table` to register an entire database as a single source. One registration
+covers all tables. Users can query any table or write JOINs across tables using
+standard SQL.
+
+```bash
+curl -X POST http://localhost:8000/v1/sources \
+  -H "Authorization: Bearer <YOUR_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "production_db",
+    "source_type": "mysql",
+    "connection": {
+      "host": "db.internal",
+      "port": 3306,
+      "database": "production",
+      "user": "tdb_reader",
+      "password": "s3cret"
+    },
+    "description": "Production database — all tables"
+  }'
+```
+
+The schema endpoint returns all tables and their columns:
+
+```json
+{
+  "source_name": "production_db",
+  "columns": [],
+  "tables": [
+    { "name": "customers", "columns": [{"name": "id", "type": "int"}, ...] },
+    { "name": "orders",    "columns": [{"name": "id", "type": "int"}, ...] }
+  ]
+}
+```
+
+### Single-table
+
+Include `table` to scope the source to one specific table. Useful when you want
+to expose individual tables as separate named sources (see
+[Registering the same database more than once](#registering-the-same-database-more-than-once)).
 
 ```bash
 curl -X POST http://localhost:8000/v1/sources \
@@ -40,26 +85,44 @@ curl -X POST http://localhost:8000/v1/sources \
       "password": "s3cret",
       "table": "orders"
     },
-    "description": "Order records from the production database",
+    "description": "Order records only",
     "tags": ["production", "finance"]
   }'
 ```
 
+The schema endpoint returns that table's columns in the `columns` field (`tables` is null).
+
 ---
 
-## One source = one table
+## Registering the same database more than once
 
-Each registered source maps to exactly one table. This is by design — it matches the
-CSV connector's model and keeps the permission surface predictable. To expose multiple
-tables, register multiple sources:
+Source **names** must be unique (case-insensitive; a duplicate name returns HTTP 409) —
+the connection details do not. Registering the same database several times is
+supported: one single-table source per table, or a database-wide source alongside
+table-scoped ones. If you prefer the per-table approach:
 
 ```bash
-# Register two tables from the same database
+# Register two tables from the same database as separate sources
 POST /v1/sources  →  { "name": "orders",   "connection": { ..., "table": "orders" } }
 POST /v1/sources  →  { "name": "products", "connection": { ..., "table": "products" } }
 ```
 
-Cross-table JOINs and multi-table queries are supported via [**typed YAML views**](../api/views.md).
+Cautions when doing this:
+
+- **Table scoping is not query enforcement.** The `table` field scopes what the
+  schema endpoint reports — it does not restrict SQL. Queries are sent to MySQL
+  as-is, so a query against the `orders` source can still read (or JOIN) any table
+  the configured database user can see. If per-table sources are meant to be real
+  access boundaries, give each source its own database user whose grants cover
+  only that table (see [Minimum required permissions](#minimum-required-database-permissions)).
+- **Credentials are stored per source.** Each registration keeps its own copy of
+  the connection config. When you rotate the database password, delete and
+  re-register every source that points at that database — there is no update
+  endpoint.
+- **Overlapping sources duplicate the catalog.** A database-wide source plus
+  single-table sources over the same tables expose the same data under several
+  source names — in the sources list, in MCP tool responses, and in audit log
+  entries. Pick one style per database unless you have a reason to mix them.
 
 ---
 
@@ -90,8 +153,15 @@ Schema is pulled live from `information_schema.columns`:
 GET /v1/sources/<source_id>/schema
 ```
 
-Returns column names and their MySQL data types in `ordinal_position` order.
-The introspection query runs on demand — it always reflects the current table definition.
+The response shape depends on the registration mode:
+
+- **Database-wide:** `tables` array is populated; `columns` is empty.
+  Each element names a table and lists its columns in `ordinal_position` order.
+- **Single-table:** `columns` array is populated; `tables` is null.
+  Lists the registered table's columns in `ordinal_position` order.
+
+The introspection query runs on demand — it always reflects the current live
+database structure.
 
 ---
 
@@ -127,10 +197,13 @@ The default query limit is **100 rows**. The hard cap is **1,000 rows**.
 }
 ```
 
-Write your SQL against the **registered table name** (`orders` here) — your SQL is sent to
-MySQL as-is, so there is no `data` alias for database sources (that's CSV-only). The `limit`
-field in the query request sets the per-query maximum. TDB appends `LIMIT <n>` to your SQL if
-no `LIMIT` clause is present. If your SQL already contains a `LIMIT` clause, TDB uses it as-is.
+Write your SQL using real database table names — your SQL is sent to MySQL as-is.
+There is no `data` alias for database sources (that's CSV-only). For database-wide
+sources you can JOIN across any tables in the database.
+
+The `limit` field in the query request sets the per-query maximum. TDB appends `LIMIT <n>` to
+your SQL if no `LIMIT` clause is present. If your SQL already contains a `LIMIT` clause, TDB
+uses it as-is.
 
 ---
 

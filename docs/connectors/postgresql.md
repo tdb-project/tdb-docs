@@ -63,7 +63,8 @@ The schema endpoint returns all tables and their columns:
 ### Single-table
 
 Include `table` to scope the source to one specific table. Useful when you want
-different API keys to access different tables as separate named sources.
+to expose individual tables as separate named sources (see
+[Registering the same database more than once](#registering-the-same-database-more-than-once)).
 
 ```bash
 curl -X POST http://localhost:8000/v1/sources \
@@ -86,6 +87,38 @@ curl -X POST http://localhost:8000/v1/sources \
 ```
 
 The schema endpoint returns that table's columns in the `columns` field (`tables` is null).
+
+---
+
+## Registering the same database more than once
+
+Source **names** must be unique (case-insensitive; a duplicate name returns HTTP 409) —
+the connection details do not. Registering the same database several times is
+supported: one single-table source per table, or a database-wide source alongside
+table-scoped ones. If you prefer the per-table approach:
+
+```bash
+# Register two tables from the same database as separate sources
+POST /v1/sources  →  { "name": "orders",   "connection": { ..., "table": "orders" } }
+POST /v1/sources  →  { "name": "products", "connection": { ..., "table": "products" } }
+```
+
+Cautions when doing this:
+
+- **Table scoping is not query enforcement.** The `table` field scopes what the
+  schema endpoint reports — it does not restrict SQL. Queries are sent to Postgres
+  as-is, so a query against the `orders` source can still read (or JOIN) any table
+  the configured database user can see. If per-table sources are meant to be real
+  access boundaries, give each source its own database user whose grants cover
+  only that table (see [Minimum required permissions](#minimum-required-database-permissions)).
+- **Credentials are stored per source.** Each registration keeps its own copy of
+  the connection config. When you rotate the database password, delete and
+  re-register every source that points at that database — there is no update
+  endpoint.
+- **Overlapping sources duplicate the catalog.** A database-wide source plus
+  single-table sources over the same tables expose the same data under several
+  source names — in the sources list, in MCP tool responses, and in audit log
+  entries. Pick one style per database unless you have a reason to mix them.
 
 ---
 
