@@ -99,6 +99,17 @@ Expected output:
 
 ---
 
+## Other clients
+
+VS Code, JetBrains IDEs, Windsurf, and Cline are not confirmed to support the
+`WWW-Authenticate` OAuth discovery flow yet — connect them with a static API key
+via the `Authorization` header instead. See
+[Connect an IDE / AI Tool →](../getting-started/ide-setup.md) for config and
+per-client caveats (notably JetBrains, which has no documented way to attach a
+header to a remote MCP server without a stdio bridge).
+
+---
+
 ## Manual OAuth flow (testing)
 
 You can walk through the full OAuth flow manually with curl:

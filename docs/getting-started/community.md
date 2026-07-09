@@ -167,8 +167,14 @@ TDB exposes a standard [MCP](https://modelcontextprotocol.io) endpoint at `/v1/m
 }
 ```
 
-Restart Claude Desktop; `query_source` appears in the tools list. The same `type: "http"`
-block works for **Cursor** (`.cursor/mcp.json`) and **VS Code** (`mcp.json`).
+Restart Claude Desktop; `query_source` appears in the tools list.
+
+!!! warning "Config format differs by client"
+    Don't reuse this exact block for other clients — VS Code's `mcp.json` uses a
+    top-level `servers` key (not `mcpServers`), and Windsurf uses `serverUrl`
+    (not `url`). See [Connect an IDE / AI Tool →](ide-setup.md) for **Cursor**,
+    **VS Code**, **JetBrains**, **Windsurf**, and **Cline**, each with the correct
+    JSON and example queries to run once connected.
 
 ---
 

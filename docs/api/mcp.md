@@ -6,6 +6,11 @@ at `POST /v1/mcp`. MCP uses JSON-RPC 2.0 over HTTP.
 This endpoint is how Claude Desktop, Cursor, and other AI tools query your data
 sources directly — without building a custom integration.
 
+!!! tip "Setting up a client"
+    This page is the protocol reference. For step-by-step config (Claude Desktop,
+    VS Code, Cursor, JetBrains, Windsurf, Cline) and example queries to run once
+    connected, see [Connect an IDE / AI Tool →](../getting-started/ide-setup.md).
+
 ---
 
 ## Supported methods

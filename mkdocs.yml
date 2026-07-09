@@ -59,6 +59,7 @@ nav:
     - Community Edition (CSV, free): getting-started/community.md
     - Enterprise — Installation: getting-started/installation.md
     - Enterprise — Quickstart: getting-started/quickstart.md
+    - Connect an IDE / AI Tool (MCP): getting-started/ide-setup.md
   - Connectors:
     - PostgreSQL: connectors/postgresql.md
     - MySQL: connectors/mysql.md
