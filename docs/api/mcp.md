@@ -33,22 +33,28 @@ TDB Enterprise exposes **seven tools**:
 | Tool | What it does | Works with |
 |---|---|---|
 | [`query_source`](#toolscall-query_source) | Run a SQL SELECT against a source | All sources, including database-wide |
-| [`schema_source`](#toolscall-schema_source) | Column names and types, no SQL required | CSV and single-table sources |
-| [`preview_source`](#toolscall-preview_source) | First N rows, no SQL required | CSV and single-table sources |
-| [`filter_source`](#toolscall-filter_source) | Rows matching one column condition | CSV and single-table sources |
-| [`aggregate_source`](#toolscall-aggregate_source) | COUNT / SUM / AVG / MIN / MAX with optional GROUP BY | CSV and single-table sources |
+| [`schema_source`](#toolscall-schema_source) | Column names and types, no SQL required | All sources — lists every table for database-wide sources |
+| [`preview_source`](#toolscall-preview_source) | First N rows, no SQL required | All sources — `table` argument required for database-wide |
+| [`filter_source`](#toolscall-filter_source) | Rows matching one column condition | All sources — `table` argument required for database-wide |
+| [`aggregate_source`](#toolscall-aggregate_source) | COUNT / SUM / AVG / MIN / MAX with optional GROUP BY | All sources — `table` argument required for database-wide |
 | [`list_views`](#toolscall-list_views-and-run_view) | List the available [YAML views](views.md) | Requires `TDB_VIEWS_DIR` |
 | [`run_view`](#toolscall-list_views-and-run_view) | Execute a named view with typed parameters | Requires `TDB_VIEWS_DIR` |
 
 !!! note "Database-wide sources and the no-SQL tools"
-    The four no-SQL convenience tools (`schema_source`, `preview_source`,
-    `filter_source`, `aggregate_source`) operate on the source's registered table.
-    For a **database-wide** source (registered without `table`), there is no single
-    table to target, so these tools return a tool-level error. Use `query_source`
-    and name real tables in your SQL instead — or register the tables you want AI
-    tools to browse as [single-table sources](../connectors/postgresql.md#registration-modes).
-    Database-wide schema is available over REST via
-    [`GET /v1/sources/<ref>/schema`](sources.md).
+    For a **database-wide** source (registered without `table`), the four no-SQL
+    convenience tools (`schema_source`, `preview_source`, `filter_source`,
+    `aggregate_source`) accept an optional `table` argument to pick which table
+    to target, validated against the source's actual tables:
+
+    - `schema_source` — omit `table` to list every table's columns; pass it to
+      see one table's columns.
+    - `preview_source`, `filter_source`, `aggregate_source` — `table` is
+      **required**. Omitting it returns a tool-level error listing the
+      available tables, so the AI tool can retry with a valid one.
+
+    Column/value validation and the generated SQL are scoped to whichever
+    table you name. `query_source` remains the only tool that can JOIN across
+    tables in a single call.
 
 Tools that return rows pass their output through the
 [prompt-injection filter](#prompt-injection-filtering) before the result reaches
@@ -253,12 +259,15 @@ and can present it as a table or process it programmatically.
 
 ### `tools/call` — `schema_source`
 
-Returns column names and data types for a source's registered table — the tool an
-AI assistant calls before writing a query. No SQL required.
+Returns column names and data types for a source — the tool an AI assistant calls
+before writing a query. No SQL required.
 
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `table` | string | No | — | Table to inspect. Ignored for single-table/CSV sources. For **database-wide** sources: omit to list every table, or name one to see just its columns. |
+
+**Single-table or CSV source:**
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \
@@ -284,6 +293,33 @@ Result payload (inside `content[0].text`):
 }
 ```
 
+**Database-wide source, no `table` (lists every table):**
+
+```json
+{
+  "source": "production_db",
+  "tables": {
+    "customers": [{"name": "id", "type": "integer"}, {"name": "country", "type": "text"}],
+    "orders": [{"name": "id", "type": "integer"}, {"name": "customer_id", "type": "integer"}]
+  }
+}
+```
+
+**Database-wide source with `table: "orders"`:**
+
+```json
+{
+  "source": "production_db",
+  "table": "orders",
+  "columns": [
+    {"name": "id", "type": "integer"},
+    {"name": "customer_id", "type": "integer"}
+  ]
+}
+```
+
+An unrecognized `table` returns a tool error listing the actual table names.
+
 Schema results are served from the [schema cache](../reference/environment-variables.md)
 when caching is enabled.
 
@@ -291,11 +327,12 @@ when caching is enabled.
 
 ### `tools/call` — `preview_source`
 
-Returns the first N rows of a source's registered table. No SQL required.
+Returns the first N rows of a source's table. No SQL required.
 
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `table` | string | No | — | Table to preview. **Required for database-wide sources** (registered without a fixed table) — ignored for single-table/CSV sources. |
 | `limit` | integer | No | 10 | Rows to return (1–100) |
 
 ```bash
@@ -310,7 +347,23 @@ curl -X POST http://localhost:8000/v1/mcp \
   }'
 ```
 
+**Database-wide source** (`table` required):
+
+```bash
+curl -X POST http://localhost:8000/v1/mcp \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 6,
+    "method": "tools/call",
+    "params": {"name": "preview_source", "arguments": {"source_name": "production_db", "table": "orders", "limit": 5}}
+  }'
+```
+
 Result payload: `{"source": ..., "columns": [...], "rows": [...], "rows_returned": N}`.
+Omitting `table` on a database-wide source returns a tool error listing the
+available tables.
 
 ---
 
@@ -326,6 +379,7 @@ fixed allow-list, so the model cannot inject arbitrary SQL through this tool.
 | `value` | string | Yes | — | Comparison value (interpreted by column type) |
 | `operator` | string | No | `=` | One of `=`, `!=`, `>`, `<`, `>=`, `<=`, `LIKE` |
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `table` | string | No | — | Table to filter. **Required for database-wide sources** — ignored for single-table/CSV sources. `column` is validated against this table's schema. |
 | `limit` | integer | No | 100 | Max rows to return (1–1,000) |
 
 ```bash
@@ -360,6 +414,7 @@ listed below.
 | `column` | string | Yes | — | Column to aggregate; `*` is allowed for `COUNT(*)` |
 | `group_by` | string | No | — | Column to group results by |
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `table` | string | No | — | Table to aggregate. **Required for database-wide sources** — ignored for single-table/CSV sources. `column`/`group_by` are validated against this table's schema. |
 | `limit` | integer | No | 100 | Max groups to return (1–1,000) |
 
 ```bash
