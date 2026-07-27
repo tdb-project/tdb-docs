@@ -202,6 +202,13 @@ and a UTC timestamp:
 {"event":"query","source_id":"…","sql":"SELECT …","rows_returned":3,"key_hint":"a1b2c3…","ts":"2026-06-01T03:02:01.160+00:00"}
 ```
 
+Refused attempts — a bad API key, a non-`SELECT` statement, an unknown source —
+are logged too, as `"event":"denied"` with an `action` and a `reason`:
+
+```json
+{"event":"denied","action":"query","reason":"sql_validation_failed","source_id":"…","sql":"DROP TABLE data","key_hint":"a1b2c3…","ts":"2026-06-01T03:02:04.771+00:00"}
+```
+
 !!! tip "Persisting data and logs"
     The `--rm` run above is ephemeral. For a persistent setup, use the
     [`docker-compose.yml`](https://github.com/tdb-project/tdb-community/blob/main/docker-compose.yml)

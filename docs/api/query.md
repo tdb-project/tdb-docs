@@ -122,7 +122,7 @@ with `read_only = True` — Postgres itself will reject write operations.
 
 ## Audit log
 
-Every successful query writes a line to `tdb_audit.jsonl`:
+Every query writes a line to `tdb_audit.jsonl`:
 
 ```json
 {
@@ -130,13 +130,27 @@ Every successful query writes a line to `tdb_audit.jsonl`:
   "source_id": "a1b2c3d4-...",
   "sql": "SELECT ...",
   "rows_returned": 2,
-  "api_key": "tdbk_a1b2...",
-  "timestamp": "2026-05-22T09:15:00.123456Z"
+  "key_hint": "tdbk_a...",
+  "ts": "2026-05-22T09:15:00.123456+00:00"
 }
 ```
 
-Rejected queries (SQL validation failures, auth failures) are logged as warnings
-but do not write a `query` audit event.
+Rejected queries — SQL validation failures, auth failures, unknown sources — write
+an `event: "denied"` entry carrying the `action` and a machine-readable `reason`:
+
+```json
+{
+  "event": "denied",
+  "action": "query",
+  "reason": "sql_validation_failed",
+  "source_id": "a1b2c3d4-...",
+  "sql": "DROP TABLE data",
+  "key_hint": "tdbk_a...",
+  "ts": "2026-05-22T09:15:02.884101+00:00"
+}
+```
+
+See [Audit Log](../security/audit.md) for the full `action` and `reason` sets.
 
 ---
 

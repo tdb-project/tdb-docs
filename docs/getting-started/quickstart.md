@@ -495,14 +495,17 @@ Expected output (one JSON object per query):
 
 ```json
 {
-  "timestamp": "2026-05-22T09:00:15.123456Z",
-  "event": "query_executed",
+  "ts": "2026-05-22T09:00:15.123456+00:00",
+  "event": "query",
   "source_id": "a1b2c3d4-...",
   "sql": "SELECT id, email, country FROM customers WHERE country = 'US' LIMIT 5",
   "rows_returned": 2,
-  "api_key": "Bearer <YOUR_KEY>"
+  "key_hint": "tdbk_a..."
 }
 ```
+
+Attempts that were refused appear as `"event": "denied"` lines carrying an
+`action` and a `reason` instead — see [Audit Log](../security/audit.md).
 
 If you see entries for the queries you ran in Steps 5 and 6c, the audit trail is
 working correctly.
