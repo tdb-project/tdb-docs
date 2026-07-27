@@ -16,6 +16,33 @@ file in the project directory, or pass them directly to the process.
 
 ---
 
+## Credential Encryption at Rest
+
+*Enterprise only.*
+
+| Variable | Default | Description |
+|---|---|---|
+| `TDB_ENCRYPTION_KEY` | *(unset — a key file is generated)* | Urlsafe-base64 32-byte key used to encrypt source `connection` blobs (including database passwords) in the registry database. Generate with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. When unset, TDB generates a key on first start and stores it beside the registry database as `.tdb_secret_key` (mode `0600`). |
+
+!!! warning "The generated key defends against a stolen database, not a stolen host"
+    Credentials are always encrypted at rest — there is no plaintext mode. But if
+    you let TDB generate the key, that key sits in the same directory as the
+    database it protects, so anything that copies the whole data directory
+    (a volume snapshot, a backup tarball, `docker cp`) takes both.
+
+    That default is still worth having: it covers the common case of a database
+    file leaking on its own. For production, set `TDB_ENCRYPTION_KEY` from your
+    secrets manager so the key never touches the data volume.
+
+!!! danger "Losing the key means re-registering every source"
+    There is no recovery path. If the registry database and its key are
+    separated, TDB fails loudly on the affected sources rather than returning
+    garbage — you must restore the matching key or re-register the sources.
+    Back the key up **separately from the database**; a backup containing both
+    provides no protection.
+
+---
+
 ## CSV Source Security
 
 | Variable | Default | Description |

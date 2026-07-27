@@ -78,6 +78,7 @@ nav:
   - Security:
     - RBAC: security/rbac.md
     - Audit Log: security/audit.md
+    - Credentials at Rest: security/credentials.md
     - Security & Updates: security/updates.md
   - Observability:
     - Prometheus Metrics: observability/metrics.md
