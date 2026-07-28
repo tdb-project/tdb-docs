@@ -14,6 +14,7 @@ pull from our private registry for commercial customers).
 | Requirement | Version |
 |---|---|
 | Docker | 20.10 or later (or any OCI runtime) |
+| CPU architecture | **Trial / evaluation images are multi-arch** — `linux/amd64` and `linux/arm64`, so they run natively on Apple Silicon Macs as well as x86 servers. Commercial production images are `linux/amd64`; [tell us](mailto:hello@tdb.jiracorp.co.in) if you need arm64 in production (e.g. AWS Graviton) |
 | PostgreSQL / MySQL / SQL Server / Snowflake | Your existing database — TDB connects to it |
 
 That's it. Python, `uv`, and the source tree are **not** required to run TDB —
