@@ -26,7 +26,7 @@ Requires authentication (`Authorization: Bearer <token>`).
 |---|---|---|---|---|
 | `source_id` | string | Yes | — | Registered source **name** (e.g. `orders`) or UUID |
 | `sql` | string (1–10,000 chars) | Yes | — | SQL SELECT statement |
-| `limit` | integer (1–1,000) | No | `100` | Maximum rows to return |
+| `limit` | integer, min 1 | No | `100` | Maximum rows to return. The ceiling is the deployment's `TDB_MAX_ROWS` (default `1,000`); a higher value is rejected with `400`, never silently reduced. |
 
 !!! tip "Use the source name"
     `source_id` accepts either the source's registered **name** (e.g. `orders`) or its
@@ -75,14 +75,25 @@ SELECT * FROM orders WHERE status = 'shipped' LIMIT 20
 
 ## Row limit behaviour
 
-TDB applies the row limit at two levels:
+TDB applies the row limit at three levels:
 
-1. **Request-level** — the `limit` field caps rows returned in this response (1–1,000).
+1. **Request-level** — the `limit` field caps rows returned in this response. It may
+   not exceed the deployment's `TDB_MAX_ROWS`; a larger value is rejected with `400`.
 2. **SQL injection** — if your SQL doesn't contain a `LIMIT` clause, TDB appends one
-   automatically. If your SQL already has `LIMIT`, TDB uses it as-is.
+   automatically. If your SQL already has one, it is left alone.
+3. **After fetching** — the result is cut to `limit` regardless of what the SQL asked
+   for, and `truncated` is set to `true` when rows were dropped. This is the ceiling
+   that actually holds: a `LIMIT 100000` in your own SQL does **not** raise it.
 
-Hard cap is 1,000 rows per request. Streaming / pagination beyond 1,000 rows is a
-post-launch feature.
+!!! warning "`truncated: true` means you did not receive the whole result"
+    Check the flag before treating a response as complete. Narrow the query — filter,
+    aggregate, or page with `LIMIT`/`OFFSET` in your own SQL against a database
+    source — rather than assuming the rows you got are all of them.
+
+**Enterprise deployments can raise the ceiling** by setting `TDB_MAX_ROWS`
+([reference](../reference/environment-variables.md)). Every row of a response is held
+in memory, so raise it deliberately. Community is fixed at 1,000. Cursor-based
+streaming and pagination remain a post-launch feature.
 
 ---
 

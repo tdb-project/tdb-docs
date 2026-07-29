@@ -121,6 +121,7 @@ When the license is missing, invalid, or expired, the server keeps running and
 | Variable | Default | Description |
 |---|---|---|
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Time-to-live for the in-process schema cache, in seconds. Set to `0` to disable caching. The cache is keyed by source ID and invalidated automatically when a source is deleted. |
+| `TDB_MAX_ROWS` | `1000` | Maximum rows any single query response may contain (**enterprise only** — community is fixed at 1,000). A request whose `limit` exceeds this is rejected with `400`; a result larger than `limit` is cut and flagged `truncated: true`, whatever the SQL's own `LIMIT` says. Every returned row is held in memory, so raise this deliberately and size RAM to match. An unparseable or non-positive value falls back to `1000` — a typo never means "unlimited". |
 
 ---
 

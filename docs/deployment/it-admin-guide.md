@@ -170,6 +170,7 @@ inside the image. Defaults in parentheses.
 | `TDB_LOG_LEVEL` | `INFO` | `DEBUG`/`INFO`/`WARNING`/`ERROR`. |
 | `TDB_VIEWS_DIR` | *(unset)* | Directory of YAML named-view definitions. Unset = views disabled. |
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Schema cache TTL (seconds). `0` disables caching. |
+| `TDB_MAX_ROWS` | `1000` | Ceiling on rows in a single query response. A request asking for more is rejected with `400`; a result larger than the request's `limit` is cut and flagged `truncated`. Raising it trades host RAM for bigger responses — size with §1.2. A bad value falls back to `1000` rather than uncapping. |
 
 ### 3.3 Access, auth & API behaviour
 
@@ -514,11 +515,13 @@ What to expect qualitatively:
   most from more RAM and from the **schema cache** (`TDB_SCHEMA_CACHE_TTL`).
 - **DB connectors** push work to the remote engine; TDB mostly marshals rows, so the TDB
   host stays light and the source DB is the bottleneck.
-- **Every response is capped at 1,000 rows, in both editions** — `limit` defaults to 100
-  and cannot exceed 1,000, and there is **no pagination or cursor today**, so a result set
-  larger than 1,000 rows must be narrowed in SQL (filter, aggregate, or `LIMIT`/`OFFSET`
-  in the query itself against a database source). This bounds per-request memory, and it
-  is the main thing to check before planning a bulk-extract workload.
+- **Every response is capped**, and the cap is enforced *after* fetching — a `LIMIT` in
+  your own SQL cannot raise it. The ceiling is `TDB_MAX_ROWS` (default 1,000; community
+  is fixed at 1,000). When rows are dropped the response carries `truncated: true`;
+  treat that flag as "this is not the whole answer." There is **no pagination or cursor
+  today**, so a larger result set must be narrowed in SQL — filter, aggregate, or page
+  with `LIMIT`/`OFFSET` yourself against a database source. This bounds per-request
+  memory and is the main thing to check before planning a bulk-extract workload.
 - Single process/single writer — see the scaling caveat in [§4.3](#43-kubernetes-reference-only).
 
 ---
