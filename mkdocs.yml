@@ -60,6 +60,8 @@ nav:
     - Enterprise — Installation: getting-started/installation.md
     - Enterprise — Quickstart: getting-started/quickstart.md
     - Connect an IDE / AI Tool (MCP): getting-started/ide-setup.md
+  - Deployment:
+    - IT Administrator Guide: deployment/it-admin-guide.md
   - Connectors:
     - PostgreSQL: connectors/postgresql.md
     - MySQL: connectors/mysql.md
