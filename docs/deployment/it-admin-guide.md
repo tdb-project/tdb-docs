@@ -64,8 +64,10 @@ Notes that drive sizing:
 - The image is **~520 MB on disk / ~130 MB compressed**.
 - **CSV** queries run in-process via **DuckDB**, which is memory- and CPU-hungry on
   large files (it reads the file per query — see [§6](#6-security-model-what-an-admin-must-know)). RAM should
-  comfortably exceed your largest CSV working set. Database connectors stream from the
-  remote engine and are far lighter on the TDB host.
+  comfortably exceed your largest CSV working set. Database connectors push the query to
+  the remote engine, so the TDB host is usually far lighter — but they **read the whole
+  result set into memory** before applying the row cap, so size for the largest result a
+  permitted query can return, not for `TDB_MAX_ROWS` rows (see [§8](#8-performance-capacity)).
 - Disk grows mainly with the **audit log** (one NDJSON line per successful query,
   append-only). Plan rotation/retention — see [§5.3](#53-logging-audit).
 
@@ -170,7 +172,7 @@ inside the image. Defaults in parentheses.
 | `TDB_LOG_LEVEL` | `INFO` | `DEBUG`/`INFO`/`WARNING`/`ERROR`. |
 | `TDB_VIEWS_DIR` | *(unset)* | Directory of YAML named-view definitions. Unset = views disabled. |
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Schema cache TTL (seconds). `0` disables caching. |
-| `TDB_MAX_ROWS` | `1000` | Ceiling on rows in a single query response. A request asking for more is rejected with `400`; a result larger than the request's `limit` is cut and flagged `truncated`. Raising it trades host RAM for bigger responses — size with §1.2. A bad value falls back to `1000` rather than uncapping. |
+| `TDB_MAX_ROWS` | `1000` | Ceiling on rows in a single query response. A request asking for more is rejected with `400`; a result larger than the request's `limit` is cut and flagged `truncated`. Raising it trades host RAM for bigger responses — size with §1.2. It caps the **response**, not the memory used to build it: see §8 before relying on it as a memory bound. A bad value falls back to `1000` rather than uncapping. |
 
 ### 3.3 Access, auth & API behaviour
 
@@ -520,8 +522,21 @@ What to expect qualitatively:
   is fixed at 1,000). When rows are dropped the response carries `truncated: true`;
   treat that flag as "this is not the whole answer." There is **no pagination or cursor
   today**, so a larger result set must be narrowed in SQL — filter, aggregate, or page
-  with `LIMIT`/`OFFSET` yourself against a database source. This bounds per-request
-  memory and is the main thing to check before planning a bulk-extract workload.
+  with `LIMIT`/`OFFSET` yourself against a database source.
+- **The cap bounds the response, not the memory used to produce it.** TDB appends
+  `LIMIT <n>` to your SQL only when the statement does not already contain the word
+  `LIMIT`. When it does — `LIMIT 100000`, a `LIMIT` inside a CTE or subquery, a column
+  named `credit_limit`, even the literal string `'no limit'` — nothing is appended: the
+  source returns the full result set and TDB holds all of it in memory before cutting it
+  to the ceiling. A query that joins or scans large tables can therefore use far more RAM
+  on the TDB host than `TDB_MAX_ROWS` suggests. **Bound this at the source**, which is
+  the only place that can stop the work early — give TDB its own read-only role with a
+  statement timeout and memory limits (Postgres `statement_timeout` and `work_mem`,
+  MySQL `max_execution_time`, SQL Server the query governor, Snowflake
+  `STATEMENT_TIMEOUT_IN_SECONDS` plus warehouse sizing). **TDB applies no query timeout
+  of its own.** When sizing §1.2, size for the largest result a permitted query can
+  produce, not for `TDB_MAX_ROWS` rows. This is the main thing to check before planning
+  a bulk-extract or ad-hoc-join workload.
 - Single process/single writer — see the scaling caveat in [§4.3](#43-kubernetes-reference-only).
 
 ---
