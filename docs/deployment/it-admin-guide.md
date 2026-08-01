@@ -534,15 +534,22 @@ What to expect qualitatively:
   megabyte. **On 0.2.0 and earlier this was not true** — the full result set was read
   before being cut to the ceiling, so size those hosts for the largest result a
   permitted query can produce.
-- **What that does not bound is the source.** The database still plans and executes your
-  query: a join across large tables is the source's work whether TDB reads ten rows of
-  the result or all of them. And **TDB applies no query timeout of its own**, so a
-  runaway query can tie up the source long after TDB has what it needs. Give TDB its own
-  read-only role with a statement timeout and memory limits — PostgreSQL
-  `statement_timeout` and `work_mem`, MySQL `max_execution_time`, SQL Server the query
-  governor, Snowflake `STATEMENT_TIMEOUT_IN_SECONDS` plus warehouse sizing. That role is
-  the only thing that can stop the work early, and it is the main thing to set up before
-  a bulk-extract or ad-hoc-join workload.
+- **A query cannot run forever (0.3.0 and later).** `TDB_QUERY_TIMEOUT` (default **30
+  seconds**) is applied to every database source, and it is enforced *by the engine* —
+  `statement_timeout`, `max_execution_time`, the ODBC query timeout,
+  `STATEMENT_TIMEOUT_IN_SECONDS` — so the database abandons the work rather than TDB
+  merely abandoning the wait. A cancelled query returns **504** and is recorded in the
+  audit log as a `query_timeout` denial. Set `TDB_QUERY_TIMEOUT=0` to disable it, which
+  is what a deployment with genuinely long-running analytical queries will want. **On
+  0.2.2 and earlier there was no timeout at all.**
+- **Two limits this does not remove.** **CSV/DuckDB is not interruptible** — it runs
+  in-process with no server to ask, so a long CSV query still runs to completion. And a
+  timeout bounds *duration*, not *cost*: a heavy join still consumes the source for as
+  long as it is allowed to run. Giving TDB its own read-only database role with a
+  statement timeout and memory limits (PostgreSQL `statement_timeout` and `work_mem`,
+  MySQL `max_execution_time`, SQL Server the query governor, Snowflake plus warehouse
+  sizing) remains worthwhile as defence in depth — it is enforced whatever TDB is
+  configured to do, including by an operator who sets `TDB_QUERY_TIMEOUT=0`.
 - Single process/single writer — see the scaling caveat in [§4.3](#43-kubernetes-reference-only).
 
 ---
