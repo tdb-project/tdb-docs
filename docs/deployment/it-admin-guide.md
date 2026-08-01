@@ -93,13 +93,13 @@ your own repo path:
 
 ```bash
 docker login registry.tdb.jiracorp.co.in        # use the token we provide
-docker pull registry.tdb.jiracorp.co.in/tdb-customers/<your-slug>/tdb-enterprise:<edition>-<expiry>
+docker pull registry.tdb.jiracorp.co.in/tdb-customers/<your-slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
 ```
 
 **B. Air-gapped tarball.** For locked-down environments we deliver a `.tar.gz`:
 
 ```bash
-docker load < tdb-enterprise-<edition>-<expiry>.tar.gz
+docker load < tdb-enterprise-<edition>-<expiry>-<build_sha>.tar.gz
 docker images tdb-enterprise        # confirm the tag is now present
 ```
 
@@ -211,7 +211,7 @@ inside the image. Defaults in parentheses.
 # docker-compose.yml
 services:
   tdb:
-    image: registry.tdb.jiracorp.co.in/tdb-customers/<slug>/tdb-enterprise:<edition>-<expiry>
+    image: registry.tdb.jiracorp.co.in/tdb-customers/<slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
     restart: unless-stopped
     ports:
       - "8000:8000"

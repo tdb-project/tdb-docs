@@ -36,7 +36,7 @@ for it.
 
     ```bash
     docker login registry.tdb.jiracorp.co.in        # use your issued pull token
-    docker pull registry.tdb.jiracorp.co.in/tdb-customers/acme/tdb-enterprise:trial-20260701
+    docker pull registry.tdb.jiracorp.co.in/tdb-customers/acme/tdb-enterprise:trial-20260701-9a54018
     ```
 
     Your welcome e-mail contains your exact repository path and tag.
@@ -47,8 +47,8 @@ for it.
     compressed tarball instead. Load it:
 
     ```bash
-    docker load < trial-acme-20260701.tar.gz
-    # Loaded image: tdb-enterprise:trial-acme-20260701
+    docker load < trial-acme-20260701-9a54018.tar.gz
+    # Loaded image: tdb-enterprise:trial-acme-20260701-9a54018
     ```
 
 ---
@@ -65,7 +65,7 @@ for it.
       -e TDB_ADMIN_USER=admin \
       -e TDB_ADMIN_PASSWORD=your-strong-password \
       -v "$(pwd)/data:/app/data" \
-      tdb-enterprise:trial-acme-20260701
+      tdb-enterprise:trial-acme-20260701-9a54018
     ```
 
     Your Bearer token for all API requests is the value you set for `TDB_API_KEYS`
