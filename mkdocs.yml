@@ -86,6 +86,7 @@ nav:
     - Prometheus Metrics: observability/metrics.md
   - Integrations:
     - Splunk HEC: integrations/splunk.md
+    - S3 audit archive: integrations/s3.md
   - Reference:
     - Environment Variables: reference/environment-variables.md
   - Editions: pricing.md

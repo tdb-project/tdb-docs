@@ -10,6 +10,19 @@ TDB can push its audit log to Splunk via the HTTP Event Collector (HEC). This le
 
 The export is **on-demand** — TDB does not stream to Splunk in real time. Schedule the export endpoint as a cron job, or call it from your SIEM pipeline on a fixed interval.
 
+!!! info "Incremental from 0.4.0"
+    Each run ships only what Splunk has not already received. TDB records how far
+    each destination has consumed and resumes from there.
+
+    **Before 0.4.0 every run re-sent the whole log from the first entry**, so a
+    scheduled export duplicated all of history on every run. If you have been
+    running the export on a cron against an earlier version, expect existing
+    duplicates in your index — TDB cannot retract what it already sent. The first
+    0.4.0 run starts from the beginning once (there is no cursor yet), then goes
+    incremental.
+
+    Pass `since_seq=0` to deliberately re-send everything.
+
 ---
 
 ## Prerequisites

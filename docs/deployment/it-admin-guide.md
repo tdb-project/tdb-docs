@@ -336,9 +336,20 @@ curated, reusable queries. Leave unset to disable the feature.
   curl -fsS -H "Authorization: Bearer $ADMIN_KEY" http://localhost:8000/v1/audit/verify
   # {"valid": true, "entries": N}
   ```
-- **Rotation/retention is your responsibility.** Rotating the file starts a fresh chain;
-  archive rotated segments if you need continuous verifiability. Optionally stream to a
-  SIEM via the Splunk exporter ([§3.4](#34-siem-export-optional-splunk)).
+- **Retention (0.4.0+): set a rotation threshold.** Both default to off, which lets the
+  log grow without bound:
+  ```bash
+  TDB_AUDIT_ROTATE_MAX_BYTES=268435456   # seal at 256 MB
+  TDB_AUDIT_ROTATE_MAX_DAYS=30           # or seal monthly
+  ```
+  TDB seals the live log into a timestamped segment and starts a fresh chain. **It never
+  deletes an entry** — pruning old segments is your decision. Each segment verifies on its
+  own, and `GET /v1/audit/history` verifies the whole sequence including the links between
+  segments, so a segment removed from the middle is detectable. Removing the *oldest*
+  segments is a supported way to age data out and keeps the history valid.
+  Seal on demand with `POST /v1/audit/rotate`. Prefer these over truncating the file
+  yourself: rotation is recorded in the chain, hand-truncation looks like tampering.
+  Optionally stream to a SIEM via the Splunk exporter ([§3.4](#34-siem-export-optional-splunk)).
 > Denial auditing applies to **both editions**. Entry shapes and the verification
 > endpoint are documented in full at [Audit Log](../security/audit.md).
 

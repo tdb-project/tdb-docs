@@ -123,6 +123,8 @@ When the license is missing, invalid, or expired, the server keeps running and
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Time-to-live for the in-process schema cache, in seconds. Set to `0` to disable caching. The cache is keyed by source ID and invalidated automatically when a source is deleted. |
 | `TDB_MAX_ROWS` | `1000` | Maximum rows any single query response may contain (**enterprise only** — community is fixed at 1,000). A request whose `limit` exceeds this is rejected with `400`; a result larger than `limit` is cut and flagged `truncated: true`, whatever the SQL's own `LIMIT` says. Every returned row is held in memory, so raise this deliberately and size RAM to match. An unparseable or non-positive value falls back to `1000` — a typo never means "unlimited". |
 | `TDB_QUERY_TIMEOUT` | `30` | Seconds a single query may run at the source before it is cancelled (**enterprise only**). Enforced by the database itself — `statement_timeout` (PostgreSQL), `max_execution_time` (MySQL), the ODBC query timeout (SQL Server), `STATEMENT_TIMEOUT_IN_SECONDS` (Snowflake) — so the engine stops doing the work, rather than TDB merely stopping waiting for it. A cancelled query returns `504` and is recorded in the audit log as a `query_timeout` denial. Set `0` to disable, which is the only way to get pre-0.3.0 behaviour. **CSV/DuckDB has no server to ask and is not interruptible.** An unparseable or negative value falls back to `30` — as with `TDB_MAX_ROWS`, a typo never removes a limit. |
+| `TDB_AUDIT_ROTATE_MAX_BYTES` | `0` | Seal the audit log into a timestamped segment once the live file exceeds this many bytes (**enterprise only**). `0` disables rotation, which is pre-0.4.0 behaviour: the log grows without bound. TDB never *deletes* an entry — rotation decides when the live log is sealed, not when anything is dropped, and each sealed segment stays independently verifiable. Pruning old segments is the operator's decision. An unparseable or negative value falls back to `0`. See [audit retention](../security/audit.md#retention-sealed-segments). |
+| `TDB_AUDIT_ROTATE_MAX_DAYS` | `0` | Seal the audit log once its oldest entry is older than this many days (**enterprise only**). Useful where retention is a calendar policy rather than a size budget. May be combined with `TDB_AUDIT_ROTATE_MAX_BYTES`; whichever threshold is crossed first seals the log. `0` disables. |
 
 ---
 
@@ -135,6 +137,12 @@ When the license is missing, invalid, or expired, the server keeps running and
 | `TDB_SPLUNK_INDEX` | *(HEC default)* | Splunk index to write events to. Omit to use the index configured on the HEC token. |
 | `TDB_SPLUNK_SOURCETYPE` | `tdb:audit` | Splunk sourcetype assigned to exported events. |
 | `TDB_SPLUNK_VERIFY_TLS` | `true` | Set to `false` to disable TLS certificate verification. Only use in development with self-signed certs. |
+| `TDB_S3_BUCKET` | — | Bucket for the [S3 audit archive](../integrations/s3.md) (**enterprise only**). Unset disables the exporter, which is the default. |
+| `TDB_S3_PREFIX` | `tdb-audit` | Key prefix within the bucket. |
+| `TDB_S3_REGION` | SDK default | AWS region. Credentials come from the standard AWS chain — TDB takes no access keys of its own. |
+| `TDB_S3_ENDPOINT_URL` | — | Override for S3-compatible storage (MinIO, Ceph, R2). |
+| `TDB_S3_SSE` | — | Server-side encryption: `AES256` or `aws:kms`. |
+| `TDB_S3_SSE_KMS_KEY_ID` | — | KMS key ID, used when `TDB_S3_SSE` is `aws:kms`. |
 
 ---
 

@@ -71,6 +71,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     **MCP**
 
     - All 7 MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view`
+    - Schema annotations — describe what a cryptic column holds, so an AI assistant reads it correctly instead of guessing
     - Prompt injection filtering (input + output)
     - Per-key MCP tool allow-lists
 
@@ -82,6 +83,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     - Signed hash-chained audit log (SHA-256, tamper-evident)
     - `GET /v1/audit/verify` — walk the chain, detect tampering
+    - Configurable retention — seal the log into verifiable segments by size or age; TDB never deletes an entry
 
     **Observability**
 
@@ -102,15 +104,15 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     **SIEM integration**
 
     - Splunk HEC audit export (`POST /v1/audit/export`)
-    - *(Datadog + OpenTelemetry exporters — coming Q3 2026)*
+    - *Additional destinations (S3, Datadog, OpenTelemetry) are built on request — tell us which one you need*
 
     **Enterprise identity**
 
-    - SSO / SAML / SCIM *(coming Q3 2026)*
+    - SSO / SAML / SCIM *(on the roadmap, not yet built)*
 
     **Fine-grained access control**
 
-    - Column-level access control *(coming Q3 2026)*
+    - Column-level access control *(on the roadmap, not yet built)*
 
     **Support**
 
@@ -143,7 +145,7 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 | API key rotation & management | ❌ | ✅ | ✅ |
 | JWT authentication | ❌ | ✅ | ✅ |
 | OAuth 2.1 with PKCE | ❌ | ✅ | ✅ |
-| SSO / SAML / SCIM | ❌ | ❌ | Coming Q3 2026 |
+| SSO / SAML / SCIM | ❌ | ❌ | On roadmap |
 | Per-key rate limiting | ❌ | ✅ | ✅ |
 | CORS configuration | ❌ | ✅ | ✅ |
 | **Query & MCP** | | | |
@@ -153,15 +155,17 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |
 | Prompt injection filtering | ❌ | ✅ | ✅ |
 | YAML named views | ❌ | ✅ | ✅ |
+| Schema annotations for AI clients | ❌ | ✅ | ✅ |
 | **Access control** | | | |
 | RBAC (read / readwrite / admin) | ❌ | ✅ | ✅ |
-| Column-level access control | ❌ | ❌ | Coming Q3 2026 |
+| Column-level access control | ❌ | ❌ | On roadmap |
 | **Audit** | | | |
 | Local NDJSON audit log | ✅ | ✅ | ✅ |
 | Hash-chained tamper-evident log | ❌ | ✅ | ✅ |
 | Log integrity verification | ❌ | ✅ | ✅ |
+| Audit log retention (sealed segments) | ❌ | ✅ | ✅ |
 | Splunk HEC export | ❌ | ❌ | ✅ |
-| Additional SIEM exporters | ❌ | ❌ | Coming Q3 2026 |
+| Additional SIEM exporters | ❌ | ❌ | On request |
 | **Observability** | | | |
 | Prometheus metrics | ❌ | ✅ | ✅ |
 | Schema caching | ❌ | ✅ | ✅ |
@@ -199,4 +203,4 @@ Paid editions are a flat self-hosted license (no per-query or per-row metering).
 No. The enterprise tier is a closed-source commercial product. The community edition is fully open under AGPLv3.
 
 **I need BigQuery / Datadog / SSO now. When do those ship?**
-Target Q3 2026. If these are blocking your evaluation, [email us](mailto:hello@tdb.jiracorp.co.in) — design partner conversations accelerate the roadmap.
+They are on the roadmap and not yet built. We deliberately don't publish dates we haven't committed engineering to — a date we miss is worse than no date, particularly in a product you're evaluating for compliance. If one of these is blocking your evaluation, [email us](mailto:hello@tdb.jiracorp.co.in): that's the signal that moves it up, and design partners get built first.

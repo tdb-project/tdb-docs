@@ -121,7 +121,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.3.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.4.0"}
   }
 }
 ```
@@ -322,6 +322,57 @@ An unrecognized `table` returns a tool error listing the actual table names.
 
 Schema results are served from the [schema cache](../reference/environment-variables.md)
 when caching is enabled.
+
+#### Annotations: telling the model what a column means
+
+!!! info "Enterprise, from 0.4.0"
+
+Real schemas are full of names like `cust_stat_cd_01`. A model that cannot tell
+what a column holds will guess, and a plausible guess produces a query that runs
+and returns the wrong answer. Annotate the schema and `schema_source` carries
+those descriptions into the model's context:
+
+```bash
+curl -X PUT http://localhost:8000/v1/sources/customers/annotations \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "annotations": [
+      {"description": "One row per retail customer account."},
+      {"column": "cust_stat_cd_01",
+       "description": "Account status. A=active, C=closed, S=suspended."},
+      {"column": "amt_usd_cts",
+       "description": "Balance in US cents. Divide by 100 for dollars."}
+    ]
+  }'
+```
+
+`schema_source` then returns:
+
+```json
+{
+  "source": "customers",
+  "columns": [
+    {"name": "cust_stat_cd_01", "type": "VARCHAR",
+     "description": "Account status. A=active, C=closed, S=suspended."},
+    {"name": "amt_usd_cts", "type": "BIGINT",
+     "description": "Balance in US cents. Divide by 100 for dollars."}
+  ],
+  "source_description": "Retail customer master",
+  "description": "One row per retail customer account."
+}
+```
+
+| Field | Comes from |
+|---|---|
+| `columns[].description` | An annotation with a `column` |
+| `description` | An annotation with no `column` — describes the table |
+| `source_description` | The source's own `description` set at registration |
+| `table_descriptions` | Table-level annotations, on database-wide list-all responses |
+
+Every one of these keys is **omitted when unset**, so an un-annotated deployment
+gets exactly the response it got before. Manage annotations with
+[`PUT`/`GET`/`DELETE /v1/sources/{ref}/annotations`](sources.md#schema-annotations).
 
 ---
 

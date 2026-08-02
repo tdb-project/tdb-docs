@@ -362,6 +362,93 @@ The response shape depends on how the source was registered:
 
 ---
 
+## Schema annotations
+
+!!! info "Enterprise, from 0.4.0"
+
+**Why you'd use this:** Column names like `cust_stat_cd_01` mean nothing to an AI
+assistant, which will guess — and a plausible guess yields a query that runs and
+returns the wrong number. Annotations attach a human description to a table or
+column; the MCP [`schema_source`](mcp.md#annotations-telling-the-model-what-a-column-means)
+tool passes them to the model along with the names and types.
+
+All three endpoints accept the source **name** or UUID.
+
+### Set annotations
+
+```http
+PUT /v1/sources/{ref}/annotations
+```
+
+Requires the `readwrite` or `admin` [role](../security/rbac.md).
+
+```bash
+curl -X PUT http://localhost:8000/v1/sources/customers/annotations \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "annotations": [
+      {"description": "One row per retail customer account."},
+      {"column": "cust_stat_cd_01",
+       "description": "Account status. A=active, C=closed, S=suspended."},
+      {"table": "orders", "column": "amt_usd_cts",
+       "description": "Order total in US cents."}
+    ]
+  }'
+```
+
+| Field | Required | Meaning |
+|---|---|---|
+| `description` | Yes | 1–2000 characters |
+| `column` | No | Column this describes. Omit to describe the table itself. |
+| `table` | No | Table this applies to. Omit for a single-table source; use it to scope an annotation on a **database-wide** source. |
+
+Annotations are upserted: repeating a `table`/`column` pair replaces its
+description, and pairs you do not mention are left alone.
+
+```json
+{"source_id": "3f1c...", "written": 3}
+```
+
+### List annotations
+
+```http
+GET /v1/sources/{ref}/annotations
+```
+
+```json
+{
+  "source_id": "3f1c...",
+  "annotations": [
+    {"table": "", "column": "", "description": "One row per retail customer account."},
+    {"table": "", "column": "cust_stat_cd_01", "description": "Account status. A=active, C=closed, S=suspended."}
+  ]
+}
+```
+
+An empty `table` or `column` means "not scoped to one".
+
+### Delete annotations
+
+```http
+DELETE /v1/sources/{ref}/annotations?column=cust_stat_cd_01
+DELETE /v1/sources/{ref}/annotations?table=orders&column=amt_usd_cts
+DELETE /v1/sources/{ref}/annotations?all=true
+```
+
+Requires `readwrite` or `admin`. Deleting a specific annotation that does not
+exist returns 404; `all=true` removes every annotation for the source and reports
+how many went.
+
+| Status | Meaning |
+|---|---|
+| 200 | Applied |
+| 403 | Caller lacks the `readwrite` role (write and delete only) |
+| 404 | Source not found, or no such annotation to delete |
+| 422 | Missing/empty `description`, or over 2000 characters |
+
+---
+
 ## Delete a source
 
 **Why you'd use this:** Remove a source that is no longer needed or was registered

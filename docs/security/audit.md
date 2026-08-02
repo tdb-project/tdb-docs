@@ -160,7 +160,10 @@ Run this check as part of your daily compliance job, or trigger it after any log
 
 ## Exporting to a SIEM
 
-Use `POST /v1/audit/export` to push the log to Splunk. See [Splunk HEC integration →](../integrations/splunk.md).
+Use `POST /v1/audit/export?destination=splunk|s3` to ship the log onward. Exports are **incremental** — each destination resumes where it left off, so a scheduled export does not re-send history. `GET /v1/audit/export/status` shows how far each has consumed.
+
+- [Splunk HEC integration →](../integrations/splunk.md)
+- [S3 audit archive →](../integrations/s3.md)
 
 ---
 
@@ -170,19 +173,70 @@ Use `POST /v1/audit/export` to push the log to Splunk. See [Splunk HEC integrati
 |---|---|---|
 | `TDB_LOG_FILE` | `tdb_audit.jsonl` | Path to the NDJSON audit log |
 | `TDB_LOG_LEVEL` | `INFO` | Log verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `TDB_AUDIT_ROTATE_MAX_BYTES` | `0` (off) | Seal the log into a segment once it exceeds this size |
+| `TDB_AUDIT_ROTATE_MAX_DAYS` | `0` (off) | Seal the log once its oldest entry is older than this |
 
 ---
 
-## Backup and rotation
+## Retention: sealed segments
 
-The audit log is append-only. TDB never truncates it. You are responsible for rotation and backup:
+!!! info "Enterprise, from 0.4.0"
+    Before 0.4.0 the log grew without bound and rotation was entirely manual.
 
-- Back up `tdb_audit.jsonl` to immutable object storage (S3, GCS) daily.
-- Run `GET /v1/audit/verify` before rotation to confirm integrity.
-- Keep old log files; the hash chain spans the entire history of a deployment.
+**TDB never deletes an audit entry.** Retention here decides when the live log is
+*sealed*, not when anything is dropped.
+
+When a threshold is crossed, TDB closes the live log with a final `rotated` entry,
+renames it to a timestamped segment, and starts a fresh log:
+
+```
+tdb_audit.jsonl                         ← live chain
+tdb_audit-20260801T031500Z-seq48210.jsonl   ← sealed segment
+tdb_audit-20260715T014500Z-seq22119.jsonl   ← sealed segment
+```
+
+Each segment keeps its chain intact and verifies on its own. The new live log opens
+with a `chain_anchor` entry naming the segment it follows and that segment's final
+hash, so the segments form a verifiable sequence rather than disconnected files.
+
+Rotation is evaluated when an entry is written and once at startup. Set either
+variable, both, or neither; whichever threshold is crossed first seals the log.
+You can also seal on demand with `POST /v1/audit/rotate` (admin).
+
+!!! warning "Why you should enable this"
+    Every audit write reads the live log to recover the previous hash. In 0.4.0
+    that cost became independent of history for a *running* server, but the live
+    file is still read once at startup — a multi-gigabyte log makes restarts slow
+    and backups unwieldy. Sizing the live log with `TDB_AUDIT_ROTATE_MAX_BYTES`
+    keeps both bounded.
+
+### Verifying across segments
+
+`GET /v1/audit/verify` proves the **live** log has not been altered. It cannot prove
+a whole segment was not removed, because every segment legitimately restarts its
+chain from genesis.
+
+`GET /v1/audit/history` walks the sealed segments, the live log, and the anchors
+linking them:
+
+```json
+{ "valid": true, "segments": 4, "entries": 128340,
+  "segment_files": ["tdb_audit-20260715T014500Z-seq22119.jsonl", "..."] }
+```
+
+Removing a segment from the **middle** of the sequence is reported as invalid.
+Pruning the **oldest** segments is a supported retention action and stays valid —
+that is how you actually delete old audit data.
+
+## Backup
+
+- Back up sealed segments to immutable object storage (S3, GCS). They never change
+  again, which makes them well suited to write-once buckets.
+- Run `GET /v1/audit/history` before pruning anything, to confirm the sequence is
+  intact first.
 
 !!! warning "Do not edit the log file"
-    Any modification — including deleting lines or reordering entries — will break the hash chain and fail verification. Treat the log as write-once.
+    Any modification — including deleting lines or reordering entries — will break the hash chain and fail verification. Treat the log as write-once. Use `POST /v1/audit/rotate` rather than truncating the file yourself: rotation is recorded *in* the chain, hand-truncation is indistinguishable from tampering.
 
 ---
 
