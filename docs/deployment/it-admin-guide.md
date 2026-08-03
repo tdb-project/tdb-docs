@@ -200,6 +200,27 @@ inside the image. Defaults in parentheses.
 | Variable | Default | Purpose |
 |---|---|---|
 | `TDB_LICENSE_PUBKEY_FILE` | *(baked key)* | Override the license verification public key path. Normally leave unset. |
+| `TDB_POOL_SIZE` | `0` (off) | Reuse PostgreSQL connections instead of opening one per query. See the note below before enabling. |
+
+**Connection pooling and your database's connection budget.** With `TDB_POOL_SIZE`
+unset, TDB opens a connection per query and closes it, and holds nothing open
+between requests — so it costs your database server nothing while idle. Setting a
+positive value trades that for speed: on a link where the handshake costs more
+than the query, most of a short query's database time is the connection setup.
+
+Before enabling it, count the ceiling against your server's `max_connections`:
+
+```
+TDB_POOL_SIZE  ×  registered PostgreSQL sources  ×  TDB processes
+```
+
+Each registered source pools separately — they authenticate as different users
+against different databases and cannot share sessions. Idle connections are
+closed after 5 minutes, so a burst does not hold its peak indefinitely, and
+pooled sessions remain read-only across reuse exactly as fresh ones are.
+
+PostgreSQL only in this release. MySQL, SQL Server and Snowflake ignore the
+variable and continue to connect per query.
 
 ---
 
