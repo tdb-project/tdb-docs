@@ -353,12 +353,52 @@ The response shape depends on how the source was registered:
 }
 ```
 
+### Descriptions in the schema response
+
+!!! info "From 0.7.0"
+
+If you have set [schema annotations](#schema-annotations), they are included
+here as well as in MCP:
+
+```json
+{
+  "source_id": "a1b2c3d4-...",
+  "source_name": "customers",
+  "description": "One row per retail customer account.",
+  "source_description": "Prod replica, read-only",
+  "columns": [
+    {"name": "cust_stat_cd_01", "type": "VARCHAR",
+     "description": "Account status. A=active, C=closed, S=suspended."},
+    {"name": "amt", "type": "BIGINT", "description": null}
+  ],
+  "tables": null,
+  "inspected_at": "2026-08-11T09:10:00Z"
+}
+```
+
+| Field | Where it comes from |
+|---|---|
+| `columns[].description` | Column annotation |
+| `tables[].description` | Table annotation (database-wide sources) |
+| `description` | Table annotation (single-table sources) |
+| `source_description` | The `description` given when the source was registered |
+
+Each is `null` when unset, so a deployment with no annotations sees exactly the
+response shown above this section.
+
 **Error responses:**
 
 | Status | Meaning |
 |---|---|
 | 404 | Source name or UUID not found |
 | 503 | Source is registered but the backend database is unreachable |
+
+!!! warning "Fixed in 0.7.0: this endpoint returned 500 for CSV sources"
+
+    On **0.2.0 through 0.6.0**, requesting the schema of a CSV source returned
+    `500`. Database connectors and the MCP `schema_source` tool were unaffected,
+    so a deployment could hit this only through REST and only on CSV. Upgrade, or
+    read a CSV source's schema through MCP in the meantime.
 
 ---
 
@@ -407,8 +447,41 @@ Annotations are upserted: repeating a `table`/`column` pair replaces its
 description, and pairs you do not mention are left alone.
 
 ```json
-{"source_id": "3f1c...", "written": 3}
+{"source_id": "3f1c...", "written": 3, "validated": true}
 ```
+
+#### Targets are checked against the live schema
+
+!!! info "From 0.7.0"
+
+An annotation on a misspelled column matches nothing, so it simply never appears
+— a failure you would discover much later, if at all. Targets are therefore
+checked when you write them:
+
+```json
+{
+  "detail": {
+    "error": "unknown_annotation_target",
+    "message": "Some annotations name a table or column this source does not have. Nothing was written. Re-send with ?validate=false to store them anyway.",
+    "problems": ["column 'cust_stat_cd_1' does not exist (available: ['amt', 'cust_stat_cd_01'])"]
+  }
+}
+```
+
+The request is rejected with **400** and **nothing is written** — there is no
+partial state to reconcile against what you sent.
+
+Two cases deliberately still succeed:
+
+- **`?validate=false`** stores the annotation without checking, for a column that
+  has not shipped yet.
+- **An unreachable source.** If the schema cannot be read, the write succeeds and
+  the response reports `"validated": false`. A database being down is not
+  evidence that your annotation is wrong, and refusing would make documenting a
+  table depend on that table being up.
+
+`validated` tells you which happened: `true` means every target was confirmed
+against the live schema.
 
 ### List annotations
 
