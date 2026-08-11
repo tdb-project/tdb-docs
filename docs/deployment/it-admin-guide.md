@@ -222,6 +222,16 @@ pooled sessions remain read-only across reuse exactly as fresh ones are.
 PostgreSQL only in this release. MySQL, SQL Server and Snowflake ignore the
 variable and continue to connect per query.
 
+**Sizing it by measurement rather than by guess (0.6.0 and later).** A pool that
+is too small does not fail — it queues, and the wait is invisible in query
+latency because the query has not started yet.
+`tdb_pool_checkout_duration_seconds` is that wait. A healthy pool checks out in
+microseconds; a p95 climbing into milliseconds means requests are queueing for a
+connection before they reach PostgreSQL, and the pool wants to be larger (budget
+permitting). `tdb_pool_checkout_failures_total{reason="pool_timeout"}` is the
+same condition after it has become an error. Neither metric records anything
+while pooling is off, so an empty series is expected rather than a fault.
+
 ---
 
 ## 4. Deployment topologies
@@ -542,12 +552,28 @@ How to benchmark in your environment:
 1. Register a representative source (your real CSV size / DB table).
 2. Drive load with a tool like `k6`/`hey`/`wrk` against `POST /v1/query` with a
    representative `SELECT`, ramping concurrency.
-3. Watch container CPU/RAM (`docker stats`) and the `/metrics` endpoint
-   (`request_count`, `request_latency`, `schema_cache_hits`).
+3. Watch container CPU/RAM (`docker stats`) and the `/metrics` endpoint. On
+   **0.6.0 and later** the useful signals are `tdb_source_query_duration_seconds`
+   (time in the data source, labelled by `source_type`),
+   `tdb_request_latency_seconds` (the whole request), and
+   `tdb_audit_append_duration_seconds`. The gap between the first two is TDB's
+   own overhead; if they track each other, the time is in your source and tuning
+   TDB will not help. On earlier versions only `tdb_requests_total`,
+   `tdb_request_latency_seconds` and the schema-cache counters exist.
+4. **Ramp concurrency, do not just repeat a single query.** Both performance
+   defects found in this product to date were invisible at concurrency 1 and only
+   appeared under parallel load — one of them made throughput *fall* as load rose.
+   A single-query timing tells you very little about behaviour under a real
+   workload.
 
 What to expect qualitatively:
 - **CSV/DuckDB** is CPU/RAM-bound and re-reads the file per query — large CSVs benefit
-  most from more RAM and from the **schema cache** (`TDB_SCHEMA_CACHE_TTL`).
+  most from more RAM and from the **schema cache** (`TDB_SCHEMA_CACHE_TTL`). Re-reading
+  the file is deliberate: it is what lets a CSV source pick up appended rows and changed
+  columns without re-registration. **On 0.5.1 and later, concurrent CSV queries share one
+  query engine.** Earlier versions built a private engine per query, each claiming a
+  thread per CPU core, so CSV throughput *fell* as concurrency rose — if you are sizing a
+  CSV-backed deployment on measurements from 0.5.0 or earlier, re-measure.
 - **DB connectors** push work to the remote engine; TDB mostly marshals rows, so the TDB
   host stays light and the source DB is the bottleneck.
 - **Every response is capped**, and the cap is enforced *after* fetching — a `LIMIT` in
@@ -602,7 +628,14 @@ Run these after deploying.
 6. **Audit working:** confirm a new line appended to `TDB_LOG_FILE` after a successful
    query, then `GET /v1/audit/verify` → `{"valid": true, ...}`.
 7. **Metrics:** `curl -fsS http://localhost:8000/metrics` returns Prometheus text;
-   wire it into your scraper.
+   wire it into your scraper. After step 4's query, confirm it was measured
+   (**0.6.0 and later**):
+
+   ```bash
+   curl -fsS http://localhost:8000/metrics | grep tdb_source_query_duration_seconds_count
+   ```
+
+   You should see a sample carrying the `source_type` of the source you queried.
 8. **MCP (if used):** point your AI client at `https://<host>/v1/mcp` and confirm the
    `initialize` handshake + a `query_source` call succeed.
 
@@ -618,7 +651,14 @@ Run these after deploying.
   once); rotate `TDB_JWT_SECRET` (invalidates outstanding JWTs) on a schedule.
 - **License renewal:** see [§5.5](#55-license).
 - **Monitoring:** scrape `/metrics`; alert on `/health` and on `audit/verify` returning
-  `valid:false`.
+  `valid:false`. On **0.6.0 and later** three more signals are worth alerting on:
+  `tdb_source_query_duration_seconds` p95 per `source_type` (a single slow source is
+  visible without correlating against your database's own monitoring);
+  `tdb_audit_append_duration_seconds` p95, which should be sub-millisecond **and flat as
+  the log grows** — if it climbs with log size, turn on rotation
+  (`TDB_AUDIT_ROTATE_MAX_BYTES` / `_MAX_DAYS`); and, if you pool,
+  `tdb_pool_checkout_duration_seconds`. See
+  [Prometheus metrics](../observability/metrics.md) for the queries.
 
 ---
 
