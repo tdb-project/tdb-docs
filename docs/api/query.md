@@ -79,8 +79,10 @@ TDB applies the row limit at three levels:
 
 1. **Request-level** — the `limit` field caps rows returned in this response. It may
    not exceed the deployment's `TDB_MAX_ROWS`; a larger value is rejected with `400`.
-2. **SQL injection** — if your SQL doesn't contain a `LIMIT` clause, TDB appends one
-   automatically. If your SQL already has one, it is left alone.
+2. **SQL injection** — if your SQL doesn't contain a `LIMIT` clause, TDB appends
+   `LIMIT limit + 1`. If your SQL already has one, it is left alone. The extra row
+   is never returned; it exists so TDB can tell a result that exactly fills the
+   limit from one that was cut.
 3. **After fetching** — the result is cut to `limit` regardless of what the SQL asked
    for, and `truncated` is set to `true` when rows were dropped. This is the ceiling
    that actually holds: a `LIMIT 100000` in your own SQL does **not** raise it.
@@ -89,6 +91,17 @@ TDB applies the row limit at three levels:
     Check the flag before treating a response as complete. Narrow the query — filter,
     aggregate, or page with `LIMIT`/`OFFSET` in your own SQL against a database
     source — rather than assuming the rows you got are all of them.
+
+!!! danger "On 0.7.0 / community 0.4.6 and earlier, `truncated` under-reported"
+    Those versions appended `LIMIT limit` rather than `limit + 1`, so a query with
+    no `LIMIT` of its own could not distinguish "exactly `limit` rows exist" from
+    "the result was cut" — and always reported `truncated: false`. A 5-row table
+    queried with `limit: 2` returned 2 rows and `truncated: false`.
+
+    Only queries carrying their own larger `LIMIT` set the flag correctly. **If you
+    are on an affected version, do not treat `truncated: false` as proof of
+    completeness** — compare `rows_returned` against your `limit` instead, and treat
+    equality as "possibly more". Fixed in **0.7.1** and **community 0.4.7**.
 
 **Enterprise deployments can raise the ceiling** by setting `TDB_MAX_ROWS`
 ([reference](../reference/environment-variables.md)). Every row of a response is held

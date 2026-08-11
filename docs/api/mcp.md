@@ -121,7 +121,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.7.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.7.1"}
   }
 }
 ```
@@ -596,5 +596,8 @@ HTTP 429 is returned with `X-RateLimit-*` headers when the limit is exceeded.
 Every successful `tools/call` that touches data (`query_source`, `preview_source`,
 `filter_source`, `aggregate_source`, `run_view`) writes a line to `tdb_audit.jsonl`,
 same format as the REST query endpoint — including the SQL that the no-SQL tools
-generated on the caller's behalf (`run_view` entries record `<view:name>`). Failed
-calls (auth failures, SQL validation errors) are logged as warnings only.
+generated on the caller's behalf (`run_view` entries record `<view:name>`).
+Refused calls are **audited, not just logged**: a blocked write, a prompt-injection
+rejection or an auth failure writes an `"event": "denied"` entry with an `action`
+and machine-readable `reason`, signed into the same hash chain as successful
+queries — deleting one breaks [`/v1/audit/verify`](../security/audit.md).

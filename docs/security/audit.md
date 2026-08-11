@@ -145,7 +145,7 @@ Requires **admin** role. Reads the entire log file and walks the hash chain.
 ```json
 {
   "valid": false,
-  "error": "hash mismatch at seq 42: expected 9c82..., got a3f1...",
+  "error": "hash mismatch at seq=42",
   "at_seq": 42
 }
 ```

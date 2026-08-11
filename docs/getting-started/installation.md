@@ -58,6 +58,7 @@ for it.
 === "Terminal (recommended)"
 
     ```bash
+    mkdir -p data   # BEFORE docker run — see the warning below
     docker run -d --name tdb \
       -p 8000:8000 \
       -e TDB_API_KEYS=your-secret-key-here \
@@ -67,6 +68,30 @@ for it.
       -v "$(pwd)/data:/app/data" \
       tdb-enterprise:trial-acme-20260701-9a54018
     ```
+
+!!! warning "Linux hosts: create the `data` directory before `docker run`"
+
+    If `./data` does not exist, Docker creates it **owned by root** — and TDB
+    runs as a non-root user (uid 1000) which then cannot open its registry
+    database inside it. On **0.7.0 and earlier** the container exits at startup
+    with SQLite's unhelpful `unable to open database file`; from **0.7.1** the
+    error names the path and the fix. Either `mkdir -p data` first (as above) or
+    `chown 1000` an existing directory. Docker Desktop on macOS/Windows is not
+    affected, which is why this bites on exactly the Linux servers most
+    production deployments use.
+
+!!! note "Using CSV sources? Mount your files at `/data`"
+
+    The image confines registered CSV paths to `/data`
+    ([`TDB_ALLOWED_DATA_DIR`](../reference/environment-variables.md)) — a
+    `file_path` anywhere else is refused with 403. Add a second mount for your
+    CSV files:
+
+    ```bash
+      -v "$(pwd)/csvs:/data" \
+    ```
+
+    Database connectors are unaffected — they take a table name, not a path.
 
     Your Bearer token for all API requests is the value you set for `TDB_API_KEYS`
     (here: `your-secret-key-here`). Use it as:
@@ -92,7 +117,7 @@ Check the logs — you should see the license confirmed and the server start:
 
 ```
 INFO:     license_ok customer=ACME Corp edition=trial expires=2026-07-01T00:00:00+00:00 days_left=30
-INFO:     tdb_startup version=0.7.0 build_sha=bae1b9c dev_mode=False
+INFO:     tdb_startup version=0.7.1 build_sha=f2479ca dev_mode=False
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 

@@ -143,8 +143,14 @@ CSV header row, and the response returns the new source's `id` — copy it for S
 `SELECT * FROM data` works on any CSV — swap it for any read-only query you like. The
 **column names are exactly your CSV's header row** (run `SELECT * FROM data` once to see them).
 The optional `limit` field caps the response: it defaults to **100** and is hard-capped at
-**1,000**, so a bare `SELECT *` returns at most those rows regardless of your SQL. Read-only is
-enforced: `INSERT` / `UPDATE` / `DELETE` / `DROP` are rejected at the API level.
+**1,000**, so a bare `SELECT *` returns at most those rows regardless of your SQL. Asking for
+more than 1,000 is **rejected with `422`**, not silently clamped — so you never receive a
+short answer believing it is complete. (Enterprise, where the ceiling is configurable via
+`TDB_MAX_ROWS`, rejects an over-ceiling `limit` with `400` and an
+`limit_exceeds_max` reason.) When rows *were* dropped, the response carries
+`"truncated": true` — reliable from **0.4.7**; earlier versions under-reported it on
+queries carrying no `LIMIT` of their own. Read-only is enforced: `INSERT` / `UPDATE` /
+`DELETE` / `DROP` are rejected at the API level.
 
 ---
 

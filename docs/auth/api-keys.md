@@ -63,7 +63,8 @@ POST /v1/auth/keys
 {
   "name": "ci-pipeline",
   "expires_in_days": 90,
-  "rate_limit": 120
+  "rate_limit": 120,
+  "role": "read"
 }
 ```
 

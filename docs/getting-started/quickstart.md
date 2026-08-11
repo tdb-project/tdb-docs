@@ -109,7 +109,7 @@ Expected response (HTTP 201):
   "id": "a1b2c3d4-...",
   "name": "production_db",
   "source_type": "postgres",
-  "connection": { "host": "host.docker.internal", "port": 5432, "dbname": "your_database" },
+  "connection": { "host": "host.docker.internal", "port": 5432, "dbname": "your_database", "user": "your_user", "password": "***" },
   "description": "Production Postgres — all tables",
   "tags": [],
   "registered_by": "<YOUR_KEY>",
@@ -122,6 +122,12 @@ Expected response (HTTP 201):
     Use `host.docker.internal` as the host when your PostgreSQL instance runs on the
     Windows or Mac host machine (or in WSL). Inside Docker, `localhost` resolves to the
     container itself — `host.docker.internal` always routes back to the host.
+
+    **On native Linux** the name does not resolve unless you add
+    `--add-host=host.docker.internal:host-gateway` to `docker run` (or use the
+    bridge gateway IP, typically `172.17.0.1`). Registration still returns 201
+    either way — the connection is not probed until schema or query time, so a
+    wrong host surfaces later as a **503**, not at registration.
 
 !!! tip "Single-table registration"
     To scope a source to one specific table, add `"table": "customers"` to the
@@ -193,16 +199,21 @@ You can use the source **name** (`production_db`) instead of the UUID.
       -Headers @{ Authorization = "Bearer <YOUR_KEY>" }
     ```
 
-Expected response (database-wide source — all tables in the `public` schema):
+Expected response (database-wide source — all tables in the `public` schema).
+`source_id` echoes whatever ref you queried by — the name here; the UUID if you
+used the UUID. The `description` fields are `null` until you set
+[schema annotations](../api/sources.md#schema-annotations):
 
 ```json
 {
-  "source_id": "a1b2c3d4-...",
+  "source_id": "production_db",
   "source_name": "production_db",
+  "source_description": null,
   "columns": [],
   "tables": [
     {
       "name": "customers",
+      "description": null,
       "columns": [
         {"name": "id", "type": "integer"},
         {"name": "email", "type": "character varying"},
@@ -212,6 +223,7 @@ Expected response (database-wide source — all tables in the `public` schema):
     },
     {
       "name": "orders",
+      "description": null,
       "columns": [
         {"name": "id", "type": "integer"},
         {"name": "customer_id", "type": "integer"},
@@ -346,7 +358,7 @@ Expected response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.7.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.7.1"}
   }
 }
 ```
@@ -354,7 +366,10 @@ Expected response:
 ### 6b — List available MCP tools
 
 **Why:** Confirms your API key is valid on the MCP endpoint and shows every tool
-an AI agent can call. You should see one tool per registered source.
+an AI agent can call. Enterprise exposes **seven fixed tools** that work against
+any registered source — `query_source`, `schema_source`, `preview_source`,
+`filter_source`, `aggregate_source`, `list_views`, `run_view` — not one tool per
+source. (The community edition exposes `query_source` only.)
 
 === "Bash"
 
@@ -375,7 +390,8 @@ an AI agent can call. You should see one tool per registered source.
       -Body '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
     ```
 
-Expected response (one entry per registered source):
+Expected response (abridged — seven tools, fixed, regardless of how many
+sources are registered):
 
 ```json
 {
@@ -384,20 +400,29 @@ Expected response (one entry per registered source):
   "result": {
     "tools": [
       {
-        "name": "query_customers",
-        "description": "Run a read-only SQL SELECT against the 'customers' source",
+        "name": "query_source",
+        "description": "Run a read-only SQL SELECT against a registered source",
         "inputSchema": {
           "type": "object",
           "properties": {
-            "sql": {"type": "string"}
+            "sql": {"type": "string"},
+            "source_name": {"type": "string"}
           },
           "required": ["sql"]
         }
-      }
+      },
+      {"name": "schema_source", "...": "..."},
+      {"name": "preview_source", "...": "..."},
+      {"name": "filter_source", "...": "..."},
+      {"name": "aggregate_source", "...": "..."},
+      {"name": "list_views", "...": "..."},
+      {"name": "run_view", "...": "..."}
     ]
   }
 }
 ```
+
+See [the MCP reference](../api/mcp.md) for each tool's full schema.
 
 ### 6c — Run a query through MCP
 
@@ -455,7 +480,7 @@ Expected response:
     "content": [
       {
         "type": "text",
-        "text": "{\"columns\":[\"total\"],\"rows\":[{\"total\":1423}],\"rows_returned\":1,\"truncated\":false}"
+        "text": "{\"source\": \"customers\", \"columns\": [\"total\"], \"rows\": [{\"total\": 1423}], \"rows_returned\": 1}"
       }
     ]
   }
@@ -479,19 +504,28 @@ confirms the log is working before you go to production.
 Every query writes a line to the audit log. The log lives **inside the container**
 at `/app/tdb_audit.jsonl` (configurable via `TDB_LOG_FILE`).
 
-=== "Bash"
+=== "Bash (jq)"
 
     ```bash
-    docker exec tdb tail -n 5 /app/tdb_audit.jsonl | python -m json.tool
+    docker exec tdb tail -n 5 /app/tdb_audit.jsonl | jq .
+    ```
+
+=== "Bash (no jq)"
+
+    ```bash
+    # The log is NDJSON — one JSON object per line — so json.tool needs
+    # --json-lines, and the interpreter is `python3` on most hosts.
+    docker exec tdb tail -n 5 /app/tdb_audit.jsonl | python3 -m json.tool --json-lines
     ```
 
 === "PowerShell"
 
     ```powershell
-    docker exec tdb tail -n 5 /app/tdb_audit.jsonl | python -m json.tool
+    docker exec tdb tail -n 5 /app/tdb_audit.jsonl | ForEach-Object { $_ | ConvertFrom-Json | ConvertTo-Json }
     ```
 
-Expected output (one JSON object per query):
+Expected output (one JSON object per query — enterprise entries are
+hash-chained, so each carries `seq`, `prev_hash` and `hash`):
 
 ```json
 {
@@ -500,7 +534,10 @@ Expected output (one JSON object per query):
   "source_id": "a1b2c3d4-...",
   "sql": "SELECT id, email, country FROM customers WHERE country = 'US' LIMIT 5",
   "rows_returned": 2,
-  "key_hint": "tdbk_a..."
+  "key_hint": "tdbk_a...",
+  "seq": 3,
+  "prev_hash": "9c82f1...",
+  "hash": "5e11ab..."
 }
 ```
 
