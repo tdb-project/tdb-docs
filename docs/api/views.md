@@ -206,6 +206,16 @@ The MCP tools respect the same `allowed_tools` restrictions as REST endpoints. S
 | Unknown parameter supplied | 400 | `Unknown parameters: ['typo']` |
 | Type coercion failure | 400 | `Parameter 'limit' expects integer, got 'abc'` |
 | Source not registered | 400 | `View 'name' references source 'x' which is not registered.` |
+| View SQL failed to execute | 500 | `View execution failed: <error from the source>` |
+
+The 400s are all caused by the *caller* — a missing, unknown or mistyped
+parameter. The **500 is caused by the view definition**: the SQL in the YAML was
+accepted at load time but rejected by the source when it ran, so it surfaces on
+whoever calls the view rather than on whoever wrote it. A parser error in the
+`sql:` field is the common case — check the view against
+[the parameter syntax](#parameter-types-and-sql-safety) (`:name`, not `{{ name }}`)
+and run the same SQL through [`POST /v1/query`](query.md) to see the source's own
+error message.
 
 ---
 
