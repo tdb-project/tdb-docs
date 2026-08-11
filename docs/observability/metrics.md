@@ -208,7 +208,16 @@ The cache is keyed by source ID and invalidated automatically when a source is d
 
 ---
 
-## Health check
+## Service endpoints
+
+Three endpoints that are not about your data.
+
+**Only `/health`, `/` and `/metrics` keep answering when the licence has
+expired.** Everything else, including `/v1/version`, returns
+`403 license_expired`. That is what makes `/` the endpoint to reach for when you
+need a version out of a container whose licence has lapsed.
+
+### Health check
 
 ```
 GET /health
@@ -218,4 +227,48 @@ Returns HTTP 200 with `{"status": "ok"}` when TDB is running. No authentication 
 
 ```bash
 curl http://localhost:8000/health
+```
+
+**It stays green on an expired licence** — deliberately, so an orchestrator does
+not kill a container that only needs its licence renewed. Data and API routes
+return `403 license_expired` instead. So `/health` alone will not tell you the
+licence has lapsed: watch the startup log, or treat a `403 license_expired` from
+any data route as the signal.
+
+### Version
+
+```
+GET /v1/version
+```
+
+Requires any valid API key, **and a valid licence** — on an expired licence this
+returns `403 license_expired` rather than a version. Reports the exact patch
+level **and the source commit** the image was built from:
+
+```bash
+curl -s -H "Authorization: Bearer <KEY>" http://localhost:8000/v1/version
+```
+
+```json
+{"version": "0.7.0", "build_sha": "bae1b9c"}
+```
+
+This is the authoritative answer to "what am I running" — worth quoting in a
+support request, and worth checking against
+[Security & Updates](../security/updates.md) when a fix is announced. The same
+values appear in the container's startup log as `tdb_startup version=… build_sha=…`.
+
+### Version banner
+
+```
+GET /
+```
+
+No authentication, and **not licence-gated** — this still answers when
+`/v1/version` is returning `403 license_expired`. It omits `build_sha`, so prefer
+`/v1/version` when identifying an exact build, and fall back to this when the
+licence has lapsed.
+
+```json
+{"product": "The Data-Bridge", "version": "0.7.0", "status": "running", "docs": "/docs"}
 ```

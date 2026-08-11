@@ -26,17 +26,23 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 
 | Endpoint | Minimum role |
 |---|---|
+| `GET /` | None (public — version banner) |
+| `GET /health` | None (public) |
+| `GET /metrics` | None (public — restrict via network policy in production) |
+| `GET /v1/version` | any valid key |
 | `GET /v1/sources` | `read` |
 | `GET /v1/sources/{id}` | `read` |
 | `GET /v1/sources/{id}/schema` | `read` |
+| `GET /v1/sources/{ref}/annotations` | `read` |
 | `POST /v1/query` | `read` |
 | `POST /v1/mcp` | `read` |
 | `GET /v1/views` | `read` |
+| `GET /v1/views/{name}` | `read` |
 | `POST /v1/views/{name}/run` | `read` |
-| `GET /health` | None (public) |
-| `GET /metrics` | None (public — restrict via network policy in production) |
 | `POST /v1/sources` | `readwrite` |
 | `DELETE /v1/sources/{id}` | `readwrite` |
+| `PUT /v1/sources/{ref}/annotations` | `readwrite` |
+| `DELETE /v1/sources/{ref}/annotations` | `readwrite` |
 | `POST /v1/auth/keys` | `admin` |
 | `GET /v1/auth/keys` | `admin` |
 | `DELETE /v1/auth/keys/{id}` | `admin` |
@@ -45,7 +51,19 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 | `PUT /v1/auth/keys/{id}/role` | `admin` |
 | `PUT /v1/auth/keys/{id}/tools` | `admin` |
 | `GET /v1/audit/verify` | `admin` |
+| `GET /v1/audit/history` | `admin` |
+| `POST /v1/audit/rotate` | `admin` |
 | `POST /v1/audit/export` | `admin` |
+| `GET /v1/audit/export/status` | `admin` |
+
+Grouped by minimum role rather than by path, since the question this table
+answers is "what can a key with role X do".
+
+!!! note "Rate limiting is checked before the role"
+
+    A key that is over its rate limit gets **429** on any endpoint, including one
+    its role would not have allowed anyway. A 429 therefore does not mean the
+    role was sufficient.
 
 ---
 
