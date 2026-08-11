@@ -85,6 +85,13 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     - `GET /v1/audit/verify` — walk the chain, detect tampering
     - Configurable retention — seal the log into verifiable segments by size or age; TDB never deletes an entry
 
+    **SIEM export**
+
+    - Splunk HEC audit export (`POST /v1/audit/export`)
+    - S3 audit export — entries written to your own bucket, keyed by sequence range
+    - Incremental by default: each destination keeps its own cursor, so a scheduled export ships only what it has not already sent
+    - *Datadog and OpenTelemetry are built on request — tell us which one you need*
+
     **Observability**
 
     - Prometheus metrics (`GET /metrics`)
@@ -97,14 +104,16 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Commercial license. Self-hosted.**
 
-    For regulated industries — healthcare-tech, fintech, and any team that needs SOC 2-ready audit export and enterprise identity.
+    For regulated industries — healthcare-tech, fintech, and any team that needs a supported deployment and enterprise identity.
+
+    **Every product feature is included in both commercial editions.** Mid-Market adds the support commitment around them, and the identity and access-control work below as it ships.
 
     **Everything in SMB, plus:**
 
-    **SIEM integration**
+    **Support**
 
-    - Splunk HEC audit export (`POST /v1/audit/export`)
-    - *Additional destinations (S3, Datadog, OpenTelemetry) are built on request — tell us which one you need*
+    - SLA-backed support — next business day response
+    - Onboarding call and deployment review
 
     **Enterprise identity**
 
@@ -113,11 +122,6 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     **Fine-grained access control**
 
     - Column-level access control *(on the roadmap, not yet built)*
-
-    **Support**
-
-    - SLA-backed support — next business day response
-    - Onboarding call and deployment review
 
     [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
 
@@ -130,6 +134,8 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 ---
 
 ## Edition comparison
+
+The two commercial editions ship the **same product**. Nothing in the running server is switched off by edition — SMB and Mid-Market differ on the support commitment, and on identity and access-control features that are still on the roadmap.
 
 | Feature | Community | SMB | Mid-Market |
 |---|---|---|---|
@@ -164,8 +170,10 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 | Hash-chained tamper-evident log | ❌ | ✅ | ✅ |
 | Log integrity verification | ❌ | ✅ | ✅ |
 | Audit log retention (sealed segments) | ❌ | ✅ | ✅ |
-| Splunk HEC export | ❌ | ❌ | ✅ |
-| Additional SIEM exporters | ❌ | ❌ | On request |
+| Splunk HEC export | ❌ | ✅ | ✅ |
+| S3 audit export | ❌ | ✅ | ✅ |
+| Incremental export cursor per destination | ❌ | ✅ | ✅ |
+| Additional SIEM exporters | ❌ | On request | On request |
 | **Observability** | | | |
 | Prometheus metrics | ❌ | ✅ | ✅ |
 | Schema caching | ❌ | ✅ | ✅ |
