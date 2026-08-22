@@ -165,6 +165,67 @@ Use `POST /v1/audit/export?destination=splunk|s3` to ship the log onward. Export
 - [Splunk HEC integration →](../integrations/splunk.md)
 - [S3 audit archive →](../integrations/s3.md)
 
+### Synchronous or backgrounded
+
+By default the request **waits** for the export to finish and returns what it
+shipped, which is what a cron job checking `errors` needs:
+
+```json
+{"exported": 2847, "skipped": 0, "errors": [], "disabled": false}
+```
+
+A first export of a large backlog can take a while. Pass `wait=false` to get
+`202` straight away and let it run in the background:
+
+```bash
+curl -fsS -X POST "http://localhost:8000/v1/audit/export?destination=s3&wait=false" \
+  -H "Authorization: Bearer $ADMIN_KEY"
+```
+
+```json
+{"accepted": true, "destination": "s3", "detail": "Export started. Read the outcome from GET /v1/audit/export/status."}
+```
+
+Nothing is waiting on that run, so its outcome is recorded instead of returned.
+`GET /v1/audit/export/status` reports the last run for every destination —
+including synchronous ones, so the field means the same thing either way:
+
+```json
+{
+  "destinations": [
+    {
+      "name": "s3",
+      "configured": true,
+      "last_exported_seq": 4210,
+      "last_run": {
+        "state": "succeeded",
+        "started_at": "2026-08-12T04:10:02+00:00",
+        "finished_at": "2026-08-12T04:10:39+00:00",
+        "exported": 120,
+        "skipped": 0,
+        "errors": []
+      }
+    }
+  ]
+}
+```
+
+`state` is `running`, `succeeded` or `failed`; `last_run` is `null` for a
+destination that has never exported.
+
+!!! warning "One run per destination at a time"
+
+    A second export to a destination that is already running returns **409**.
+    Both runs would read the same cursor and ship the same entries, so
+    overlapping them duplicates events in your SIEM.
+
+    This matters most with `wait=false`: a cron firing every five minutes against
+    an export that takes ten will collide. Either widen the interval past the
+    slowest run, or treat 409 as "the previous run is still going" and skip.
+
+    A run whose process is killed is treated as abandoned after **one hour**, so a
+    crash cannot block a destination permanently.
+
 ---
 
 ## Configuration

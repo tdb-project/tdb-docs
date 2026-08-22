@@ -85,6 +85,14 @@ curl -X POST http://localhost:8000/v1/audit/export \
 {"disabled": true}
 ```
 
+!!! tip "Long exports"
+
+    Add `&wait=false` to return `202` immediately and run the export in
+    the background, then read the result from
+    `GET /v1/audit/export/status`. A destination runs one export at a
+    time — an overlapping call gets `409`. See
+    [Exporting to a SIEM](../security/audit.md#synchronous-or-backgrounded).
+
 **Response — partial failure:**
 
 ```json
