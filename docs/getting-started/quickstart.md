@@ -315,7 +315,9 @@ Expected response:
 ```
 
 !!! info "Read-only enforcement"
-    TDB rejects any SQL that is not a `SELECT` or `WITH` query at two levels:
+    TDB rejects any SQL that does not begin with `SELECT`, at two levels
+    (CTEs are not supported — see
+    [what SQL is accepted](../api/query.md#what-sql-is-accepted)):
     (1) the SQL validator, and (2) the Postgres `read_only = True` transaction flag.
     An `INSERT`, `UPDATE`, or `DELETE` returns HTTP 400 before it reaches the database.
 

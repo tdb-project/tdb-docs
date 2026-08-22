@@ -110,9 +110,63 @@ streaming and pagination remain a post-launch feature.
 
 ---
 
+## What SQL is accepted
+
+**The statement must begin with `SELECT`**, after leading whitespace and nothing
+else. That rule is stricter than "read-only", and the difference catches people
+out:
+
+| SQL | Accepted |
+|---|---|
+| `SELECT * FROM orders` | ✅ |
+| `select * from orders` (any case) | ✅ |
+| `SELECT * FROM orders -- comment` | ✅ trailing comments are fine |
+| `SELECT * FROM (SELECT …) t` | ✅ subqueries |
+| `SELECT … UNION SELECT …` | ✅ |
+| `SELECT * FROM t WHERE note = 'update pending'` | ✅ keywords inside string literals |
+| `WITH x AS (…) SELECT * FROM x` | ❌ **CTEs are not supported** |
+| `/* comment */ SELECT 1` | ❌ a *leading* comment |
+| `-- comment`<br>`SELECT 1` | ❌ a leading line comment |
+| `(SELECT 1)` | ❌ parenthesised |
+| `EXPLAIN SELECT 1` | ❌ |
+| `SHOW TABLES`, `VALUES (1)`, `TABLE orders` | ❌ |
+
+All rejections return HTTP 400 with
+`SQL validation failed: Only SELECT statements are allowed`.
+
+!!! warning "CTEs (`WITH … SELECT`) are rejected"
+
+    A common table expression is read-only and valid SQL, but TDB's validator
+    requires the statement to *start* with `SELECT`, so `WITH` is refused. Rewrite
+    the CTE as a subquery:
+
+    ```sql
+    -- rejected
+    WITH recent AS (SELECT * FROM orders WHERE created_at > '2026-01-01')
+    SELECT customer, COUNT(*) FROM recent GROUP BY customer
+
+    -- accepted
+    SELECT customer, COUNT(*)
+    FROM (SELECT * FROM orders WHERE created_at > '2026-01-01') recent
+    GROUP BY customer
+    ```
+
+### Multiple statements
+
+Semicolon-separated statements are accepted if each one is a `SELECT`, but
+**only the last result set is returned** — earlier statements run and their
+output is discarded. `SELECT 1 AS a; SELECT 2 AS b` returns `[{"b": 2}]`. Send
+one statement per request.
+
+A write keyword anywhere in the string is still rejected, including after a
+semicolon: `SELECT 1; DELETE FROM orders` returns 400 with
+`Blocked keyword: DELETE`.
+
+---
+
 ## Read-only enforcement
 
-TDB rejects SQL that is not a `SELECT` or `WITH` statement:
+TDB rejects SQL containing a write keyword:
 
 === "Bash"
 

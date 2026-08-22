@@ -190,7 +190,8 @@ Cautions when doing this:
 SQL Server has no session-level read-only flag equivalent to PostgreSQL's
 `conn.read_only` or MySQL's `transaction_read_only`. Two layers are used instead:
 
-1. **SQL validator** — TDB rejects any SQL that does not start with `SELECT` or `WITH`
+1. **SQL validator** — TDB rejects any SQL that does not start with `SELECT`
+   (CTEs are **not** supported — see [what SQL is accepted](../api/query.md#what-sql-is-accepted))
    before it reaches the database. Returns HTTP 400 with a clear error message.
 
 2. **Always-rollback transactions** — Every connection is opened with
