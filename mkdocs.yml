@@ -88,6 +88,7 @@ nav:
     - Splunk HEC: integrations/splunk.md
     - S3 audit archive: integrations/s3.md
   - Reference:
+    - CLI: reference/cli.md
     - Environment Variables: reference/environment-variables.md
   - Editions: pricing.md
 
