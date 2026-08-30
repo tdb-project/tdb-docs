@@ -10,6 +10,31 @@ tdb register    # register a CSV file as a source
 tdb query       # run a read-only SQL query
 ```
 
+!!! warning "The `tdb` command is not inside the Docker image"
+    The published container installs the runtime dependencies and serves the
+    app; it does **not** install the `tdb` console script, so
+    `docker exec … tdb query` will not work. If you followed the Docker
+    quickstart, drive the server with the [REST API](../api/query.md) — that is
+    the supported path, and the CLI is a convenience for source installs, not a
+    second interface.
+
+    To get the CLI, install from source:
+
+    ```bash
+    git clone https://github.com/tdb-project/tdb-community.git
+    cd tdb-community
+    pip install uv && uv sync
+    ```
+
+    It can then talk to **any** reachable TDB, including one running in a
+    container — point it with `TDB_URL`:
+
+    ```bash
+    export TDB_URL=http://localhost:8000
+    export TDB_API_KEYS=your-key
+    tdb query "SELECT * FROM data"
+    ```
+
 ## Environment
 
 | Variable | Purpose | Default |
