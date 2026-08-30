@@ -84,6 +84,30 @@ request is made.
     The CLI sends the path; it does not decide what is allowed. See
     [Environment Variables](environment-variables.md).
 
+!!! warning "`register` needs the path to exist on both machines"
+    The CLI checks the file exists **locally** before sending, and the server
+    then opens that same path **on its own filesystem**. When both are the same
+    machine this is invisible. When the CLI is talking to a container or a
+    remote host it is not: the path has to resolve, to the same file, on each
+    side.
+
+    For a containerised server that means a bind mount using the **same path
+    inside and out**, with the confinement directory pointed at it:
+
+    ```bash
+    docker run -d -p 8000:8000 \
+      -e TDB_API_KEYS=your-key \
+      -e TDB_ALLOWED_DATA_DIR=/srv/csv \
+      -v /srv/csv:/srv/csv \
+      ghcr.io/tdb-project/tdb-community:latest
+
+    tdb register /srv/csv/sales.csv --name sales
+    ```
+
+    `-v /srv/csv:/data` would **not** work: the CLI would send `/srv/csv/...`,
+    which does not exist in the container. `tdb query` has no such constraint —
+    it sends SQL, not paths.
+
 ---
 
 ## `tdb query`
