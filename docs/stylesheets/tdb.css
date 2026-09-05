@@ -1,105 +1,318 @@
 /*
- * TDB docs — alignment with the landing page at tdb.jiracorp.co.in.
+ * TDB docs — one visual system with the landing page at tdb.jiracorp.co.in.
  *
- * Deliberately small. Material's defaults are good; this only pulls the two
- * properties onto one palette and type rhythm so moving between them does not
- * feel like moving between two products. Anything that fights Material's own
- * layout belongs in an override template, not here.
+ * The landing page is dark, near-black (#0A0B0D), hairline-bordered, Inter +
+ * JetBrains Mono, indigo accent. Stock Material is none of those things, so a
+ * reader crossing from one to the other saw two different products. This makes
+ * the docs the same surface: same ground, same borders, same type rhythm, same
+ * code treatment.
+ *
+ * Dark is the default (see mkdocs.yml). Light is a real design too, not a
+ * fallback — it is what someone printing or reading in sunlight gets.
  */
 
+/* ============================ tokens ====================================== */
+
 :root {
-  --tdb-accent:      #4F5BD5;   /* indigo, on light */
-  --tdb-accent-dark: #818CF8;   /* lifted indigo, legible on near-black */
+  --tdb-radius:      10px;
+  --tdb-radius-lg:   14px;
   --md-text-font:    "Inter";
   --md-code-font:    "JetBrains Mono";
 }
 
-/* ---- dark scheme: match the landing page's near-black, not Material's navy -- */
+/* ---- light: off-white, hairlines, indigo. Not stock Material. ------------- */
+[data-md-color-scheme="default"] {
+  --tdb-bg:        #FFFFFF;
+  --tdb-bg-soft:   #FAFAFB;
+  --tdb-bg-inset:  #F5F6F8;
+  --tdb-line:      #E6E8EC;
+  --tdb-line-soft: #EEF0F3;
+  --tdb-ink:       #14161A;
+  --tdb-ink-dim:   #5B616E;
+  --tdb-accent:    #4F5BD5;
+
+  --md-default-bg-color:          var(--tdb-bg);
+  --md-default-fg-color:          var(--tdb-ink);
+  --md-default-fg-color--light:   var(--tdb-ink-dim);
+  --md-default-fg-color--lighter: #8B909C;
+  --md-primary-fg-color:          var(--tdb-bg);
+  --md-primary-bg-color:          var(--tdb-ink);
+  --md-accent-fg-color:           var(--tdb-accent);
+  --md-typeset-a-color:           var(--tdb-accent);
+  --md-code-bg-color:             var(--tdb-bg-inset);
+  --md-code-fg-color:             #2B303B;
+}
+
+/* ---- dark: the landing page's exact ground ------------------------------- */
 [data-md-color-scheme="slate"] {
   --md-hue: 220;
-  --md-default-bg-color:        #0A0B0D;
-  --md-default-bg-color--light: #101216;
-  --md-default-fg-color:        #E9EBEF;
-  --md-default-fg-color--light: #A2A9B4;
+  --tdb-bg:        #0A0B0D;
+  --tdb-bg-soft:   #101216;
+  --tdb-bg-inset:  #0D0F12;
+  --tdb-line:      #1C2027;
+  --tdb-line-soft: #16191F;
+  --tdb-ink:       #E9EBEF;
+  --tdb-ink-dim:   #A2A9B4;
+  --tdb-accent:    #818CF8;
+
+  --md-default-bg-color:          var(--tdb-bg);
+  --md-default-bg-color--light:   var(--tdb-bg-soft);
+  --md-default-fg-color:          var(--tdb-ink);
+  --md-default-fg-color--light:   var(--tdb-ink-dim);
   --md-default-fg-color--lighter: #6E7681;
-  --md-code-bg-color:           #0D0F12;
-  --md-code-fg-color:           #D6DAE1;
-  --md-primary-fg-color:        #12141A;
-  --md-accent-fg-color:         var(--tdb-accent-dark);
-  --md-typeset-a-color:         var(--tdb-accent-dark);
+  --md-primary-fg-color:          var(--tdb-bg);
+  --md-primary-bg-color:          var(--tdb-ink);
+  --md-accent-fg-color:           var(--tdb-accent);
+  --md-typeset-a-color:           var(--tdb-accent);
+  --md-code-bg-color:             var(--tdb-bg-inset);
+  --md-code-fg-color:             #D6DAE1;
+  --md-footer-bg-color:           var(--tdb-bg);
+  --md-footer-bg-color--dark:     var(--tdb-bg);
 }
 
-[data-md-color-scheme="slate"] .md-header,
-[data-md-color-scheme="slate"] .md-tabs {
-  background-color: #0D0F12;
-  border-bottom: 1px solid #1C2027;
-}
+/* ============================ chrome ====================================== */
 
-/* Hairline borders instead of Material's heavier separators. */
-[data-md-color-scheme="slate"] .md-typeset table:not([class]) th,
-[data-md-color-scheme="slate"] .md-typeset table:not([class]) td {
-  border-color: #1C2027;
+/* Header + tabs read as one blurred bar, like the landing page's nav. */
+.md-header {
+  background-color: color-mix(in srgb, var(--tdb-bg) 78%, transparent);
+  backdrop-filter: saturate(160%) blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  border-bottom: 1px solid var(--tdb-line);
+  box-shadow: none;
+  color: var(--tdb-ink);
 }
-[data-md-color-scheme="slate"] .md-typeset code,
-[data-md-color-scheme="slate"] .md-typeset pre > code {
-  border: 1px solid #1C2027;
+.md-tabs {
+  background-color: transparent;
+  border-bottom: 1px solid var(--tdb-line);
+  color: var(--tdb-ink-dim);
 }
+.md-tabs__link { opacity: 1; color: var(--tdb-ink-dim); font-size: .74rem; }
+.md-tabs__link:hover { color: var(--tdb-ink); }
+.md-tabs__link--active { color: var(--tdb-ink); font-weight: 600; }
+.md-header__title { font-weight: 600; letter-spacing: -.01em; }
 
-/* ---- typography: match the landing page's tighter display scale ------------ */
-.md-typeset h1,
+/* Search: a field, not a filled slab. */
+.md-search__form {
+  background-color: var(--tdb-bg-soft);
+  border: 1px solid var(--tdb-line);
+  border-radius: 9px;
+  box-shadow: none;
+}
+.md-search__form:hover { background-color: var(--tdb-bg-soft); border-color: var(--tdb-accent); }
+[data-md-toggle="search"]:checked ~ .md-header .md-search__form { border-radius: 9px 9px 0 0; }
+.md-search__input::placeholder { color: var(--md-default-fg-color--lighter); }
+
+/* Sidebars: quieter, with the active item marked by weight and a rule. */
+.md-sidebar { font-size: .72rem; }
+.md-nav__title { color: var(--md-default-fg-color--lighter); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; }
+.md-nav__link { color: var(--tdb-ink-dim); border-radius: 6px; }
+.md-nav__link:hover { color: var(--tdb-ink); }
+.md-nav__link--active,
+.md-nav__item .md-nav__link--active { color: var(--tdb-accent); font-weight: 600; }
+.md-nav--secondary .md-nav__link--active { border-left: 2px solid var(--tdb-accent); padding-left: .6rem; margin-left: -.6rem; }
+
+/* ============================ typography ================================== */
+
+.md-typeset { font-size: .78rem; line-height: 1.72; }
+.md-typeset h1 {
+  color: var(--tdb-ink);
+  font-weight: 700;
+  letter-spacing: -.028em;
+  font-size: 1.85rem;
+  line-height: 1.18;
+  margin: 0 0 .8rem;
+}
 .md-typeset h2 {
   font-weight: 700;
-  letter-spacing: -0.022em;
+  letter-spacing: -.022em;
+  font-size: 1.28rem;
+  line-height: 1.26;
+  margin: 2.2rem 0 .8rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--tdb-line-soft);
 }
-.md-typeset h1 { letter-spacing: -0.028em; }
-.md-typeset h3 { font-weight: 600; letter-spacing: -0.012em; }
+.md-typeset h3 { font-weight: 600; letter-spacing: -.012em; font-size: 1.02rem; margin-top: 1.6rem; }
+.md-typeset h4 { font-weight: 600; font-size: .86rem; }
+.md-typeset a { text-underline-offset: 3px; }
+.md-typeset a:hover { text-decoration: underline; }
 
-/* Inline code should read as code without shouting. */
+/* ============================ code ======================================== */
+
 .md-typeset code {
-  font-size: 0.86em;
+  font-size: .84em;
   border-radius: 5px;
-  padding: 0.12em 0.36em;
+  padding: .12em .38em;
+  border: 1px solid var(--tdb-line);
+  background-color: var(--tdb-bg-inset);
 }
-.md-typeset pre > code { border-radius: 10px; }
+.md-typeset pre > code {
+  border-radius: var(--tdb-radius);
+  padding: 1rem 1.05rem;
+  line-height: 1.72;
+}
+.md-typeset .highlight,
+.md-typeset pre {
+  border-radius: var(--tdb-radius);
+}
+.md-typeset .highlight > pre > code,
+.md-typeset .highlighttable .linenos { border: 1px solid var(--tdb-line); }
+.md-typeset .md-clipboard { color: var(--md-default-fg-color--lighter); }
+.md-typeset .md-clipboard:hover { color: var(--tdb-accent); }
 
-/* ---- tables: the API reference leans on these heavily ---------------------- */
+/* Tabbed code blocks (=== "macOS / Linux") — a real tab strip. */
+.md-typeset .tabbed-labels { box-shadow: none; border-bottom: 1px solid var(--tdb-line); }
+.md-typeset .tabbed-labels > label { font-size: .68rem; font-weight: 600; color: var(--tdb-ink-dim); }
+.md-typeset .tabbed-labels > label:hover { color: var(--tdb-accent); }
+.md-typeset .tabbed-set > input:checked + label { color: var(--tdb-accent); }
+
+/* ============================ tables ====================================== */
+
+/* The API reference is mostly tables, so they get the most attention. */
 .md-typeset table:not([class]) {
-  font-size: 0.78rem;
-  border-radius: 10px;
+  font-size: .7rem;
+  border: 1px solid var(--tdb-line);
+  border-radius: var(--tdb-radius);
   overflow: hidden;
+  box-shadow: none;
 }
 .md-typeset table:not([class]) th {
+  background-color: var(--tdb-bg-soft);
+  color: var(--tdb-ink);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: .01em;
+  border-bottom: 1px solid var(--tdb-line);
 }
+.md-typeset table:not([class]) td { border-top: 1px solid var(--tdb-line-soft); }
+.md-typeset table:not([class]) tr:hover { background-color: var(--tdb-bg-soft); }
 
-/* ---- admonitions: flatter, closer to the landing page's cards -------------- */
+/* ============================ admonitions ================================= */
+
 .md-typeset .admonition,
 .md-typeset details {
-  border-radius: 10px;
-  border-width: 1px;
+  border: 1px solid var(--tdb-line);
+  border-left-width: 3px;
+  border-radius: var(--tdb-radius);
   box-shadow: none;
-  font-size: 0.76rem;
+  font-size: .72rem;
+  background-color: var(--tdb-bg-soft);
 }
+.md-typeset .admonition-title,
+.md-typeset summary {
+  background-color: transparent;
+  font-weight: 600;
+  border: 0;
+}
+.md-typeset .admonition-title::before,
+.md-typeset summary::before { top: .5rem; }
 
-/* ---- buttons (used on the docs index) -------------------------------------- */
+/* ============================ buttons + cards ============================= */
+
 .md-typeset .md-button {
   border-radius: 9px;
   font-weight: 600;
+  font-size: .74rem;
+  padding: .5rem 1.1rem;
+  border-width: 1px;
   transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 .md-typeset .md-button--primary {
-  border-color: var(--tdb-accent);
   background-color: var(--tdb-accent);
+  border-color: var(--tdb-accent);
   color: #fff;
 }
-[data-md-color-scheme="slate"] .md-typeset .md-button--primary {
-  border-color: var(--tdb-accent-dark);
-  background-color: var(--tdb-accent-dark);
-  color: #0A0B0D;
+[data-md-color-scheme="slate"] .md-typeset .md-button--primary { color: #0A0B0D; }
+.md-typeset .md-button:not(.md-button--primary) { color: var(--tdb-ink); border-color: var(--tdb-line); }
+.md-typeset .md-button:not(.md-button--primary):hover { background-color: var(--tdb-bg-soft); border-color: var(--tdb-accent); color: var(--tdb-ink); }
+
+/* Grid cards (docs index) — same card treatment as the landing page. */
+.md-typeset .grid.cards > ul > li {
+  border: 1px solid var(--tdb-line);
+  border-radius: var(--tdb-radius-lg);
+  background-color: var(--tdb-bg-soft);
+  box-shadow: none;
+  padding: 1.1rem 1.15rem;
+  transition: border-color .15s ease;
+}
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--tdb-accent);
+  box-shadow: none;
 }
 
-/* Respect a reader who has asked for less motion. */
-@media (prefers-reduced-motion: reduce) {
-  .md-typeset .md-button { transition: none; }
+/* ============================ footer ====================================== */
+
+.md-footer { border-top: 1px solid var(--tdb-line); }
+.md-footer-meta { background-color: transparent; }
+.md-footer__link { opacity: .85; }
+.md-footer__link:hover { opacity: 1; }
+.md-copyright { color: var(--md-default-fg-color--lighter); }
+
+/* ============================ misc ======================================== */
+
+.md-typeset hr { border-bottom: 1px solid var(--tdb-line); }
+.md-typeset kbd {
+  background-color: var(--tdb-bg-inset);
+  border: 1px solid var(--tdb-line);
+  box-shadow: none;
+  border-radius: 5px;
 }
+.md-typeset blockquote {
+  border-left: 2px solid var(--tdb-accent);
+  color: var(--tdb-ink-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-typeset .md-button,
+  .md-typeset .grid.cards > ul > li { transition: none; }
+}
+
+/* ---- admonition accents ---------------------------------------------------
+ * Material's defaults are fully saturated (cyan info, lime tip) and read as
+ * loud against a near-black ground next to an indigo accent. These keep the
+ * semantic distinction — you still know a danger from a note at a glance —
+ * but pull each hue into the same tonal range as the rest of the page.
+ *
+ * Per scheme, because they must be: the lifted hues that carry on near-black
+ * are far too pale on white. The light set is darkened to stay readable.
+ */
+[data-md-color-scheme="slate"] { --md-admonition-bg-color: var(--tdb-bg-soft); }
+
+.md-typeset .admonition.note,    .md-typeset details.note    { border-left-color: #7C8CFF; }
+.md-typeset .admonition.info,    .md-typeset details.info    { border-left-color: #5EAECD; }
+.md-typeset .admonition.tip,     .md-typeset details.tip     { border-left-color: #4FB286; }
+.md-typeset .admonition.warning, .md-typeset details.warning { border-left-color: #C99A32; }
+.md-typeset .admonition.danger,  .md-typeset details.danger  { border-left-color: #D9536F; }
+
+/* dark — lifted hues, legible on #0A0B0D */
+[data-md-color-scheme="slate"] {
+  --tdb-adm-note: #A5B0FF;
+  --tdb-adm-info: #8FCBE0;
+  --tdb-adm-tip:  #7EE787;
+  --tdb-adm-warn: #E3B341;
+  --tdb-adm-danger: #F08098;
+}
+/* light — darkened, since the lifted set fails contrast on white */
+[data-md-color-scheme="default"] {
+  --tdb-adm-note: #3F4BC4;
+  --tdb-adm-info: #256B85;
+  --tdb-adm-tip:  #226B49;
+  --tdb-adm-warn: #7E570A;
+  --tdb-adm-danger: #A32F46;
+}
+
+.md-typeset .note    > .admonition-title, .md-typeset .note    > summary { color: var(--tdb-adm-note); }
+.md-typeset .info    > .admonition-title, .md-typeset .info    > summary { color: var(--tdb-adm-info); }
+.md-typeset .tip     > .admonition-title, .md-typeset .tip     > summary { color: var(--tdb-adm-tip); }
+.md-typeset .warning > .admonition-title, .md-typeset .warning > summary { color: var(--tdb-adm-warn); }
+.md-typeset .danger  > .admonition-title, .md-typeset .danger  > summary { color: var(--tdb-adm-danger); }
+
+.md-typeset .note    > .admonition-title::before, .md-typeset .note    > summary::before { background-color: var(--tdb-adm-note); }
+.md-typeset .info    > .admonition-title::before, .md-typeset .info    > summary::before { background-color: var(--tdb-adm-info); }
+.md-typeset .tip     > .admonition-title::before, .md-typeset .tip     > summary::before { background-color: var(--tdb-adm-tip); }
+.md-typeset .warning > .admonition-title::before, .md-typeset .warning > summary::before { background-color: var(--tdb-adm-warn); }
+.md-typeset .danger  > .admonition-title::before, .md-typeset .danger  > summary::before { background-color: var(--tdb-adm-danger); }
+
+/* Inline code in a table must not break mid-identifier — `source_id` was
+   rendering as "source_i / d" in the narrow Field column, which reads as a
+   different parameter name. Material already wraps tables in a horizontal
+   scroll container, so keeping tokens whole costs nothing. */
+.md-typeset table:not([class]) code { white-space: nowrap; }
