@@ -45,9 +45,9 @@ where you run the command.
 
 !!! tip "Image tags"
     `:latest` always points to the newest **stable release** (not the tip of `main`). For
-    production, pin an immutable release tag like `:0.4.2` — or a `@sha256:` digest;
-    `:0.4` floats to the newest patch within a minor. Pull `:edge` to try the latest
-    unreleased `main` build.
+    production, pin an immutable release tag like `:0.6.0` — or a `@sha256:` digest, which
+    is the only tag that cannot move under you; `:0.6` floats to the newest patch within
+    that minor. Pull `:edge` to try the latest unreleased `main` build.
 
 Verify it's up (use `curl.exe` on Windows — see the note below):
 

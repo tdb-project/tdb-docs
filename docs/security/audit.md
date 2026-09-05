@@ -264,12 +264,18 @@ Rotation is evaluated when an entry is written and once at startup. Set either
 variable, both, or neither; whichever threshold is crossed first seals the log.
 You can also seal on demand with `POST /v1/audit/rotate` (admin).
 
-!!! warning "Why you should enable this"
-    Every audit write reads the live log to recover the previous hash. In 0.4.0
-    that cost became independent of history for a *running* server, but the live
-    file is still read once at startup — a multi-gigabyte log makes restarts slow
-    and backups unwieldy. Sizing the live log with `TDB_AUDIT_ROTATE_MAX_BYTES`
-    keeps both bounded.
+!!! tip "Why you should enable this"
+    **Not for speed — that argument expired in 0.8.0.** Every audit write needs the
+    previous entry's hash. 0.4.0 made that independent of history for a running
+    server, and 0.8.0 made the first write after a restart independent of it too, by
+    reading the chain head backwards from the end of the file (measured at 500,000
+    entries: 4.3 s before, under a millisecond after, and flat as the log grows).
+    A large live log no longer slows startup or the first request.
+
+    Enable rotation for the reasons that remain: **a multi-gigabyte single file is
+    awkward to back up, copy and retain**, and sealed segments are what let you
+    prune old history while keeping every remaining segment independently
+    verifiable. Size the live log to whatever your backup story wants.
 
 ### Verifying across segments
 

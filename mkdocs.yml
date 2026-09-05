@@ -7,13 +7,22 @@ docs_dir: docs
 theme:
   name: material
   palette:
-    - scheme: default
+    # Follow the reader's OS setting first, then let them override either way.
+    # The landing page (tdb.jiracorp.co.in) is dark-only, so a reader arriving
+    # from it in dark mode stays in dark mode rather than being flashed white.
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Follow system theme
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       primary: indigo
       accent: indigo
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: indigo
       accent: indigo
       toggle:
@@ -27,11 +36,18 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.tracking
+    - navigation.footer
     - search.highlight
     - search.share
+    - search.suggest
     - content.code.copy
     - content.code.annotate
+    - content.tooltips
     - toc.follow
+
+extra_css:
+  - stylesheets/tdb.css
 
 markdown_extensions:
   - admonition

@@ -1,0 +1,105 @@
+/*
+ * TDB docs — alignment with the landing page at tdb.jiracorp.co.in.
+ *
+ * Deliberately small. Material's defaults are good; this only pulls the two
+ * properties onto one palette and type rhythm so moving between them does not
+ * feel like moving between two products. Anything that fights Material's own
+ * layout belongs in an override template, not here.
+ */
+
+:root {
+  --tdb-accent:      #4F5BD5;   /* indigo, on light */
+  --tdb-accent-dark: #818CF8;   /* lifted indigo, legible on near-black */
+  --md-text-font:    "Inter";
+  --md-code-font:    "JetBrains Mono";
+}
+
+/* ---- dark scheme: match the landing page's near-black, not Material's navy -- */
+[data-md-color-scheme="slate"] {
+  --md-hue: 220;
+  --md-default-bg-color:        #0A0B0D;
+  --md-default-bg-color--light: #101216;
+  --md-default-fg-color:        #E9EBEF;
+  --md-default-fg-color--light: #A2A9B4;
+  --md-default-fg-color--lighter: #6E7681;
+  --md-code-bg-color:           #0D0F12;
+  --md-code-fg-color:           #D6DAE1;
+  --md-primary-fg-color:        #12141A;
+  --md-accent-fg-color:         var(--tdb-accent-dark);
+  --md-typeset-a-color:         var(--tdb-accent-dark);
+}
+
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: #0D0F12;
+  border-bottom: 1px solid #1C2027;
+}
+
+/* Hairline borders instead of Material's heavier separators. */
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th,
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) td {
+  border-color: #1C2027;
+}
+[data-md-color-scheme="slate"] .md-typeset code,
+[data-md-color-scheme="slate"] .md-typeset pre > code {
+  border: 1px solid #1C2027;
+}
+
+/* ---- typography: match the landing page's tighter display scale ------------ */
+.md-typeset h1,
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+.md-typeset h1 { letter-spacing: -0.028em; }
+.md-typeset h3 { font-weight: 600; letter-spacing: -0.012em; }
+
+/* Inline code should read as code without shouting. */
+.md-typeset code {
+  font-size: 0.86em;
+  border-radius: 5px;
+  padding: 0.12em 0.36em;
+}
+.md-typeset pre > code { border-radius: 10px; }
+
+/* ---- tables: the API reference leans on these heavily ---------------------- */
+.md-typeset table:not([class]) {
+  font-size: 0.78rem;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.md-typeset table:not([class]) th {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ---- admonitions: flatter, closer to the landing page's cards -------------- */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 10px;
+  border-width: 1px;
+  box-shadow: none;
+  font-size: 0.76rem;
+}
+
+/* ---- buttons (used on the docs index) -------------------------------------- */
+.md-typeset .md-button {
+  border-radius: 9px;
+  font-weight: 600;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.md-typeset .md-button--primary {
+  border-color: var(--tdb-accent);
+  background-color: var(--tdb-accent);
+  color: #fff;
+}
+[data-md-color-scheme="slate"] .md-typeset .md-button--primary {
+  border-color: var(--tdb-accent-dark);
+  background-color: var(--tdb-accent-dark);
+  color: #0A0B0D;
+}
+
+/* Respect a reader who has asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .md-typeset .md-button { transition: none; }
+}
