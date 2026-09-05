@@ -131,7 +131,8 @@ Cautions when doing this:
 Read-only access is enforced at two independent layers:
 
 1. **SQL validator** — TDB rejects any SQL that does not start with `SELECT`
-   (CTEs are **not** supported — see [what SQL is accepted](../api/query.md#what-sql-is-accepted))
+   or `WITH`, and any SQL containing a write keyword (see
+   [what SQL is accepted](../api/query.md#what-sql-is-accepted)),
    before it reaches the database. Returns HTTP 400 with a clear error message.
 
 2. **Transaction-level read-only** — Every Postgres connection is opened with

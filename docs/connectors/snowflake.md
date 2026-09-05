@@ -158,7 +158,8 @@ there is no rollback safety net at the connector level.
 Two layers are used instead:
 
 1. **SQL validator** — TDB rejects any SQL that does not start with `SELECT`
-   (CTEs are **not** supported — see [what SQL is accepted](../api/query.md#what-sql-is-accepted))
+   or `WITH`, and any SQL containing a write keyword (see
+   [what SQL is accepted](../api/query.md#what-sql-is-accepted)),
    before it reaches Snowflake. Returns HTTP 400 with a clear error message.
 
 2. **SELECT-only role** (strongly recommended) — Because there is no connector-level

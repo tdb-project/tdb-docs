@@ -191,8 +191,18 @@ SQL Server has no session-level read-only flag equivalent to PostgreSQL's
 `conn.read_only` or MySQL's `transaction_read_only`. Two layers are used instead:
 
 1. **SQL validator** — TDB rejects any SQL that does not start with `SELECT`
-   (CTEs are **not** supported — see [what SQL is accepted](../api/query.md#what-sql-is-accepted))
+   or `WITH`, and any SQL containing a write keyword (see
+   [what SQL is accepted](../api/query.md#what-sql-is-accepted)),
    before it reaches the database. Returns HTTP 400 with a clear error message.
+
+    !!! note "CTEs and the row ceiling on SQL Server"
+
+        A `WITH … SELECT` query is accepted, but the row ceiling is **not**
+        pushed into it as a `TOP` clause — `TOP` has to sit on the statement's
+        final `SELECT`, and locating that means parsing the statement. The
+        response is still capped and `truncated` is still accurate; SQL Server
+        simply does more work before the rows are cut. Add your own `TOP` to a
+        large CTE if that matters.
 
 2. **Always-rollback transactions** — Every connection is opened with
    `autocommit=False`. After every query — including schema introspection and

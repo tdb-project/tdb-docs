@@ -112,9 +112,9 @@ streaming and pagination remain a post-launch feature.
 
 ## What SQL is accepted
 
-**The statement must begin with `SELECT`**, after leading whitespace and nothing
-else. That rule is stricter than "read-only", and the difference catches people
-out:
+**The statement must begin with `SELECT` or `WITH`**, ignoring leading
+whitespace and leading comments. That rule is stricter than "read-only", and the
+difference catches people out:
 
 | SQL | Accepted |
 |---|---|
@@ -124,32 +124,43 @@ out:
 | `SELECT * FROM (SELECT …) t` | ✅ subqueries |
 | `SELECT … UNION SELECT …` | ✅ |
 | `SELECT * FROM t WHERE note = 'update pending'` | ✅ keywords inside string literals |
-| `WITH x AS (…) SELECT * FROM x` | ❌ **CTEs are not supported** |
-| `/* comment */ SELECT 1` | ❌ a *leading* comment |
-| `-- comment`<br>`SELECT 1` | ❌ a leading line comment |
+| `WITH x AS (…) SELECT * FROM x` | ✅ CTEs, **from 0.6.0 / 0.10.0** |
+| `WITH RECURSIVE t(n) AS (…) SELECT * FROM t` | ✅ recursive CTEs |
+| `/* comment */ SELECT 1` | ✅ a leading comment, **from 0.6.0 / 0.10.0** |
+| `-- comment`<br>`SELECT 1` | ✅ a leading line comment |
+| `WITH x AS (DELETE FROM t RETURNING *) SELECT * FROM x` | ❌ `Blocked keyword: DELETE` |
 | `(SELECT 1)` | ❌ parenthesised |
 | `EXPLAIN SELECT 1` | ❌ |
 | `SHOW TABLES`, `VALUES (1)`, `TABLE orders` | ❌ |
 
-All rejections return HTTP 400 with
-`SQL validation failed: Only SELECT statements are allowed`.
+Rejections return HTTP 400. A statement that opens with the wrong token gives
+`SQL validation failed: Only SELECT and WITH statements are allowed`; one
+containing a write keyword gives `Blocked keyword: <keyword>` instead, and that
+check runs first.
 
-!!! warning "CTEs (`WITH … SELECT`) are rejected"
+!!! info "CTEs are accepted from community 0.6.0 / enterprise 0.10.0"
 
-    A common table expression is read-only and valid SQL, but TDB's validator
-    requires the statement to *start* with `SELECT`, so `WITH` is refused. Rewrite
+    Earlier versions refused `WITH … SELECT` — the validator required the
+    statement to *start* with `SELECT`. If you are on an older release, rewrite
     the CTE as a subquery:
 
     ```sql
-    -- rejected
-    WITH recent AS (SELECT * FROM orders WHERE created_at > '2026-01-01')
-    SELECT customer, COUNT(*) FROM recent GROUP BY customer
-
-    -- accepted
+    -- accepted everywhere
     SELECT customer, COUNT(*)
     FROM (SELECT * FROM orders WHERE created_at > '2026-01-01') recent
     GROUP BY customer
     ```
+
+    A **data-modifying** CTE is still refused on every version, by the
+    write-keyword scan rather than by the opening token:
+    `WITH w AS (INSERT INTO t … RETURNING *) SELECT * FROM w` returns 400 with
+    `Blocked keyword: INSERT`.
+
+    On **SQL Server** the row ceiling is not pushed into a CTE as a `TOP`
+    clause, because `TOP` has to sit on the statement's final `SELECT`. The
+    response is capped and `truncated` is still accurate — the source simply
+    does more work before the rows are cut. Every other source pushes a `LIMIT`
+    down as usual.
 
 ### Multiple statements
 

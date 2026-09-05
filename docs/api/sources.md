@@ -501,6 +501,42 @@ GET /v1/sources/{ref}/annotations
 
 An empty `table` or `column` means "not scoped to one".
 
+#### Finding annotations that have gone stale
+
+Targets are checked when they are written, but a schema moves underneath them.
+A renamed or dropped column leaves an annotation that matches nothing and says
+nothing — the description just stops appearing in `schema_source`.
+
+Add `?validate=true` to re-run the write-time check against the live schema:
+
+```http
+GET /v1/sources/{ref}/annotations?validate=true
+```
+
+```json
+{
+  "source_id": "3f1c...",
+  "annotations": [
+    {
+      "table": "", "column": "cust_stat_cd_01",
+      "description": "Account status. A=active, C=closed, S=suspended.",
+      "stale": true,
+      "problem": "column 'cust_stat_cd_01' does not exist (available: ['amt', 'status_code'])"
+    }
+  ],
+  "validated": true,
+  "stale_count": 1
+}
+```
+
+It is **off by default** because it turns a registry read into a round-trip to
+the source; without the flag the response is exactly as shown above, with no
+`stale`, `validated` or `stale_count` fields.
+
+`validated: false` means the source could not be read — never that nothing
+matched. Nothing is flagged stale on that path: an unreachable database is not
+evidence that an annotation is wrong. This is the same rule the write path uses.
+
 ### Delete annotations
 
 ```http

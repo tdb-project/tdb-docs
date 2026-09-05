@@ -315,9 +315,9 @@ Expected response:
 ```
 
 !!! info "Read-only enforcement"
-    TDB rejects any SQL that does not begin with `SELECT`, at two levels
-    (CTEs are not supported — see
-    [what SQL is accepted](../api/query.md#what-sql-is-accepted)):
+    TDB rejects any SQL that does not begin with `SELECT` or `WITH`, and any
+    SQL containing a write keyword (see
+    [what SQL is accepted](../api/query.md#what-sql-is-accepted)), at two levels:
     (1) the SQL validator, and (2) the Postgres `read_only = True` transaction flag.
     An `INSERT`, `UPDATE`, or `DELETE` returns HTTP 400 before it reaches the database.
 
@@ -360,7 +360,7 @@ Expected response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.9.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.10.0"}
   }
 }
 ```
