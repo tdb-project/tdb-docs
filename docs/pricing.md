@@ -1,3 +1,11 @@
+---
+hide:
+  # Single-page tab: with navigation.tabs this page is already its own tab, so
+  # the left sidebar renders one entry repeating the tab's label. Hiding it
+  # drops the duplicate and gives the content the full width.
+  - navigation
+---
+
 # Editions
 
 TDB is an open-core product. The community edition is **free, forever** under AGPLv3. The paid editions add the connectors, auth, and compliance features you need to run TDB in production for a real team.

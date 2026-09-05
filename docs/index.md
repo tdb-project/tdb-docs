@@ -1,3 +1,12 @@
+---
+hide:
+  # With navigation.tabs, "Home" is already a tab. The left sidebar on this page
+  # then renders a single entry that says "Home" too, so the landing page of the
+  # docs showed the same link twice, side by side. Hiding the sidebar here drops
+  # the duplicate and gives the feature cards the full content width.
+  - navigation
+---
+
 # TDB Enterprise
 
 **The Data-Bridge** is a self-hosted, auditable API layer that turns your databases
