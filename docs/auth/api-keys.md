@@ -73,7 +73,7 @@ POST /v1/auth/keys
 | `name` | string (1–100 chars) | Yes | Human-readable label |
 | `expires_in_days` | integer > 0 | No | Key auto-expires after this many days. Omit for no expiry. |
 | `rate_limit` | integer > 0 | No | Requests per minute. Omit to use the server default (`TDB_DEFAULT_RATE_LIMIT`, default 60). |
-| `role` | `"read"`, `"readwrite"`, or `"admin"` | No | RBAC role. Default: `"admin"`. See [RBAC →](../security/rbac.md). |
+| `role` | `"read"`, `"readwrite"`, or `"admin"` | No | RBAC role. Default: `"read"` (from 0.11.0; `"admin"` before). Existing keys keep their role. See [RBAC →](../security/rbac.md). |
 
 **Response (HTTP 201):**
 

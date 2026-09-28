@@ -89,3 +89,24 @@ published as GitHub Security Advisories and summarized here. For the Community
 Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
+
+### 2026-09-28 — SQL on a CSV source could read files outside the data directory
+
+**Fixed in community 0.7.0 and enterprise 0.11.0. Affects every earlier
+release.** DuckDB resolves file paths written *inside* a query — for example
+`read_csv('/etc/passwd')` — and `TDB_ALLOWED_DATA_DIR` only ever checked the
+path a source was registered with. A caller able to query a CSV source (in
+enterprise, any role, `read` included) could therefore read any file the server
+process could read. Exploiting it requires a valid API key or token.
+
+The fixed releases confine SQL to the source's data directory, disable
+extension loading and lock the engine's settings. A refused read returns 403
+and is audited as `sql_file_access`. They also refuse a query containing more
+than one statement, and in enterprise a key created without a `role` is now
+`read` rather than `admin`.
+
+**Action:** upgrade. If you ran an earlier release with keys held by people or
+agents you would not give shell-level file read to, review the audit log for
+`read_csv`, `read_text` or other file paths in `sql`, and rotate any secret
+stored in a file the server process could read.
+

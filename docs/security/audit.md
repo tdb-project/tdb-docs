@@ -82,6 +82,7 @@ Two fields describe the refusal:
 | `prompt_injection_detected` | The prompt-injection filter rejected the input |
 | `source_not_found` | The referenced source does not exist |
 | `path_outside_allowed_dir` | A CSV path resolved outside `TDB_ALLOWED_DATA_DIR` |
+| `sql_file_access` | The SQL itself named a file outside the source's data directory (from community 0.7.0 / enterprise 0.11.0) |
 | `file_unreadable` | The CSV backing a source is missing or unreadable |
 | `unsupported_source_type` | The `source_type` is not a registered connector |
 | `registry_conflict` | The source name is already taken |

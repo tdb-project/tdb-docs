@@ -485,6 +485,9 @@ grants nothing beyond what was issued.
   persisted DuckDB database file. DuckDB reads the CSV file directly per query.
 - CSV file access is **confined to `TDB_ALLOWED_DATA_DIR`** (default `/data`); symlinks
   and `..` are resolved and paths outside are rejected. Keep that mount read-only.
+  From 0.11.0 this also bounds the **SQL**: DuckDB refuses any file outside that
+  directory named inside a query, extensions cannot be loaded, and a query cannot
+  change the engine's settings. A query may contain only one statement.
 - Queries are **`SELECT`-only**, enforced by the SQL validator before execution; the
   CSV path is passed through DuckDB's `read_csv` Python API (never string-interpolated),
   which prevents path/SQL injection.

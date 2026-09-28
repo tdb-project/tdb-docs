@@ -164,14 +164,26 @@ check runs first.
 
 ### Multiple statements
 
-Semicolon-separated statements are accepted if each one is a `SELECT`, but
-**only the last result set is returned** — earlier statements run and their
-output is discarded. `SELECT 1 AS a; SELECT 2 AS b` returns `[{"b": 2}]`. Send
-one statement per request.
+**One statement per request, from community 0.7.0 / enterprise 0.11.0.**
+`SELECT 1; SELECT 2` returns 400 with `Only one statement per query is
+allowed`, and is audited as `sql_validation_failed`. A `;` inside a string
+literal or comment does not count. Send the statement **without** a trailing
+`;` — the validator accepts one, but a query with no `LIMIT` of its own then
+fails when TDB appends the row cap after it (a known issue in every release).
 
-A write keyword anywhere in the string is still rejected, including after a
-semicolon: `SELECT 1; DELETE FROM orders` returns 400 with
-`Blocked keyword: DELETE`.
+Earlier releases accepted several statements, ran them all and returned only
+the last result set. Only the first statement's opening keyword was checked, so
+a second statement could be something the write-keyword list does not name —
+which is why this is now refused rather than documented.
+
+### Files are not readable from SQL
+
+A CSV query can read only files in the source's data directory
+(`TDB_ALLOWED_DATA_DIR`, or the CSV's own directory when that is unset), **from
+community 0.7.0 / enterprise 0.11.0**. `SELECT * FROM read_csv('/etc/passwd')`
+returns **403** and is audited as `sql_file_access`. Earlier releases let DuckDB
+open any path written in the SQL — see the
+[security advisory](../security/updates.md#where-advisories-are-published).
 
 ---
 
