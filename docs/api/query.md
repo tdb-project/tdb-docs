@@ -167,9 +167,9 @@ check runs first.
 **One statement per request, from community 0.7.0 / enterprise 0.11.0.**
 `SELECT 1; SELECT 2` returns 400 with `Only one statement per query is
 allowed`, and is audited as `sql_validation_failed`. A `;` inside a string
-literal or comment does not count. Send the statement **without** a trailing
-`;` — the validator accepts one, but a query with no `LIMIT` of its own then
-fails when TDB appends the row cap after it (a known issue in every release).
+literal or comment does not count, and a single trailing `;` is fine. (Before
+community 0.7.1 / enterprise 0.11.1 a trailing `;` on a query with no `LIMIT`
+of its own failed with a 500, because the row cap was appended after it.)
 
 Earlier releases accepted several statements, ran them all and returned only
 the last result set. Only the first statement's opening keyword was checked, so
