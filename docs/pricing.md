@@ -75,6 +75,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     - All Community features, plus:
     - Named views (YAML-defined, typed parameters)
+    - [PostgreSQL wire gateway](integrations/postgres-wire.md) — existing Postgres clients, BI tools and drivers connect to TDB unchanged apart from host, port and password, governed and audited
 
     **MCP**
 
@@ -164,6 +165,7 @@ The two commercial editions ship the **same product**. Nothing in the running se
 | CORS configuration | ❌ | ✅ | ✅ |
 | **Query & MCP** | | | |
 | REST query endpoint (SELECT) | ✅ | ✅ | ✅ |
+| PostgreSQL wire gateway (unchanged Postgres clients) | ❌ | ✅ | ✅ |
 | Row limit per response † | 1,000 | 1,000 | 1,000 |
 | MCP tools | `query_source` | All 7 | All 7 |
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |

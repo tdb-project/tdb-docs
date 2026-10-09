@@ -348,6 +348,11 @@ curl -fsS -X POST http://localhost:8000/v1/sources \
   (403, audited `privileged_db_role`). A read-only session does not stop such a role
   reading host files, so every API key allowed to query the source would inherit that
   reach. Plan the role before upgrading; `TDB_ALLOW_PRIVILEGED_DB_ROLE=true` overrides.
+- **The PostgreSQL wire gateway (from 0.14.0) is off unless `TDB_PG_PORT` is set.**
+  When on: open that port only to the clients that need it, give TDB a certificate
+  they trust (`TDB_PG_TLS_CERT`/`TDB_PG_TLS_KEY`), run a single worker process, and
+  budget one source-database session per connected client (`TDB_PG_MAX_CLIENTS`).
+  See [PostgreSQL wire gateway](../integrations/postgres-wire.md).
 - **For PostgreSQL over a network you do not control, set `"sslmode": "verify-full"`**
   and mount the CA as `sslrootcert`. From 0.12.0 TDB never sends the password in
   cleartext to a server whose identity it has not verified.

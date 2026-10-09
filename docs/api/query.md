@@ -126,6 +126,7 @@ difference catches people out:
 | `SELECT * FROM t WHERE note = 'update pending'` | ✅ keywords inside string literals |
 | `SELECT replace(name, 'a', 'b') FROM t` | ✅ the `replace()` string function, **from 0.8.0 / 0.13.0** (earlier: `Blocked keyword: replace`) |
 | `REPLACE INTO t VALUES (…)` | ❌ MySQL's `REPLACE` statement, in any form |
+| `SELECT has_table_privilege(t, 'UPDATE') AS update` | ✅ a write keyword as an alias, **from 0.9.0 / 0.14.0** |
 | `WITH x AS (…) SELECT * FROM x` | ✅ CTEs, **from 0.6.0 / 0.10.0** |
 | `WITH RECURSIVE t(n) AS (…) SELECT * FROM t` | ✅ recursive CTEs |
 | `/* comment */ SELECT 1` | ✅ a leading comment, **from 0.6.0 / 0.10.0** |

@@ -28,7 +28,7 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 
 | Field | Description |
 |---|---|
-| `event` | `"query"` for an executed query, `"denied"` for a refused attempt |
+| `event` | `"query"` for an executed query, `"denied"` for a refused attempt; `"query_started"` precedes each statement on the [wire gateway](../integrations/postgres-wire.md#audit-trail) (enterprise, from 0.14.0) |
 | `ts` | ISO 8601 timestamp (UTC) of when the query executed |
 | `source_id` | UUID of the registered source that was queried |
 | `sql` | The SQL statement executed (or `<view:name>` for named views) |
@@ -37,6 +37,7 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 | `seq` | Monotonically increasing sequence number, starting from 1 |
 | `prev_hash` | SHA-256 hash of the previous entry (genesis entry uses `000...0`) |
 | `hash` | SHA-256 hash of this entry (computed over all fields except `hash` itself) |
+| `transport`, `client_user`, `statement_kind`, `params`, `outcome`, `sqlstate` | Wire gateway entries only — see [the gateway's audit trail](../integrations/postgres-wire.md#audit-trail) |
 
 ---
 
@@ -87,6 +88,9 @@ Two fields describe the refusal:
 | `unsupported_source_type` | The `source_type` is not a registered connector |
 | `registry_conflict` | The source name is already taken |
 | `tool_not_permitted_<tool>` | The key's `allowed_tools` scope excludes this MCP tool — or, from enterprise 0.12.0, the REST route equivalent to it (see [RBAC](rbac.md#restricting-tool-access)) |
+| `wire_requires_read_role` | Wire gateway: the key or token is not `read`-role, or is a static admin key |
+| `row_cap_exceeded` | Wire gateway: a result exceeded `TDB_PG_MAX_ROWS`; the connection was closed |
+| `statement_after_transaction_end` | Wire gateway: a statement followed `COMMIT`/`ROLLBACK` in the same batch |
 | `privileged_db_role` | Enterprise, from 0.12.0: the source connects as a database role that can reach the database server's files or programs (see [connectors](../connectors/postgresql.md#use-a-least-privileged-role)) |
 
 To review refusals only:

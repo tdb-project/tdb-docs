@@ -102,6 +102,7 @@ nav:
   - Observability:
     - Prometheus Metrics: observability/metrics.md
   - Integrations:
+    - PostgreSQL wire gateway: integrations/postgres-wire.md
     - Splunk HEC: integrations/splunk.md
     - S3 audit archive: integrations/s3.md
   - Reference:
