@@ -93,7 +93,9 @@ in the open-source repository.
 ### 2026-10-09 — The read-only check could be shown one statement while the engine ran several
 
 **Fixed in community 0.7.2 and enterprise 0.12.0. Affects every earlier
-release.** The SQL validator decided where string literals and comments end
+release.** Advisory
+[GHSA-qmj5-8fv9-h74r](https://github.com/tdb-project/tdb-community/security/advisories/GHSA-qmj5-8fv9-h74r).
+The SQL validator decided where string literals and comments end
 the ANSI way only, while the engines TDB runs on also read dollar-quoted
 strings, backslash escapes and nested or engine-specific comments. Quoted
 carefully, SQL could therefore carry a second statement past the
