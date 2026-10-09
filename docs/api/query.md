@@ -124,6 +124,8 @@ difference catches people out:
 | `SELECT * FROM (SELECT …) t` | ✅ subqueries |
 | `SELECT … UNION SELECT …` | ✅ |
 | `SELECT * FROM t WHERE note = 'update pending'` | ✅ keywords inside string literals |
+| `SELECT replace(name, 'a', 'b') FROM t` | ✅ the `replace()` string function, **from 0.8.0 / 0.13.0** (earlier: `Blocked keyword: replace`) |
+| `REPLACE INTO t VALUES (…)` | ❌ MySQL's `REPLACE` statement, in any form |
 | `WITH x AS (…) SELECT * FROM x` | ✅ CTEs, **from 0.6.0 / 0.10.0** |
 | `WITH RECURSIVE t(n) AS (…) SELECT * FROM t` | ✅ recursive CTEs |
 | `/* comment */ SELECT 1` | ✅ a leading comment, **from 0.6.0 / 0.10.0** |
