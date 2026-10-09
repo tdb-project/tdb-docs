@@ -90,6 +90,19 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-10-09 — pip removed from the images
+
+**Community 0.9.1 and enterprise 0.14.1.** The `python:3.12-slim` base image
+ships pip 25.0.1, which image scanners report for six CVEs, among them
+CVE-2026-13346 (GHSA-qwm4-qh6w-59xr). **TDB was not exposed**: it never runs
+pip, because its dependencies are installed with uv at build time. Rather than
+upgrade a tool nothing uses, the images no longer contain pip, including
+`ensurepip`'s bundled copy. A Trivy scan of the rebuilt images reports no
+Python-package findings.
+
+**Action:** upgrade if your image scanner reports pip in a TDB image. Nothing
+else changes.
+
 ### 2026-10-09 — The read-only check could be shown one statement while the engine ran several
 
 **Fixed in community 0.7.2 and enterprise 0.12.0. Affects every earlier

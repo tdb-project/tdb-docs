@@ -20,7 +20,15 @@ The database name selects the TDB source: a source **named** `sales`, or, if
 there is none, the single PostgreSQL source whose `dbname` is `sales`.
 
 Verified unchanged with psql, psycopg 3, psycopg2 + SQLAlchemy + pandas,
-pgjdbc 42.7 (and so DBeaver and most JVM tools) and Metabase.
+pgjdbc 42.7, DBeaver (its web edition, CloudBeaver 24.3, which runs the same
+engine and driver as the desktop app) and Metabase.
+
+!!! note "Upgrade to 0.14.1 for DBeaver, Metabase and other JDBC tools"
+    On 0.14.0, a statement TDB refused over the extended protocol — which pgjdbc
+    always uses — reached the client as `SQL Error [22012]: division by zero`
+    instead of TDB's refusal. It was refused and audited all the same, and
+    nothing was written; only the message was wrong. Fixed in 0.14.1, where
+    DBeaver shows `SQL Error [42501]: … SQL validation failed: …`.
 
 ---
 
