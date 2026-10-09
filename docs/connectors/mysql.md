@@ -236,6 +236,25 @@ want to restrict connections by source IP.
 
 TDB does not need `INSERT`, `UPDATE`, `DELETE`, `CREATE`, or any other privilege.
 
+### Use a least-privileged role
+
+**From enterprise 0.12.0, TDB refuses to query as a user holding the global
+`FILE` privilege** (which `root` and any `ALL PRIVILEGES ON *.*` grant include).
+`FILE` lets a `SELECT` read server files with `LOAD_FILE()` and write them with
+`SELECT … INTO OUTFILE`, and a read-only transaction stops neither — so every
+TDB key allowed to query the source would have that reach. A refused query
+returns **403** (MCP: a tool error) and is audited as `privileged_db_role`.
+
+Check before registering — the output must not mention `FILE` or
+`ALL PRIVILEGES ON *.*`:
+
+```sql
+SHOW GRANTS FOR CURRENT_USER();
+```
+
+`TDB_ALLOW_PRIVILEGED_DB_ROLE=true` turns the check off for a deployment that
+accepts the risk — see the [environment variables](../reference/environment-variables.md).
+
 ---
 
 ## Connection pooling

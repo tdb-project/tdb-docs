@@ -85,12 +85,19 @@ Parameter values are type-checked and safely embedded before execution. TDB does
 | Type | Input | SQL output |
 |---|---|---|
 | `string` | `"O'Brien"` | `'O''Brien'` (single quotes escaped) |
+| `string` on MySQL / Snowflake | `"C:\\dir"` | `'C:\\dir'` (backslashes escaped too, from 0.12.0) |
 | `integer` | `"42"` or `42` | `42` |
 | `float` | `"3.14"` or `3.14` | `3.14` |
 | `boolean` | `"true"`, `"1"`, `"yes"` | `1` |
 | `boolean` | `"false"`, `"0"`, `"no"` | `0` |
 
 Supplying a value that cannot be coerced to the declared type returns HTTP 400.
+
+MySQL and Snowflake treat a backslash inside a string literal as an escape
+character, so on those sources backslashes are doubled as well as quotes and
+the value arrives unchanged. Before enterprise 0.12.0 only quotes were escaped,
+and a string parameter containing a backslash could end the literal early —
+upgrade if you run views with string parameters against either engine.
 
 ---
 
@@ -193,7 +200,7 @@ list_views()               → returns all view names and descriptions
 run_view(name, params)     → executes the named view
 ```
 
-The MCP tools respect the same `allowed_tools` restrictions as REST endpoints. See [RBAC → Restricting MCP tool access](../security/rbac.md#restricting-mcp-tool-access).
+A key's `allowed_tools` scope applies to both: the MCP tools above, and — from enterprise 0.12.0 — the REST routes on this page (`list_views` for listing and reading views, `run_view` for running one). A key scoped to `["run_view"]` can run views and cannot send its own SQL. See [RBAC → Restricting tool access](../security/rbac.md#restricting-tool-access).
 
 ---
 

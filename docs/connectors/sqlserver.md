@@ -311,6 +311,27 @@ GRANT SELECT ON SCHEMA::dbo TO tdb_reader;
 
 TDB does not need `INSERT`, `UPDATE`, `DELETE`, `CREATE`, or any other permission.
 
+### Use a least-privileged role
+
+**From enterprise 0.12.0, TDB refuses to query as a login in `sysadmin` or
+`bulkadmin`, or holding `CONTROL SERVER` or `ADMINISTER BULK OPERATIONS`.**
+Those can read server files with `OPENROWSET(BULK …)` inside a transaction
+TDB rolls back, so every TDB key allowed to query the source would have that
+reach. `sa` is refused. A refused query returns **403** (MCP: a tool error) and
+is audited as `privileged_db_role`.
+
+Check before registering — the result must be `0`:
+
+```sql
+SELECT CASE WHEN IS_SRVROLEMEMBER('sysadmin') = 1
+              OR IS_SRVROLEMEMBER('bulkadmin') = 1
+              OR HAS_PERMS_BY_NAME(NULL, NULL, 'ADMINISTER BULK OPERATIONS') = 1
+            THEN 1 ELSE 0 END;
+```
+
+`TDB_ALLOW_PRIVILEGED_DB_ROLE=true` turns the check off for a deployment that
+accepts the risk — see the [environment variables](../reference/environment-variables.md).
+
 ---
 
 ## Connection pooling

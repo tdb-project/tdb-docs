@@ -90,6 +90,53 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-10-09 — The read-only check could be shown one statement while the engine ran several
+
+**Fixed in community 0.7.2 and enterprise 0.12.0. Affects every earlier
+release.** The SQL validator decided where string literals and comments end
+the ANSI way only, while the engines TDB runs on also read dollar-quoted
+strings, backslash escapes and nested or engine-specific comments. Quoted
+carefully, SQL could therefore carry a second statement past the
+one-statement rule introduced in 0.7.0 / 0.11.0, and the CSV engine executed
+it. The engine lock from 0.7.0 / 0.11.0 still confined file access to the data
+directory, but within that directory a second statement could write files —
+including the registered CSV. Exploiting it requires a valid API key or token.
+
+The fixed releases check the SQL under each supported engine's reading of it,
+and the CSV connector runs a query only if DuckDB's own parser reads exactly
+one `SELECT`. Refusals are 400, audited as `sql_validation_failed`.
+
+**Action:** upgrade. If you ran an earlier release with keys held by people or
+agents you would not give write access to the data directory, check that the
+CSV files there are the ones you expect.
+
+### 2026-10-09 — Enterprise 0.12.0: four further hardening fixes
+
+**Fixed in enterprise 0.12.0.** Found in the same review:
+
+- **`allowed_tools` now applies on REST.** A key scoped to MCP tools could
+  still use the equivalent REST routes — notably `POST /v1/query` — so a key
+  meant only to run views could send its own SQL. See
+  [RBAC → Restricting tool access](rbac.md#restricting-tool-access).
+- **Privileged database roles are refused.** A source registered as a
+  PostgreSQL superuser, a MySQL user with `FILE`, or a SQL Server
+  `sysadmin`/`bulkadmin` login let any key allowed to query it read files on
+  the database host, because a read-only session does not stop those
+  functions. Such sources now return 403 (`privileged_db_role`) until they use
+  a least-privileged role, or `TDB_ALLOW_PRIVILEGED_DB_ROLE=true` is set. See
+  [use a least-privileged role](../connectors/postgresql.md#use-a-least-privileged-role).
+- **PostgreSQL passwords are never sent in cleartext to an unverified
+  server.** TDB now sets `require_auth=!password` unless the source uses
+  `sslmode=verify-full`, and accepts `sslmode` / `sslrootcert` keys. See
+  [SSL connections](../connectors/postgresql.md#ssl-connections).
+- **View string parameters are escaped for MySQL and Snowflake**, whose
+  literals honour backslash escapes. See [views](../api/views.md).
+
+**Action:** upgrade; then re-register any database source that used a
+superuser, `root` or `sa` with a `SELECT`-only role, and review keys whose
+`allowed_tools` you relied on — check the audit log for `POST /v1/query`
+entries from them.
+
 ### 2026-09-28 — SQL on a CSV source could read files outside the data directory
 
 **Fixed in community 0.7.0 and enterprise 0.11.0. Affects every earlier

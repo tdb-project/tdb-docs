@@ -100,9 +100,9 @@ Valid values: `"read"`, `"readwrite"`, `"admin"`. Invalid values return HTTP 422
 
 ---
 
-## Restricting MCP tool access
+## Restricting tool access
 
-Beyond the role system, you can restrict which MCP tools a key can call. This is useful when you want a key that can query data but cannot introspect schema, or cannot run aggregate queries.
+Beyond the role system, you can restrict which MCP tools a key can call. This is useful when you want a key that can query data but cannot introspect schema, or cannot run aggregate queries — or a key for an agent that may only run the [views](../api/views.md) you defined.
 
 ```bash
 # Allow only query_source and schema_source
@@ -120,6 +120,21 @@ curl -X PUT http://localhost:8000/v1/auth/keys/<KEY_ID>/tools \
 
 Available MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view`.
 
+**The scope also governs the REST routes that do the same thing, from enterprise
+0.12.0.** Earlier releases checked it only on MCP, so a key scoped to
+`["run_view"]` could still send any SQL to `POST /v1/query`.
+
+| REST route | Requires tool |
+|---|---|
+| `POST /v1/query` | `query_source` |
+| `GET /v1/sources/{ref}/schema` | `schema_source` |
+| `GET /v1/views`, `GET /v1/views/{name}` | `list_views` |
+| `POST /v1/views/{name}/run` | `run_view` |
+
+A REST request outside the scope returns **403** and is audited as
+`tool_not_permitted_<tool>`. Routes with no MCP equivalent (source and key
+management, audit) are governed by the role alone.
+
 !!! note
     Tool-level restrictions only apply to DB-managed keys. Static env keys and JWT tokens are never tool-restricted.
 
@@ -132,7 +147,8 @@ Available MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_
 | No credentials | 401 | `Invalid or missing credentials` |
 | Invalid token | 401 | `Invalid or expired token` |
 | Valid key, insufficient role | 403 | `Insufficient privileges. Required: 'readwrite', have: 'read'.` |
-| Valid key, tool not allowed | 200 (tool-error) | `Tool 'schema_source' is not permitted for this API key.` |
+| Valid key, tool not allowed (MCP) | 200 (tool-error) | `Tool 'schema_source' is not permitted for this API key.` |
+| Valid key, tool not allowed (REST, from 0.12.0) | 403 | `This API key's allowed_tools does not include 'query_source', which this endpoint requires.` |
 
 MCP tool-access denials return HTTP 200 with `isError: true` in the JSON-RPC result, not a protocol-level error, so MCP clients handle them as a failed tool call rather than a connection failure.
 

@@ -17,6 +17,9 @@ A source can be registered in two modes: **database-wide** (all tables) or **sin
 | `password` | string | Yes | — | Database password |
 | `table` | string | No | — | Omit to register the whole database; set to scope to one table |
 | `schema` | string | No | `"public"` | Postgres schema name |
+| `sslmode` | string | No | `"prefer"` | libpq [`sslmode`](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) — use `verify-full` to authenticate the server (from 0.12.0) |
+| `sslrootcert` | string | No | — | CA certificate file for `verify-ca` / `verify-full`, as a path inside the TDB container (from 0.12.0) |
+| `require_auth` | string | No | `"!password"` | libpq [`require_auth`](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-REQUIRE-AUTH); the default refuses cleartext passwords unless `sslmode` is `verify-full` (from 0.12.0) |
 
 ---
 
@@ -140,6 +143,12 @@ Read-only access is enforced at two independent layers:
    any write attempt, even if it somehow bypassed the validator. You cannot accidentally
    grant write access by misconfiguring the validator.
 
+3. **Privileged roles are refused** (from 0.12.0) — a read-only transaction
+   stops writes to tables, but not functions such as `pg_read_file()` that
+   reach the database server's own files. Whether those work depends on the
+   role, so TDB refuses to query as one that could: see
+   [use a least-privileged role](#use-a-least-privileged-role).
+
 This means your `tdb_reader` database user does not need `INSERT`, `UPDATE`, `DELETE`,
 or `DDL` privileges — `SELECT` only is sufficient and recommended.
 
@@ -231,6 +240,35 @@ GRANT USAGE ON SCHEMA public TO tdb_reader;
 
 TDB does not need `CREATE`, `INSERT`, `UPDATE`, `DELETE`, or `TRUNCATE` permissions.
 
+### Use a least-privileged role
+
+**From enterprise 0.12.0, TDB refuses to query through a role that can reach
+the database server's host**: a superuser, or a member of
+`pg_read_server_files`, `pg_write_server_files` or `pg_execute_server_program`.
+Such a role can read server files with `pg_read_file()` even inside a
+read-only transaction, so every TDB key allowed to query the source — `read`
+included — would have that reach too. The check runs whenever TDB opens a
+connection; a refused query returns **403** (MCP: a tool error) and is audited
+as `privileged_db_role`.
+
+Check a role before registering it:
+
+```sql
+SELECT rolsuper,
+       pg_has_role(current_user, 'pg_read_server_files', 'MEMBER') AS read_files,
+       pg_has_role(current_user, 'pg_execute_server_program', 'MEMBER') AS run_programs
+FROM pg_roles WHERE rolname = current_user;
+```
+
+All three should be `false`. If a deployment genuinely must use such a role,
+`TDB_ALLOW_PRIVILEGED_DB_ROLE=true` turns the check off — see the
+[environment variables](../reference/environment-variables.md).
+
+!!! warning "Upgrading a source registered as `postgres`"
+    A source registered with the `postgres` superuser (common in development)
+    is refused after upgrading to 0.12.0. Create a role as above and update the
+    source's credentials.
+
 ---
 
 ## Connection pooling
@@ -265,6 +303,21 @@ target table. Check your Postgres grants (see [Minimum required permissions](#mi
 
 ### SSL connections
 
-SSL support (sslmode, client certificates) is not yet configurable in the
-`connection` object. Connections use the psycopg3 default (prefer SSL when available).
-SSL configuration will be added to the connection schema in a future release.
+From enterprise 0.12.0 the `connection` object takes `sslmode` and
+`sslrootcert` with libpq's meaning. The default remains `prefer`, which encrypts
+when the server supports it **but does not check the server's identity**. For a
+database reached over a network you do not control, use:
+
+```json
+{"sslmode": "verify-full", "sslrootcert": "/certs/db-ca.pem"}
+```
+
+with the CA file mounted into the container.
+
+Independently of `sslmode`, TDB **never sends the database password in
+cleartext** unless the server's identity was verified (`verify-full`): it sets
+libpq's `require_auth=!password`. SCRAM-SHA-256 and MD5 — every supported
+PostgreSQL default — are unaffected. A server configured for cleartext
+`password` authentication is refused with `server requested a cleartext
+password`; use `verify-full`, or set `require_auth` explicitly to accept the
+risk.

@@ -176,6 +176,28 @@ the last result set. Only the first statement's opening keyword was checked, so
 a second statement could be something the write-keyword list does not name —
 which is why this is now refused rather than documented.
 
+### Literals and comments are read the way every engine reads them
+
+**From community 0.7.2 / enterprise 0.12.0.** The engines TDB runs on disagree
+about where a string or comment ends: PostgreSQL and DuckDB read `$$…$$` and
+`E'…'` strings and nest `/* */` comments; MySQL treats a backslash inside a
+string as an escape and starts a comment at `#`; Snowflake honours backslashes
+and `//` comments. TDB checks the SQL under **each** of those readings, and
+refuses it if any reading finds a write keyword or a second statement. On a CSV
+source, DuckDB's own parser must also read the query as exactly one `SELECT`.
+
+| SQL | Accepted |
+|---|---|
+| `SELECT $$it's$$ AS a` | ✅ dollar-quoted strings |
+| `SELECT data #>> '{a,b}' FROM t` | ✅ Postgres JSON operators |
+| `SELECT 1 /* outer /* inner */ still a comment */` | ✅ nested comments |
+| a query that one engine would read as two statements | ❌ `Only one statement per query is allowed` |
+
+Both refusals are HTTP 400 and audited as `sql_validation_failed`. Ordinary SQL
+is unaffected; what is refused is SQL whose meaning depends on which engine
+reads it. Earlier releases read literals the ANSI way only — see the
+[security advisory](../security/updates.md#where-advisories-are-published).
+
 ### Files are not readable from SQL
 
 A CSV query can read only files in the source's data directory

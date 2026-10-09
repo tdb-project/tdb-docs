@@ -342,6 +342,15 @@ curl -fsS -X POST http://localhost:8000/v1/sources \
 - **Best practice: give TDB a least-privilege, read-only DB login** (e.g. Postgres role
   with `SELECT` only; SQL Server `db_datareader`). This is your real guarantee — TDB's
   enforcement is defence-in-depth on top of it.
+- **From 0.12.0 TDB enforces part of this:** a source connecting as a role that can
+  reach the database server's files or programs — a PostgreSQL superuser, a MySQL user
+  with `FILE`, SQL Server `sa` / `sysadmin` / `bulkadmin` — is refused on every query
+  (403, audited `privileged_db_role`). A read-only session does not stop such a role
+  reading host files, so every API key allowed to query the source would inherit that
+  reach. Plan the role before upgrading; `TDB_ALLOW_PRIVILEGED_DB_ROLE=true` overrides.
+- **For PostgreSQL over a network you do not control, set `"sslmode": "verify-full"`**
+  and mount the CA as `sslrootcert`. From 0.12.0 TDB never sends the password in
+  cleartext to a server whose identity it has not verified.
 
 > **Security:** the `connection` block (including the password) is **persisted**,
 > encrypted at rest — read [§6.2](#62-where-source-credentials-live) for the key

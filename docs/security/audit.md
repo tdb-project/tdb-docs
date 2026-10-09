@@ -68,7 +68,7 @@ Two fields describe the refusal:
 
 | Field | Description |
 |---|---|
-| `action` | What was attempted: `auth`, `authorize`, `query`, `register`, `ratelimit`, `mcp_auth`, `mcp_query`, or `mcp_call` |
+| `action` | What was attempted: `auth`, `authorize`, `query`, `register`, `ratelimit`, `mcp_auth`, `mcp_query`, `mcp_call`, and — enterprise, from 0.12.0 — `schema`, `view_list` or `view_run` |
 | `reason` | Machine-readable cause — see the table below |
 
 | `reason` | Raised when |
@@ -78,7 +78,7 @@ Two fields describe the refusal:
 | `invalid_or_expired_token` | A JWT failed signature or expiry validation |
 | `insufficient_role_required_<role>_have_<role>` | RBAC refused the request (403) |
 | `rate_limit_exceeded` | The key's per-minute budget was exhausted (429) |
-| `sql_validation_failed` | The statement was not a permitted read-only `SELECT` |
+| `sql_validation_failed` | The statement was not a permitted read-only `SELECT` — including, from community 0.7.2 / enterprise 0.12.0, SQL that some supported engine would read as more than one statement |
 | `prompt_injection_detected` | The prompt-injection filter rejected the input |
 | `source_not_found` | The referenced source does not exist |
 | `path_outside_allowed_dir` | A CSV path resolved outside `TDB_ALLOWED_DATA_DIR` |
@@ -86,7 +86,8 @@ Two fields describe the refusal:
 | `file_unreadable` | The CSV backing a source is missing or unreadable |
 | `unsupported_source_type` | The `source_type` is not a registered connector |
 | `registry_conflict` | The source name is already taken |
-| `tool_not_permitted_<tool>` | The key's `allowed_tools` scope excludes this MCP tool |
+| `tool_not_permitted_<tool>` | The key's `allowed_tools` scope excludes this MCP tool — or, from enterprise 0.12.0, the REST route equivalent to it (see [RBAC](rbac.md#restricting-tool-access)) |
+| `privileged_db_role` | Enterprise, from 0.12.0: the source connects as a database role that can reach the database server's files or programs (see [connectors](../connectors/postgresql.md#use-a-least-privileged-role)) |
 
 To review refusals only:
 
