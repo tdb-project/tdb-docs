@@ -301,6 +301,31 @@ Removing a segment from the **middle** of the sequence is reported as invalid.
 Pruning the **oldest** segments is a supported retention action and stays valid —
 that is how you actually delete old audit data.
 
+### Community edition: rotate with logrotate
+
+tdb-community has no built-in rotation; its log grows until you rotate it. It
+opens the file for every entry, so an ordinary `logrotate` rule that **renames**
+the file is safe: the next entry starts a new file and nothing is lost.
+
+```
+/srv/tdb/logs/tdb_audit.jsonl {
+  daily
+  rotate 30
+  compress
+  delaycompress
+  missingok
+  notifempty
+}
+```
+
+Two rules:
+
+- **Mount the directory, not the file.** Run with `-e TDB_LOG_FILE=/logs/tdb_audit.jsonl -v /srv/tdb/logs:/logs`.
+  If you bind-mount the file itself, the container keeps writing to the renamed
+  file and the new one stays empty.
+- **Do not use `copytruncate`.** Entries written between the copy and the
+  truncate are lost.
+
 ## Backup
 
 - Back up sealed segments to immutable object storage (S3, GCS). They never change
