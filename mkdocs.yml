@@ -1,4 +1,4 @@
-site_name: TDB Enterprise
+site_name: The Data-Bridge
 site_description: The Data-Bridge — secure, auditable API layer over your data sources
 site_author: TDB Project
 site_url: https://docs.tdb.jiracorp.co.in
@@ -6,6 +6,9 @@ docs_dir: docs
 
 theme:
   name: material
+  # The landing page's mark, so the two sites read as one product.
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
   palette:
     # Dark FIRST, and deliberately not gated on prefers-color-scheme. The landing
     # page at tdb.jiracorp.co.in is dark-only, so following the OS setting meant a
@@ -69,9 +72,12 @@ markdown_extensions:
   - toc:
       permalink: true
 
+# Nine tabs: at 1440px the previous thirteen overflowed and the last one
+# rendered as "Editio". Grouping changes no page path, so no URL moves.
 nav:
-  - Home: index.md
-  - Why TDB: why-tdb.md
+  - Home:
+    - Overview: index.md
+    - Why TDB: why-tdb.md
   - Getting Started:
     - Community Edition (CSV, free): getting-started/community.md
     - Enterprise — Installation: getting-started/installation.md
@@ -79,28 +85,28 @@ nav:
     - Connect an IDE / AI Tool (MCP): getting-started/ide-setup.md
   - Deployment:
     - IT Administrator Guide: deployment/it-admin-guide.md
+    - Prometheus Metrics: observability/metrics.md
   - Connectors:
     - PostgreSQL: connectors/postgresql.md
     - MySQL: connectors/mysql.md
     - SQL Server: connectors/sqlserver.md
     - Snowflake: connectors/snowflake.md
-  - Authentication:
-    - Overview: auth/overview.md
-    - API Keys: auth/api-keys.md
-    - JWT: auth/jwt.md
-    - OAuth 2.1 (MCP): auth/oauth.md
   - API Reference:
     - Sources: api/sources.md
     - Query: api/query.md
     - MCP: api/mcp.md
     - Views: api/views.md
   - Security:
-    - RBAC: security/rbac.md
-    - Audit Log: security/audit.md
-    - Credentials at Rest: security/credentials.md
-    - Security & Updates: security/updates.md
-  - Observability:
-    - Prometheus Metrics: observability/metrics.md
+    - Authentication:
+      - Overview: auth/overview.md
+      - API Keys: auth/api-keys.md
+      - JWT: auth/jwt.md
+      - OAuth 2.1 (MCP): auth/oauth.md
+    - Access & audit:
+      - RBAC: security/rbac.md
+      - Audit Log: security/audit.md
+      - Credentials at Rest: security/credentials.md
+      - Security & Updates: security/updates.md
   - Integrations:
     - PostgreSQL wire gateway: integrations/postgres-wire.md
     - Splunk HEC: integrations/splunk.md

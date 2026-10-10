@@ -7,13 +7,13 @@ hide:
   - navigation
 ---
 
-# TDB Enterprise
+# The Data-Bridge
 
-**The Data-Bridge** is a self-hosted, auditable API layer that turns your databases
-into secure REST and MCP endpoints — governed, queryable, and AI-ready.
+**TDB** is a self-hosted, auditable API layer that turns your databases into secure
+REST, SQL and MCP endpoints — governed, queryable, and AI-ready.
 
-Register a data source once. Query it from REST, SQL, or any MCP-compatible AI
-tool. Every query is logged.
+Register a data source once. Query it over REST, from any MCP-compatible AI tool, or
+from the PostgreSQL clients and BI tools you already use. Every query is logged.
 
 [Install it :material-arrow-right:](getting-started/installation.md){ .md-button .md-button--primary }
 [First query in 5 minutes](getting-started/quickstart.md){ .md-button }
@@ -57,36 +57,48 @@ copilot, and with a tamper-evident audit log you own.
 
     [:octicons-arrow-right-24: Authentication](auth/overview.md)
 
--   :material-api:{ .lg .middle } **Query & MCP**
+-   :material-api:{ .lg .middle } **Query & views**
 
     ---
 
-    A REST query endpoint (SELECT only) and seven MCP tools — `query_source`,
-    `schema_source`, `preview_source`, `filter_source`, `aggregate_source`,
-    `list_views`, `run_view`. YAML-defined named views with typed parameters,
-    prompt-injection filtering on input and output, per-key tool allow-lists,
-    and auto schema detection.
+    A REST query endpoint (SELECT and CTEs only, row ceiling enforced),
+    YAML-defined named views with typed parameters, and auto schema detection.
 
     [:octicons-arrow-right-24: Query API](api/query.md)
+
+-   :material-robot-outline:{ .lg .middle } **MCP for AI tools**
+
+    ---
+
+    Seven MCP tools — `query_source`, `schema_source`, `preview_source`,
+    `filter_source`, `aggregate_source`, `list_views`, `run_view` — on one endpoint
+    that speaks the `2026-07-28` specification and the earlier handshake-era
+    revisions. Tools
+    are marked read-only and return structured output, with prompt-injection
+    filtering and per-key tool allow-lists.
+
+    [:octicons-arrow-right-24: MCP reference](api/mcp.md)
+
+-   :material-elephant:{ .lg .middle } **PostgreSQL wire gateway**
+
+    ---
+
+    Metabase, DBeaver, `psql`, JDBC and other PostgreSQL clients connect with
+    only a new host, port and password. Every statement is checked as read-only
+    and audited before it runs, as it is over REST and MCP.
+
+    [:octicons-arrow-right-24: Wire gateway](integrations/postgres-wire.md)
 
 -   :material-shield-check-outline:{ .lg .middle } **Audit & compliance**
 
     ---
 
     An NDJSON audit log on every query, signed and hash-chained so tampering is
-    detectable, with integrity verification via `GET /v1/audit/verify` and
-    incremental export to Splunk HEC or S3.
+    detectable, naming the AI client behind each MCP call, with integrity
+    verification via `GET /v1/audit/verify` and incremental export to Splunk HEC
+    or S3. Prometheus metrics and a health check cover the rest of operations.
 
     [:octicons-arrow-right-24: Audit log](security/audit.md)
-
--   :material-chart-line:{ .lg .middle } **Observability**
-
-    ---
-
-    Prometheus metrics at `GET /metrics`, schema caching with a configurable
-    TTL, and a health check at `GET /health`.
-
-    [:octicons-arrow-right-24: Metrics](observability/metrics.md)
 
 -   :material-server-security:{ .lg .middle } **Read-only, enforced**
 
@@ -110,12 +122,13 @@ Postgres · MySQL · SQL Server · Snowflake
       │  read-only connection (per connector)
       ▼
  ┌────────────────────────────────────────────┐
- │              TDB Enterprise                │
+ │              The Data-Bridge               │
  │                                            │
  │  POST /v1/sources     ← register source    │
  │  POST /v1/query       ← SQL SELECT         │
  │  POST /v1/mcp         ← MCP tool calls     │
  │  GET  /v1/views       ← YAML-defined views │
+ │  :5432 (opt-in)       ← Postgres wire      │
  │  GET  /metrics        ← Prometheus         │
  │                                            │
  │  Every query → hash-chained audit log      │
@@ -125,7 +138,7 @@ Postgres · MySQL · SQL Server · Snowflake
       │
       │  Authorization: Bearer <token>
       ▼
- Your app / Claude Desktop / Cursor
+ Your app · Claude Desktop · Cursor · Metabase · psql
 ```
 
 ---
@@ -166,6 +179,7 @@ Postgres · MySQL · SQL Server · Snowflake
     ---
 
     [:octicons-arrow-right-24: YAML named views](api/views.md)<br>
+    [:octicons-arrow-right-24: PostgreSQL wire gateway](integrations/postgres-wire.md)<br>
     [:octicons-arrow-right-24: Prometheus metrics](observability/metrics.md)<br>
     [:octicons-arrow-right-24: Splunk HEC integration](integrations/splunk.md)<br>
     [:octicons-arrow-right-24: All environment variables](reference/environment-variables.md)

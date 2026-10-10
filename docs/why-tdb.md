@@ -1,11 +1,3 @@
----
-hide:
-  # Single-page tab: with navigation.tabs this page is already its own tab, so
-  # the left sidebar renders one entry repeating the tab's label. Hiding it
-  # drops the duplicate and gives the content the full width.
-  - navigation
----
-
 # Why TDB
 
 ## The problem
@@ -48,7 +40,9 @@ sources — **all of them** — on **your own infrastructure**:
 - **Self-hosted** — data never leaves your perimeter; nothing is routed through a SaaS vendor.
 - **Multi-source** — connects to the databases you already run; no migration, no consolidation.
 - **REST + SQL + MCP, simultaneously** — one governed surface for dashboards, scripts, and any MCP-compatible AI tool.
-- **Audited by default** — every query, result, and tool call is logged to a tamper-evident audit log that *you* own.
+- **Your existing SQL tools, unchanged** — Metabase, DBeaver, `psql` and other PostgreSQL clients connect through the [wire gateway](integrations/postgres-wire.md) with only a new host, port and password, and every statement is governed and audited like any other (enterprise).
+- **Current with MCP** — one endpoint speaks the `2026-07-28` MCP specification as well as the handshake-era revisions from `2024-11-05` to `2025-11-25`, so new and older AI clients both connect without configuration.
+- **Audited by default** — every query, result, and tool call is logged to a tamper-evident audit log that *you* own, including which AI client made the call.
 - **Governed** — OAuth 2.1, role-based access control, per-key rate limiting, and prompt-injection filtering.
 - **Open-core** — start free on the community edition; upgrade for production and multi-source.
 

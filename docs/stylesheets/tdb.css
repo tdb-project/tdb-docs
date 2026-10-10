@@ -249,6 +249,9 @@
 /* ============================ misc ======================================== */
 
 .md-typeset hr { border-bottom: 1px solid var(--tdb-line); }
+/* A section written as `---` then `## Heading` drew two rules: the hr, and the
+   h2's own border-top. Keep the hr's line and drop the heading's. */
+.md-typeset hr + h2 { border-top: 0; padding-top: 0; margin-top: 1.6rem; }
 .md-typeset kbd {
   background-color: var(--tdb-bg-inset);
   border: 1px solid var(--tdb-line);
