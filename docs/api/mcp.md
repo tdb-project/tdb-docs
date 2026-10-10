@@ -121,6 +121,35 @@ the argument was not given.
 
 ---
 
+## Protocol versions
+
+From community 0.11.0 / enterprise 0.17.0, TDB speaks MCP `2025-11-25`,
+`2025-06-18` and `2024-11-05`. Earlier releases always answered `2024-11-05`.
+
+`initialize` answers with the `protocolVersion` the client asked for if TDB
+supports it. Otherwise it answers with the newest supported version older than
+the request, or `2024-11-05`. A client is never handed a version newer than it
+asked for. A client asking for `2025-03-26` gets `2024-11-05`, as before: that
+revision requires servers to accept JSON-RPC batches, which TDB does not.
+
+After the handshake, clients send the negotiated version in the
+`MCP-Protocol-Version` header. A value TDB does not support is refused with HTTP
+400. A request without the header is served as `2024-11-05`.
+
+When the header names `2025-06-18` or later:
+
+- every tool in `tools/list` also carries a `title`, `annotations`
+  (`readOnlyHint: true`, `openWorldHint: false`: every TDB tool reads a
+  registered source and changes nothing) and an `outputSchema`;
+- a successful `tools/call` also carries `structuredContent`, the same object as
+  the JSON in the text block, which is still sent;
+- `initialize` adds `serverInfo.title`, `serverInfo.description` and
+  `capabilities.tools.listChanged: false`.
+
+A client on `2024-11-05` receives exactly what it did before.
+
+---
+
 ## Method reference
 
 ### `initialize`
@@ -142,7 +171,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.16.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.17.0"}
   }
 }
 ```
@@ -585,7 +614,10 @@ Two filters protect the MCP path:
 - **Output:** rows returned by any tool are screened before the response is
   serialised. Cells that contain injection patterns (e.g. instructions embedded in
   data that try to steer the AI model) are redacted, and the redaction count is
-  written to the server log.
+  written to the server log. `structuredContent` is built from the filtered
+  text, so it never carries a redacted value. In enterprise from 0.17.0, if the
+  output filter itself fails, the call is a tool error and the rows are withheld.
+  Earlier releases returned them unfiltered.
 
 The filters run server-side on every call — there is nothing to configure on the
 MCP client.
@@ -600,6 +632,7 @@ MCP client.
 | 200 | -32700 | Parse error — invalid JSON |
 | 200 | -32600 | Invalid JSON-RPC version |
 | 400 | -32600 | Batch (array) or non-object body (from community 0.10.0 / enterprise 0.15.0) |
+| 400 | -32600 | Unsupported `MCP-Protocol-Version` header (from community 0.11.0 / enterprise 0.17.0) |
 | 200 | -32601 | Method not found / unknown tool |
 | 200 | -32602 | `params` or `arguments` is not an object, or a `tools/call` without a string `name` |
 | 401 | -32001 | Unauthorized (missing/invalid token) |
@@ -608,7 +641,7 @@ MCP client.
 
 Protocol-level errors (parse, version, unknown method, invalid params) are returned
 with HTTP 200 and an `error` object. A body TDB cannot accept at all (a batch or a
-non-object) is HTTP 400. Auth, origin and rate-limit failures use their HTTP status
+non-object), or an unsupported `MCP-Protocol-Version` header, is HTTP 400. Auth, origin and rate-limit failures use their HTTP status
 codes, so MCP clients can react to them at the transport layer.
 
 ---
