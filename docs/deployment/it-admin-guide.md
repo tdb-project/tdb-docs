@@ -80,6 +80,9 @@ Notes that drive sizing:
 - **Egress** the host must allow: to each registered data source (e.g. Postgres 5432,
   MySQL 3306, SQL Server 1433, Snowflake 443); to your private registry if pulling the
   image; and to your SIEM endpoint if you enable the Splunk exporter (HEC over 443/8088).
+  If you enable [Client ID Metadata Documents](../auth/oauth.md#client-id-metadata-documents)
+  (`TDB_OAUTH_CIMD_HOSTS`, off by default, 0.18.0 and later), allow HTTPS (443) to the
+  hosts you list there. TDB connects to them directly and does not use an egress proxy.
 - **No inbound** connections are required other than to port 8000 from your API/MCP
   clients (and the reverse proxy).
 
@@ -173,7 +176,7 @@ inside the image. Defaults in parentheses.
 | `TDB_LOG_LEVEL` | `INFO` | `DEBUG`/`INFO`/`WARNING`/`ERROR`. |
 | `TDB_VIEWS_DIR` | *(unset)* | Directory of YAML named-view definitions. Unset = views disabled. |
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Schema cache TTL (seconds). `0` disables caching. |
-| `TDB_MAX_ROWS` | `1000` | Ceiling on rows in a single query response. A request asking for more is rejected with `400`; a result larger than the request's `limit` is cut and flagged `truncated`. Raising it trades host RAM for bigger responses — size with §1.2. From 0.2.1 it caps both the response **and** the rows TDB reads from the source to produce it, so raising it raises both; on 0.2.0 and earlier it capped the response only (see §8). A bad value falls back to `1000` rather than uncapping. |
+| `TDB_MAX_ROWS` | `1000` | Ceiling on rows in a single query response, on every path: `POST /v1/query`, the MCP tools, and view runs (the MCP tools and view runs from 0.16.0; before that they clamped at a fixed 1,000). A request asking for more is rejected with `400`; a result larger than the request's `limit` is cut and flagged `truncated`. Raising it trades host RAM for bigger responses — size with §1.2. From 0.2.1 it caps both the response **and** the rows TDB reads from the source to produce it, so raising it raises both; on 0.2.0 and earlier it capped the response only (see §8). A bad value falls back to `1000` rather than uncapping. |
 
 ### 3.3 Access, auth & API behaviour
 
@@ -183,7 +186,8 @@ inside the image. Defaults in parentheses.
 | `TDB_DEFAULT_RATE_LIMIT` | `60` | Default requests/min per API key (overridable per key). |
 | `TDB_CORS_ORIGINS` | *(empty = off)* | Comma-separated allowed origins. `*` = all (dev only). |
 | `TDB_CORS_ALLOW_CREDENTIALS` | `false` | `Access-Control-Allow-Credentials`. Don't combine with `*`. |
-| `TDB_SERVER_URL` | *(derived)* | Public base URL TDB advertises as the OAuth **issuer**. Set to your external HTTPS URL behind a proxy. |
+| `TDB_SERVER_URL` | *(derived)* | Public base URL TDB advertises as the OAuth **issuer**. Set to your external HTTPS URL behind a proxy. From 0.18.0 it is also the base of the absolute `resource_metadata` URL in the MCP `401` challenge. |
+| `TDB_OAUTH_CIMD_HOSTS` | *(empty: off)* | Comma-separated hosts whose OAuth Client ID Metadata Documents TDB may fetch (0.18.0 and later). Enabling it makes TDB fetch HTTPS URLs that clients choose, from inside your network; every fetch is guarded (public addresses only, no redirects, size and time limits). Leave empty unless a client needs it. Not usable air-gapped. |
 
 ### 3.4 SIEM export (optional — Splunk)
 
@@ -512,7 +516,9 @@ TDB authenticates **callers** via static API keys, JWT (HMAC, `TDB_JWT_SECRET`),
 **OAuth 2.1 + PKCE** (for Claude/ChatGPT/Cursor MCP), plus a single
 `TDB_ADMIN_USER`/`TDB_ADMIN_PASSWORD` for the consent/login flow. Authorization is
 **RBAC** (`read` / `readwrite` / `admin`) per API key, with optional MCP tool-level
-scoping.
+scoping. From 0.18.0, every audit entry written for an MCP request also records which AI
+client made it and at what protocol version (`mcp_client`, `mcp_protocol`). Clients
+report these themselves, so treat them as a label, not proof of identity.
 
 > **Directory / AD integration is not supported today:**
 > - **No SSO / SAML / OIDC-IdP / LDAP / Active Directory login** to TDB itself (this is

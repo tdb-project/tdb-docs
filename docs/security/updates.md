@@ -90,6 +90,25 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-10-10 — Enterprise 0.16.0 and 0.17.0: two hardening fixes
+
+**Fixed in enterprise 0.16.0 and 0.17.0.** Community is not affected.
+
+- **`TDB_MAX_ROWS` now bounds the MCP tools and view runs (0.16.0).**
+  `preview_source`, `filter_source`, `aggregate_source`, `run_view` and
+  `POST /v1/views/{name}/run` capped `limit` at a fixed 1,000, whatever
+  `TDB_MAX_ROWS` said. An operator who lowered the ceiling to limit how much
+  data one call can return still got up to 1,000 rows from these paths. A
+  `limit` above the ceiling is now refused and audited `limit_exceeds_max`, as
+  on `POST /v1/query`.
+- **The prompt-injection output filter fails closed (0.17.0).** If the filter
+  itself raised an error, the tool result was returned unfiltered. It is now a
+  tool error, and the rows are withheld. No input that triggers such an error is
+  known; this closes the gap rather than a demonstrated bypass.
+
+**Action:** upgrade. If you lowered `TDB_MAX_ROWS`, check the audit log for MCP
+`query` entries whose `rows_returned` exceeded it before the upgrade.
+
 ### 2026-10-09 — pip removed from the images
 
 **Community 0.9.1 and enterprise 0.14.1.** The `python:3.12-slim` base image
