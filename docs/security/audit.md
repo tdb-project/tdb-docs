@@ -87,6 +87,7 @@ Two fields describe the refusal:
 | `file_unreadable` | The CSV backing a source is missing or unreadable |
 | `unsupported_source_type` | The `source_type` is not a registered connector |
 | `registry_conflict` | The source name is already taken |
+| `invalid_origin` | An MCP request came from a browser page on another origin (403; from community 0.10.0 / enterprise 0.15.0). See [MCP: browser origins](../api/mcp.md#browser-origins) |
 | `tool_not_permitted_<tool>` | The key's `allowed_tools` scope excludes this MCP tool — or, from enterprise 0.12.0, the REST route equivalent to it (see [RBAC](rbac.md#restricting-tool-access)) |
 | `wire_requires_read_role` | Wire gateway: the key or token is not `read`-role, or is a static admin key |
 | `row_cap_exceeded` | Wire gateway: a result exceeded `TDB_PG_MAX_ROWS`; the connection was closed |

@@ -18,11 +18,16 @@ sources directly — without building a custom integration.
 | JSON-RPC method | Auth required | Description |
 |---|---|---|
 | `initialize` | No | MCP handshake — returns protocol version and capabilities |
+| `ping` | No | Liveness — returns an empty result (from community 0.10.0 / enterprise 0.15.0) |
 | `tools/list` | Yes | Lists available tools |
 | `tools/call` | Yes | Executes a tool |
 
-Only `initialize` is unauthenticated. This is intentional — MCP clients must complete
-the handshake before presenting credentials, per the MCP spec.
+Only `initialize` and `ping` are unauthenticated. This is intentional — MCP clients must
+complete the handshake before presenting credentials, per the MCP spec.
+
+Notifications such as `notifications/initialized` (no `id`) are accepted with HTTP
+202 and an empty body. From community 0.10.0 / enterprise 0.15.0; earlier releases
+answered them with "Method not found", which clients ignored.
 
 ---
 
@@ -65,7 +70,7 @@ the MCP client. API keys can be restricted to a subset of tools — see
 
 ## Authentication
 
-All MCP methods except `initialize` require a Bearer token:
+All MCP methods except `initialize` and `ping` require a Bearer token:
 
 ```
 Authorization: Bearer <token>
@@ -83,6 +88,14 @@ WWW-Authenticate: Bearer realm="TDB", resource_metadata="/.well-known/oauth-prot
 Claude Desktop and Cursor use this header to trigger the OAuth 2.1 PKCE flow
 automatically. See [OAuth 2.1 →](../auth/oauth.md).
 
+### Browser origins
+
+From community 0.10.0 / enterprise 0.15.0, a request carrying an `Origin` header is
+served only if that origin is the TDB server itself or, in enterprise, is listed
+in `TDB_CORS_ORIGINS`. Anything else gets HTTP 403 and is audited as
+`invalid_origin`. MCP clients outside a browser send no `Origin` and are not
+affected. The MCP spec requires this check.
+
 ---
 
 ## Request format
@@ -97,6 +110,14 @@ All requests are JSON-RPC 2.0 objects sent to `POST /v1/mcp`:
   "params": { ... }
 }
 ```
+
+Send one object per request: batches (a JSON array) are not supported. `params`,
+and the `arguments` of a `tools/call`, must be objects.
+
+In enterprise, each tool argument is checked against the type the tool declares
+(from 0.15.0). A wrong type is a tool error (`isError: true`) that names the
+argument. A number sent as a digit string (`"10"`) is accepted, and `null` means
+the argument was not given.
 
 ---
 
@@ -121,7 +142,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.14.2"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.15.0"}
   }
 }
 ```
@@ -572,14 +593,17 @@ MCP client.
 | 200 | — | Success (check `isError` for tool-level errors) |
 | 200 | -32700 | Parse error — invalid JSON |
 | 200 | -32600 | Invalid JSON-RPC version |
+| 400 | -32600 | Batch (array) or non-object body (from community 0.10.0 / enterprise 0.15.0) |
 | 200 | -32601 | Method not found / unknown tool |
+| 200 | -32602 | `params` or `arguments` is not an object, or a `tools/call` without a string `name` |
 | 401 | -32001 | Unauthorized (missing/invalid token) |
+| 403 | -32600 | `Origin` not allowed (see [Browser origins](#browser-origins)) |
 | 429 | -32000 | Rate limit exceeded |
 
-Protocol-level errors (parse, version, unknown method) follow JSON-RPC-over-HTTP
-convention and are returned with HTTP 200 and an `error` object; only auth and
-rate-limit failures use HTTP status codes, so MCP clients can react to them at the
-transport layer.
+Protocol-level errors (parse, version, unknown method, invalid params) are returned
+with HTTP 200 and an `error` object. A body TDB cannot accept at all (a batch or a
+non-object) is HTTP 400. Auth, origin and rate-limit failures use their HTTP status
+codes, so MCP clients can react to them at the transport layer.
 
 ---
 
