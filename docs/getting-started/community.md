@@ -49,19 +49,31 @@ where you run the command.
     is the only tag that cannot move under you; `:0.6` floats to the newest patch within
     that minor. Pull `:edge` to try the latest unreleased `main` build.
 
-Verify it's up (use `curl.exe` on Windows — see the note below):
+Wait for it to come up. The first start takes about five seconds, and a request sent
+before then fails with a connection error, so this waits for the health check rather
+than calling it once:
 
-```bash
-curl http://localhost:8000/health
-# {"status": "ok"}
-```
+=== "macOS / Linux"
+
+    ```bash
+    until curl -sf http://localhost:8000/health; do sleep 1; done
+    # {"status":"ok"}
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    while (-not (curl.exe -sf http://localhost:8000/health)) { Start-Sleep 1 }
+    curl.exe http://localhost:8000/health
+    # {"status":"ok"}
+    ```
 
 Open [http://localhost:8000/docs](http://localhost:8000/docs) for the interactive Swagger UI.
 Tail the container logs any time with `docker logs -f tdb`.
 
 !!! warning "Windows: `curl.exe` for the GET, `Invoke-RestMethod` for JSON POSTs"
-    In PowerShell, `curl` is an **alias for `Invoke-WebRequest`**, so type `curl.exe` explicitly
-    for the Step 1 health check to get the real curl. For the POST requests that send a JSON body
+    In PowerShell, `curl` is an **alias for `Invoke-WebRequest`**, so the Step 1 health check
+    types `curl.exe` explicitly to get the real curl. For the POST requests that send a JSON body
     (Steps 2–3), PowerShell mangles quoted JSON when handing it to `curl.exe` — the spaces in your
     SQL get split into separate arguments — so the Windows tabs use the native `Invoke-RestMethod`
     cmdlet instead. It's the reliable approach across PowerShell 5.1 and 7.x.
