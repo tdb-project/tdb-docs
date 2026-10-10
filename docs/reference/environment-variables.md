@@ -105,6 +105,7 @@ When the license is missing, invalid, or expired, the server keeps running and
 | Variable | Default | Description |
 |---|---|---|
 | `TDB_SERVER_URL` | *(derived from request)* | Public base URL of the TDB server. Required when running behind a reverse proxy so OAuth discovery endpoints return correct URLs. Example: `https://tdb.yourcompany.com`. |
+| `TDB_OAUTH_CIMD_HOSTS` | *(empty: off)* | Comma-separated hosts whose [Client ID Metadata Document](../auth/oauth.md#client-id-metadata-documents) URLs TDB may fetch. Empty disables the feature and clients register as before. Enterprise, from 0.18.0. |
 
 ---
 

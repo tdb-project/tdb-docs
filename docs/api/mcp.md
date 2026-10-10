@@ -21,6 +21,7 @@ sources directly — without building a custom integration.
 | `ping` | No | Liveness — returns an empty result (from community 0.10.0 / enterprise 0.15.0) |
 | `tools/list` | Yes | Lists available tools |
 | `tools/call` | Yes | Executes a tool |
+| `server/discover` | No | `2026-07-28` only: supported versions and capabilities (from community 0.12.0 / enterprise 0.18.0) |
 
 Only `initialize` and `ping` are unauthenticated. This is intentional — MCP clients must
 complete the handshake before presenting credentials, per the MCP spec.
@@ -133,8 +134,10 @@ asked for. A client asking for `2025-03-26` gets `2024-11-05`, as before: that
 revision requires servers to accept JSON-RPC batches, which TDB does not.
 
 After the handshake, clients send the negotiated version in the
-`MCP-Protocol-Version` header. A value TDB does not support is refused with HTTP
-400. A request without the header is served as `2024-11-05`.
+`MCP-Protocol-Version` header. A request without the header is served as
+`2024-11-05`. `2025-03-26` in the header is refused with HTTP 400. From
+community 0.12.0 / enterprise 0.18.0, any other value that is not a handshake
+version is judged by the `2026-07-28` rules below.
 
 When the header names `2025-06-18` or later:
 
@@ -147,6 +150,34 @@ When the header names `2025-06-18` or later:
   `capabilities.tools.listChanged: false`.
 
 A client on `2024-11-05` receives exactly what it did before.
+
+### `2026-07-28`
+
+From community 0.12.0 / enterprise 0.18.0, the same endpoint also serves
+`2026-07-28`, the stateless revision. It has no `initialize` handshake. A
+request is served this way when its `MCP-Protocol-Version` header, or its
+`params._meta`, names `2026-07-28`. A handshake-era header always selects the
+handshake era, so existing clients are unaffected. The official MCP Python SDK
+connects this way in its default mode.
+
+- `server/discover` (no auth) returns `supportedVersions`, `capabilities`,
+  `ttlMs` and `cacheScope: "public"`.
+- Every request carries `io.modelcontextprotocol/protocolVersion` and
+  `io.modelcontextprotocol/clientCapabilities` in `params._meta`. Missing
+  either is HTTP 400, `-32602`.
+- The `MCP-Protocol-Version`, `Mcp-Method` and (on `tools/call`) `Mcp-Name`
+  headers must repeat the body. A missing, mismatched or repeated header is
+  HTTP 400, `-32020`.
+- An unsupported version is HTTP 400, `-32022`, with
+  `data: {"supported": [...], "requested": "..."}`.
+- An unknown method, including `initialize` and `ping`, is HTTP 404, `-32601`.
+  It is answered before authentication, so a client can tell this server from
+  one that predates `2026-07-28`.
+- An unknown tool is `-32602`.
+- Every result carries `resultType: "complete"` and
+  `_meta["io.modelcontextprotocol/serverInfo"]`. `tools/list` also carries
+  `ttlMs` and `cacheScope: "private"`, because it sits behind authentication.
+- Titles, annotations, `outputSchema` and `structuredContent` are always sent.
 
 ---
 
@@ -171,7 +202,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.17.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.18.0"}
   }
 }
 ```
@@ -633,6 +664,10 @@ MCP client.
 | 200 | -32600 | Invalid JSON-RPC version |
 | 400 | -32600 | Batch (array) or non-object body (from community 0.10.0 / enterprise 0.15.0) |
 | 400 | -32600 | Unsupported `MCP-Protocol-Version` header (from community 0.11.0 / enterprise 0.17.0) |
+| 400 | -32602 | `2026-07-28`: `params._meta` is missing the version or client capabilities |
+| 400 | -32020 | `2026-07-28`: a routing header is missing, repeated or disagrees with the body |
+| 400 | -32022 | `2026-07-28`: unsupported protocol version (`data.supported` lists the served ones) |
+| 404 | -32601 | `2026-07-28`: unknown method |
 | 200 | -32601 | Method not found / unknown tool |
 | 200 | -32602 | `params` or `arguments` is not an object, or a `tools/call` without a string `name` |
 | 401 | -32001 | Unauthorized (missing/invalid token) |
@@ -664,3 +699,11 @@ Refused calls are **audited, not just logged**: a blocked write, a prompt-inject
 rejection or an auth failure writes an `"event": "denied"` entry with an `action`
 and machine-readable `reason`, signed into the same hash chain as successful
 queries — deleting one breaks [`/v1/audit/verify`](../security/audit.md).
+
+From community 0.12.0 / enterprise 0.18.0, every entry written while serving
+`/v1/mcp` also names the caller: `mcp_client` and `mcp_protocol`. A
+`2026-07-28` client is named by the `clientInfo` it sends with each request. A
+handshake-era client is named by its `User-Agent`, because it names itself only
+at `initialize`, which a stateless server cannot tie to later calls. Both are
+self-reported by the client: use them to tell AI tools apart, not as proof of
+identity. The key that made the call is still `key_hint`.

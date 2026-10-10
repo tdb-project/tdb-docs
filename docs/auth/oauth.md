@@ -55,9 +55,15 @@ Expected output:
   "response_types_supported": ["code"],
   "grant_types_supported": ["authorization_code"],
   "code_challenge_methods_supported": ["S256"],
-  "token_endpoint_auth_methods_supported": ["none"]
+  "token_endpoint_auth_methods_supported": ["none"],
+  "authorization_response_iss_parameter_supported": true
 }
 ```
+
+From enterprise 0.18.0, the authorization redirect carries `iss` with the issuer
+above (RFC 9207), so a client using several authorization servers can tell which
+one issued a code. A `401` from `/v1/mcp` names the protected-resource metadata
+with an absolute URL, built from `TDB_SERVER_URL` when it is set.
 
 ---
 
@@ -213,6 +219,44 @@ curl -X POST http://localhost:8000/v1/mcp \
     }
   }'
 ```
+
+---
+
+## Client ID Metadata Documents
+
+From enterprise 0.18.0, and **off unless enabled**. A client may use an HTTPS URL
+as its `client_id` instead of registering first. TDB fetches that URL, reads the
+client's name and redirect URIs from the JSON document there, and continues the
+flow as for a registered client. Dynamic registration stays available either way.
+
+Enable it by listing the hosts whose documents may be fetched:
+
+```bash
+TDB_OAUTH_CIMD_HOSTS=claude.ai,client.example.com
+```
+
+The authorization server metadata then advertises
+`client_id_metadata_document_supported: true`.
+
+Enabling this makes TDB fetch a URL that a client chose, from inside your
+network. Every fetch is guarded:
+
+- the host must be in `TDB_OAUTH_CIMD_HOSTS`;
+- the URL must be `https`, with a path, and no credentials, query, fragment or
+  `.`/`..` segments;
+- every address the host resolves to must be public. Private, loopback,
+  link-local and cloud-metadata addresses are refused. TDB connects to the
+  address it checked, and TLS still verifies the certificate against the
+  hostname, so a name that re-resolves cannot redirect the fetch inward;
+- redirects are refused, and the fetch has a 5-second deadline and a 64 KiB
+  size limit;
+- the document's `client_id` must equal its URL, it must describe a public
+  client (no `client_secret`, `token_endpoint_auth_method` `none`), and its
+  `redirect_uris` follow the [rules below](#redirect-uri-restrictions).
+
+Documents are cached for 5 minutes, and refusals for 30 seconds. A refusal is
+logged as `oauth_cimd_refused` with the reason. TDB connects directly and does
+not use an egress proxy, so this cannot work in an air-gapped deployment.
 
 ---
 

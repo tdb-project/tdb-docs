@@ -117,7 +117,7 @@ Check the logs — you should see the license confirmed and the server start:
 
 ```
 INFO:     license_ok customer=ACME Corp edition=trial expires=2026-07-01T00:00:00+00:00 days_left=30
-INFO:     tdb_startup version=0.17.0 build_sha=9a53690 dev_mode=False
+INFO:     tdb_startup version=0.18.0 build_sha=1bd1378 dev_mode=False
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 
