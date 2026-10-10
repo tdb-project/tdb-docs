@@ -164,9 +164,9 @@ The two commercial editions ship the **same product**. Nothing in the running se
 | Per-key rate limiting | ❌ | ✅ | ✅ |
 | CORS configuration | ❌ | ✅ | ✅ |
 | **Query & MCP** | | | |
-| REST query endpoint (SELECT) | ✅ | ✅ | ✅ |
+| REST query endpoint (SELECT and CTEs) | ✅ | ✅ | ✅ |
 | PostgreSQL wire gateway (unchanged Postgres clients) | ❌ | ✅ | ✅ |
-| Row limit per response † | 1,000 | 1,000 | 1,000 |
+| Row limit per response † | 1,000 | 1,000 by default, configurable | 1,000 by default, configurable |
 | MCP tools | `query_source` | All 7 | All 7 |
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |
 | Prompt injection filtering | ❌ | ✅ | ✅ |
@@ -193,7 +193,7 @@ The two commercial editions ship the **same product**. Nothing in the running se
 | SLA-backed (next business day) | ❌ | ❌ | ✅ |
 | Onboarding call | ❌ | ❌ | ✅ |
 
-† All editions currently cap responses at 1,000 rows — a deliberate safety default that keeps an AI agent from pulling an entire table. Push work down with aggregates and named views; pagination beyond 1,000 rows is on the roadmap.
+† Every edition caps a response at 1,000 rows by default — a deliberate safety default that keeps an AI agent from pulling an entire table. Community's cap is fixed; the commercial editions can raise or lower it with `TDB_MAX_ROWS`, and it applies to every path (REST, MCP tools, views). Push work down with aggregates and named views; pagination beyond 1,000 rows is on the roadmap.
 
 ---
 
