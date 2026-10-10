@@ -238,7 +238,7 @@ TDB rejects SQL containing a write keyword:
 Expected response (HTTP 400):
 
 ```json
-{"detail": "SQL validation failed: Only SELECT statements are allowed"}
+{"detail": "SQL validation failed: Blocked keyword: DELETE"}
 ```
 
 Even if the SQL validator is somehow bypassed, the Postgres connection is opened

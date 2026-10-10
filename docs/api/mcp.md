@@ -336,7 +336,7 @@ and can present it as a table or process it programmatically.
   "jsonrpc": "2.0",
   "id": 3,
   "result": {
-    "content": [{"type": "text", "text": "SQL validation error: Only SELECT statements are allowed"}],
+    "content": [{"type": "text", "text": "SQL validation error: Blocked keyword: DROP"}],
     "isError": true
   }
 }
@@ -604,7 +604,7 @@ curl -X POST http://localhost:8000/v1/mcp \
     "method": "tools/call",
     "params": {
       "name": "run_view",
-      "arguments": {"view_name": "daily_signups", "parameters": {"country": "US"}}
+      "arguments": {"view_name": "orders_by_status", "parameters": {"status": "shipped"}}
     }
   }'
 ```

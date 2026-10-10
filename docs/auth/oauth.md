@@ -148,14 +148,14 @@ Response:
 
 ```bash
 # Generate a random code verifier (43–128 chars, URL-safe)
-CODE_VERIFIER=$(python -c "
+CODE_VERIFIER=$(python3 -c "
 import secrets, base64
 v = secrets.token_urlsafe(48)
 print(v)
 ")
 
 # Compute the S256 code challenge
-CODE_CHALLENGE=$(python -c "
+CODE_CHALLENGE=$(python3 -c "
 import hashlib, base64, sys
 v = '$CODE_VERIFIER'
 digest = hashlib.sha256(v.encode('ascii')).digest()
@@ -179,7 +179,9 @@ http://localhost:8000/oauth/authorize
 ```
 
 Log in with `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD`. You'll be redirected to
-`http://localhost:9999/callback?code=<auth_code>&state=random-state-value`.
+`http://localhost:9999/callback?code=<auth_code>&iss=http%3A%2F%2Flocalhost%3A8000&state=random-state-value`.
+The `iss` parameter (enterprise 0.18.0 and later) names the issuer; check that it
+equals the `issuer` in the authorization server metadata.
 
 **Step 4 — Exchange the code for an access token:**
 
@@ -219,6 +221,10 @@ curl -X POST http://localhost:8000/v1/mcp \
     }
   }'
 ```
+
+This runs against the first registered source, and `data` is the table name of a
+CSV source. With a database source, use a real table name and pass
+`"source_name"`.
 
 ---
 
