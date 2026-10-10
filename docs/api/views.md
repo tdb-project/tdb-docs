@@ -165,7 +165,7 @@ POST /v1/views/{name}/run
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `parameters` | object | No | Key-value pairs for named parameters. |
-| `limit` | integer (1–1000) | No | Max rows to return. Default: 1000. |
+| `limit` | integer | No | Max rows to return. Default: 1,000, or `TDB_MAX_ROWS` if lower. At most `TDB_MAX_ROWS`; a larger value is refused with 400 and audited `limit_exceeds_max` (from 0.16.0; before, it was a fixed 1–1000 whatever `TDB_MAX_ROWS` said). |
 
 **Response:**
 

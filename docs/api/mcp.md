@@ -142,7 +142,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.15.1"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.16.0"}
   }
 }
 ```
@@ -411,7 +411,7 @@ Returns the first N rows of a source's table. No SQL required.
 |---|---|---|---|---|
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
 | `table` | string | No | — | Table to preview. **Required for database-wide sources** (registered without a fixed table) — ignored for single-table/CSV sources. |
-| `limit` | integer | No | 10 | Rows to return (1–100) |
+| `limit` | integer | No | 10 | Rows to return (1–100; at most `TDB_MAX_ROWS`, and a larger value is a tool error (from 0.16.0)) |
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \
@@ -458,7 +458,7 @@ fixed allow-list, so the model cannot inject arbitrary SQL through this tool.
 | `operator` | string | No | `=` | One of `=`, `!=`, `>`, `<`, `>=`, `<=`, `LIKE` |
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
 | `table` | string | No | — | Table to filter. **Required for database-wide sources** — ignored for single-table/CSV sources. `column` is validated against this table's schema. |
-| `limit` | integer | No | 100 | Max rows to return (1–1,000) |
+| `limit` | integer | No | 100 | Max rows to return. At most `TDB_MAX_ROWS`, and a larger value is a tool error (from 0.16.0) |
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \
@@ -493,7 +493,7 @@ listed below.
 | `group_by` | string | No | — | Column to group results by |
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
 | `table` | string | No | — | Table to aggregate. **Required for database-wide sources** — ignored for single-table/CSV sources. `column`/`group_by` are validated against this table's schema. |
-| `limit` | integer | No | 100 | Max groups to return (1–1,000) |
+| `limit` | integer | No | 100 | Max groups to return. At most `TDB_MAX_ROWS`, and a larger value is a tool error (from 0.16.0) |
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \
@@ -532,7 +532,7 @@ source, and parameter definitions.
 |---|---|---|---|---|
 | `view_name` | string | Yes | — | Name of the view to execute |
 | `parameters` | object | No | `{}` | Parameter values required by the view |
-| `limit` | integer | No | 1,000 | Max rows to return (1–1,000) |
+| `limit` | integer | No | 1,000, or `TDB_MAX_ROWS` if lower | Max rows to return. At most `TDB_MAX_ROWS`, and a larger value is a tool error (from 0.16.0) |
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \

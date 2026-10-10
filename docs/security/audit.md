@@ -79,6 +79,7 @@ Two fields describe the refusal:
 | `invalid_or_expired_token` | A JWT failed signature or expiry validation |
 | `insufficient_role_required_<role>_have_<role>` | RBAC refused the request (403) |
 | `rate_limit_exceeded` | The key's per-minute budget was exhausted (429) |
+| `limit_exceeds_max` | A request's `limit` was above the deployment's `TDB_MAX_ROWS` (enterprise): `POST /v1/query` from 0.2.0; MCP tools and view runs from 0.16.0 |
 | `sql_validation_failed` | The statement was not a permitted read-only `SELECT` — including, from community 0.7.2 / enterprise 0.12.0, SQL that some supported engine would read as more than one statement |
 | `prompt_injection_detected` | The prompt-injection filter rejected the input |
 | `source_not_found` | The referenced source does not exist |
