@@ -142,7 +142,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.15.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.15.1"}
   }
 }
 ```
@@ -253,12 +253,18 @@ curl -X POST http://localhost:8000/v1/mcp \
     "content": [
       {
         "type": "text",
-        "text": "{\"source\":\"customers\",\"columns\":[\"country\",\"n\"],\"rows\":[{\"country\":\"US\",\"n\":1420},{\"country\":\"GB\",\"n\":380}],\"rows_returned\":2}"
+        "text": "{\"source\":\"customers\",\"columns\":[\"country\",\"n\"],\"rows\":[{\"country\":\"US\",\"n\":1420},{\"country\":\"GB\",\"n\":380}],\"rows_returned\":2,\"truncated\":false}"
       }
     ]
   }
 }
 ```
+
+`truncated` is `true` when the source had more rows than were returned, so a
+result of exactly the row cap is not mistaken for a complete one. Every tool that
+returns rows carries it: community always has; enterprise from 0.15.1, on
+`query_source`, `preview_source`, `filter_source`, `aggregate_source` and
+`run_view`.
 
 The `text` field contains a JSON-serialised result object. AI tools receive this
 and can present it as a table or process it programmatically.
@@ -433,7 +439,7 @@ curl -X POST http://localhost:8000/v1/mcp \
   }'
 ```
 
-Result payload: `{"source": ..., "columns": [...], "rows": [...], "rows_returned": N}`.
+Result payload: `{"source": ..., "columns": [...], "rows": [...], "rows_returned": N, "truncated": bool}`.
 Omitting `table` on a database-wide source returns a tool error listing the
 available tables.
 
@@ -469,7 +475,7 @@ curl -X POST http://localhost:8000/v1/mcp \
   }'
 ```
 
-Result payload: `{"source": ..., "columns": [...], "rows": [...], "rows_returned": N}`.
+Result payload: `{"source": ..., "columns": [...], "rows": [...], "rows_returned": N, "truncated": bool}`.
 An unknown column returns a tool error listing the valid column names.
 
 ---
@@ -505,7 +511,7 @@ curl -X POST http://localhost:8000/v1/mcp \
 ```
 
 Result payload: `{"source": ..., "function": "COUNT", "column": "*", "group_by": "country",
-"columns": [...], "rows": [...], "rows_returned": N}`.
+"columns": [...], "rows": [...], "rows_returned": N, "truncated": bool}`.
 
 ---
 
@@ -543,7 +549,7 @@ curl -X POST http://localhost:8000/v1/mcp \
   }'
 ```
 
-Result payload: `{"view": ..., "source": ..., "columns": [...], "rows": [...], "rows_returned": N}`.
+Result payload: `{"view": ..., "source": ..., "columns": [...], "rows": [...], "rows_returned": N, "truncated": bool}`.
 
 ---
 

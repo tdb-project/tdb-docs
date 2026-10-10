@@ -178,6 +178,7 @@ POST /v1/views/{name}/run
     {"id": 1, "customer_id": 42, "status": "pending", "amount": 99.99}
   ],
   "rows_returned": 1,
+  "truncated": false,
   "executed_at": "2026-05-22T09:01:23.456789Z"
 }
 ```
