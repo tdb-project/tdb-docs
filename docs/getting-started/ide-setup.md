@@ -29,7 +29,7 @@ quick reference; details and JSON for each client follow.
 | Client | Config location | Top-level key | URL field | Native header/auth support |
 |---|---|---|---|---|
 | [Claude Desktop](#claude-desktop) | `claude_desktop_config.json` | `mcpServers` | `url` | Yes — `headers` |
-| [VS Code](#vs-code) | `.vscode/mcp.json` or user profile | `servers` (not `mcpServers`) | `url` | Yes — `headers`, plus `inputs` for secret prompting |
+| [VS Code](#vs-code) | The TDB extension, or `.vscode/mcp.json` / user profile | `servers` (not `mcpServers`) | `url` | Yes — `headers`, plus `inputs` for secret prompting |
 | [Cursor](#cursor) | `.cursor/mcp.json` | `mcpServers` | `url` | Yes — `headers` |
 | [Windsurf (Cascade)](#windsurf-cascade) | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | `serverUrl` (not `url`) | Yes — `headers` |
 | [JetBrains IDEs](#jetbrains-ides) | Settings UI (AI Assistant) | `mcpServers` | `url` | Not documented for HTTP servers — use the stdio bridge below |
@@ -70,6 +70,22 @@ Restart Claude Desktop (a full quit, not just closing the window). `query_source
 ---
 
 ## VS Code
+
+### With the TDB extension (recommended)
+
+Install **The Data-Bridge (TDB)** from the
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=tdb-project.tdb-vscode)
+or [Open VSX](https://open-vsx.org/extension/tdb-project/tdb-vscode). Then run
+**TDB: Connect to Server** from the Command Palette and enter the server URL and
+your API key. The key goes into VS Code's encrypted secret storage, not into a file.
+TDB's tools then appear in agent mode, and the status bar shows the server's version.
+
+The extension needs desktop VS Code 1.101 or later. It also sends the
+`MCP-Protocol-Version` header that VS Code itself leaves out, so your agent gets tool
+titles, read-only hints and structured results. Without the header, TDB answers with
+the oldest protocol version. **TDB: Disconnect** removes the key and the server.
+
+### By hand
 
 Add a `.vscode/mcp.json` in your workspace (or run **MCP: Add Server** from the
 Command Palette to create one in your user profile):
