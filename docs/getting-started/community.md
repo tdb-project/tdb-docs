@@ -190,9 +190,15 @@ Restart Claude Desktop; `query_source` appears in the tools list.
 !!! warning "Config format differs by client"
     Don't reuse this exact block for other clients — VS Code's `mcp.json` uses a
     top-level `servers` key (not `mcpServers`), and Windsurf uses `serverUrl`
-    (not `url`). See [Connect an IDE / AI Tool →](ide-setup.md) for **Cursor**,
-    **VS Code**, **JetBrains**, **Windsurf**, and **Cline**, each with the correct
-    JSON and example queries to run once connected.
+    (not `url`). See [Connect an IDE / AI Tool →](ide-setup.md) for **Claude Code**,
+    **Cursor**, **VS Code**, **JetBrains**, **Windsurf**, and **Cline**, each with the
+    correct setup and example queries to run once connected.
+
+**VS Code, easiest:** install the free
+[TDB extension](https://marketplace.visualstudio.com/items?itemName=tdb-project.tdb-vscode)
+(also on [Open VSX](https://open-vsx.org/extension/tdb-project/tdb-vscode)), run
+**TDB: Connect to Server**, and enter `http://localhost:8000` and your key. The key is
+kept in VS Code's secret storage, and no JSON is needed.
 
 ---
 

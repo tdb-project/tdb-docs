@@ -29,6 +29,7 @@ quick reference; details and JSON for each client follow.
 | Client | Config location | Top-level key | URL field | Native header/auth support |
 |---|---|---|---|---|
 | [Claude Desktop](#claude-desktop) | `claude_desktop_config.json` | `mcpServers` | `url` | Yes — `headers` |
+| [Claude Code](#claude-code) | `claude mcp add` (stored in `~/.claude.json`; `--scope project` writes `.mcp.json`) | `mcpServers` | `url` | Yes — `--header` |
 | [VS Code](#vs-code) | The TDB extension, or `.vscode/mcp.json` / user profile | `servers` (not `mcpServers`) | `url` | Yes — `headers`, plus `inputs` for secret prompting |
 | [Cursor](#cursor) | `.cursor/mcp.json` | `mcpServers` | `url` | Yes — `headers` |
 | [Windsurf (Cascade)](#windsurf-cascade) | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | `serverUrl` (not `url`) | Yes — `headers` |
@@ -69,6 +70,24 @@ Restart Claude Desktop (a full quit, not just closing the window). `query_source
 
 ---
 
+## Claude Code
+
+Add TDB with one command:
+
+```bash
+claude mcp add --transport http tdb http://localhost:8000/v1/mcp --header "Authorization: Bearer YOUR_API_KEY"
+```
+
+Then run `claude mcp list`; `tdb` should show as connected. The command uses the
+default `local` scope, which keeps the key in your user configuration
+(`~/.claude.json`), not in the project. `--scope project` writes it to `.mcp.json`
+in the project folder instead, so don't use that with a raw key in a repository.
+
+Claude Code connects with MCP `2026-07-28`, TDB's stateless revision: it was tested
+with Claude Code 2.1.300 against community 0.12.0.
+
+---
+
 ## VS Code
 
 ### With the TDB extension (recommended)
@@ -96,7 +115,10 @@ Command Palette to create one in your user profile):
     "tdb": {
       "type": "http",
       "url": "http://localhost:8000/v1/mcp",
-      "headers": { "Authorization": "Bearer ${input:tdb-api-key}" }
+      "headers": {
+        "Authorization": "Bearer ${input:tdb-api-key}",
+        "MCP-Protocol-Version": "2025-11-25"
+      }
     }
   },
   "inputs": [
@@ -113,6 +135,11 @@ Command Palette to create one in your user profile):
 !!! warning "VS Code uses `servers`, not `mcpServers`"
     This is the single most common mistake when copying a Claude Desktop or Cursor
     config into VS Code — the file is silently ignored if the top-level key is wrong.
+
+VS Code agrees `2025-11-25` with the server when it connects but never repeats the
+`MCP-Protocol-Version` header, so TDB would answer every later request as
+`2024-11-05`. The extra header gets your agent tool titles, read-only hints and
+structured results. Servers older than community 0.11.0 / enterprise 0.17.0 ignore it.
 
 The `inputs` block above prompts you for the key on first connect and masks it in
 the UI, instead of storing it in plaintext in a file that might be committed. If

@@ -158,7 +158,7 @@ From community 0.12.0 / enterprise 0.18.0, the same endpoint also serves
 request is served this way when its `MCP-Protocol-Version` header, or its
 `params._meta`, names `2026-07-28`. A handshake-era header always selects the
 handshake era, so existing clients are unaffected. The official MCP Python SDK
-connects this way in its default mode.
+connects this way in its default mode, and so does Claude Code (tested with 2.1.300).
 
 - `server/discover` (no auth) returns `supportedVersions`, `capabilities`,
   `ttlMs` and `cacheScope: "public"`.
