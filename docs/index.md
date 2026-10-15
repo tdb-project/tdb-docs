@@ -75,7 +75,9 @@ copilot, and with a tamper-evident audit log you own.
     that speaks the `2026-07-28` specification and the earlier handshake-era
     revisions. Tools
     are marked read-only and return structured output, with prompt-injection
-    filtering and per-key tool allow-lists.
+    filtering and per-key tool allow-lists. Claude Code connects on the newest
+    revision, and a free [VS Code extension](getting-started/ide-setup.md#vs-code)
+    sets TDB up in one command.
 
     [:octicons-arrow-right-24: MCP reference](api/mcp.md)
 

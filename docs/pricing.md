@@ -40,6 +40,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     **MCP**
 
     - `query_source` tool only
+    - Free [VS Code extension](getting-started/ide-setup.md#vs-code) — connect in one command; the same extension serves every edition
 
     **Audit**
 
@@ -83,6 +84,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     - Schema annotations — describe what a cryptic column holds, so an AI assistant reads it correctly instead of guessing
     - Prompt injection filtering (input + output)
     - Per-key MCP tool allow-lists
+    - Free [VS Code extension](getting-started/ide-setup.md#vs-code) — the same one community uses; your extra tools appear with no extension change
 
     **Access control**
 
