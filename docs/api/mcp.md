@@ -202,7 +202,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.18.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.19.0"}
   }
 }
 ```
@@ -240,9 +240,10 @@ Response (abbreviated — one entry per tool, seven in total):
 }
 ```
 
-`tools/list` always advertises all seven tools. A key with a
-[tool allow-list](#tool-allow-lists-per-api-key) still sees the full list but is
-rejected at call time for tools outside its allow-list.
+`tools/list` advertises the tools the calling key may use. A key with a
+[tool allow-list](#tool-allow-lists-per-api-key) is listed only those tools (from
+0.19.0; earlier releases listed all seven and refused the rest at call time).
+Every other caller is listed all seven.
 
 ---
 
@@ -619,6 +620,13 @@ DB-managed API keys can carry an `allowed_tools` list that restricts which MCP
 tools the key may call — for example, a reporting agent's key limited to
 `["schema_source", "run_view", "list_views"]`. Keys without an allow-list can call
 every tool.
+
+From 0.19.0, `tools/list` shows a scoped key only its allowed tools, so an agent is
+not offered tools it cannot use. Keys without an allow-list, `TDB_API_KEYS` keys and
+OAuth callers are listed all seven; an empty list (`[]`) is listed none. On protocol
+`2026-07-28` a client may cache the list for up to five minutes, so after you change
+a key's scope its client can briefly show the old list. Calls are always checked
+against the current scope.
 
 A disallowed call returns a tool-level error (HTTP 200, `isError: true`) so MCP
 clients handle it gracefully:

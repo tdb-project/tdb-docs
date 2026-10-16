@@ -200,7 +200,8 @@ See [Role-based access control →](../security/rbac.md) for the full access mat
 
 ## Restrict MCP tools
 
-Limit which MCP tools a key is allowed to call. Pass `null` to restore unrestricted access (the default).
+Limit which MCP tools a key is allowed to call. From 0.19.0 the key's `tools/list`
+shows only these tools. Pass `null` to restore unrestricted access (the default).
 
 ```
 PUT /v1/auth/keys/<key_id>/tools
@@ -217,6 +218,9 @@ PUT /v1/auth/keys/<key_id>/tools
 ```json
 {"tools": null}
 ```
+
+Tool names must be exact. From 0.19.0 an unknown name (for example `query-source`)
+is rejected with 400, naming it and the valid tools, and nothing is changed.
 
 When a key with a tool allow-list calls a disallowed tool, TDB returns a tool-error response (HTTP 200 with `isError: true`) rather than a protocol-level error, so MCP clients handle it gracefully.
 

@@ -61,7 +61,8 @@ Edit `claude_desktop_config.json` (Settings → Developer → Edit Config):
 ```
 
 Restart Claude Desktop (a full quit, not just closing the window). `query_source`
-(Community) or all seven tools (Enterprise) appear in the tools list.
+(Community) or the Enterprise tools your key may use (all seven unless it has a
+[tool allow-list](../api/mcp.md#tool-allow-lists-per-api-key)) appear in the tools list.
 
 !!! tip "Enterprise: OAuth instead of a static key"
     If you've configured [OAuth 2.1](../auth/oauth.md), drop the `headers` block —
