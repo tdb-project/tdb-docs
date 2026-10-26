@@ -171,28 +171,21 @@ queries carrying no `LIMIT` of their own. Read-only is enforced: `INSERT` / `UPD
 TDB exposes a standard [MCP](https://modelcontextprotocol.io) endpoint at `/v1/mcp`
 (Streamable HTTP). The Community Edition ships one tool: `query_source`.
 
-**Claude Desktop** — edit `claude_desktop_config.json`:
+**Claude Desktop:** download `tdb.mcpb` from the
+[latest tdb-connectors release](https://github.com/tdb-project/tdb-connectors/releases/latest),
+open it to install, then enter `http://localhost:8000` and your key in Settings →
+Extensions → The Data-Bridge (TDB). `query_source` appears in the tools list.
 
-```json
-{
-  "mcpServers": {
-    "tdb": {
-      "type": "http",
-      "url": "http://localhost:8000/v1/mcp",
-      "headers": { "Authorization": "Bearer YOUR_API_KEY" }
-    }
-  }
-}
-```
-
-Restart Claude Desktop; `query_source` appears in the tools list.
+**Claude Code:** run `claude plugin install tdb --marketplace tdb-project/tdb-connectors`
+in a terminal (Claude Code 2.1.292 or later), then `/plugin configure tdb@tdb-connectors`
+and `/reload-plugins` in a session.
 
 !!! warning "Config format differs by client"
-    Don't reuse this exact block for other clients — VS Code's `mcp.json` uses a
+    Clients you set up by hand use different config keys: VS Code's `mcp.json` uses a
     top-level `servers` key (not `mcpServers`), and Windsurf uses `serverUrl`
-    (not `url`). See [Connect an IDE / AI Tool →](ide-setup.md) for **Claude Code**,
-    **Cursor**, **VS Code**, **JetBrains**, **Windsurf**, and **Cline**, each with the
-    correct setup and example queries to run once connected.
+    (not `url`). See [Connect an IDE / AI Tool →](ide-setup.md) for **Cursor**,
+    **VS Code**, **JetBrains**, **Windsurf**, and **Cline**, each with the correct
+    setup and example queries to run once connected.
 
 **VS Code, easiest:** install the free
 [TDB extension](https://marketplace.visualstudio.com/items?itemName=tdb-project.tdb-vscode)

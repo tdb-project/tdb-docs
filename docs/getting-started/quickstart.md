@@ -560,6 +560,6 @@ working correctly.
 
 - [PostgreSQL connector reference →](../connectors/postgresql.md)
 - [Set up JWT authentication →](../auth/jwt.md)
-- [Connect Claude Desktop via OAuth →](../auth/oauth.md)
+- [Connect OAuth clients (Cursor, custom connectors) →](../auth/oauth.md)
 - [Create and rotate API keys →](../auth/api-keys.md)
 - [Connect VS Code, Cursor, JetBrains, and other IDEs →](ide-setup.md)

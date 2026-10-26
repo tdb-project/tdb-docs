@@ -161,7 +161,7 @@ When the license is missing, invalid, or expired, the server keeps running and
 # Core
 TDB_API_KEYS=your-strong-bootstrap-key
 
-# JWT + OAuth (required for Claude Desktop / Cursor)
+# JWT + OAuth (required for OAuth clients: Cursor, custom connectors)
 TDB_JWT_SECRET=<output of: python -c "import secrets; print(secrets.token_hex(32))">
 TDB_ADMIN_USER=admin
 TDB_ADMIN_PASSWORD=your-strong-admin-password

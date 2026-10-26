@@ -86,8 +86,8 @@ header that MCP-aware clients use to discover the OAuth authorization server:
 WWW-Authenticate: Bearer realm="TDB", resource_metadata="/.well-known/oauth-protected-resource"
 ```
 
-Claude Desktop and Cursor use this header to trigger the OAuth 2.1 PKCE flow
-automatically. See [OAuth 2.1 →](../auth/oauth.md).
+OAuth clients such as Cursor and Claude custom connectors use this header to start the
+OAuth 2.1 PKCE flow. See [OAuth 2.1 →](../auth/oauth.md).
 
 ### Browser origins
 

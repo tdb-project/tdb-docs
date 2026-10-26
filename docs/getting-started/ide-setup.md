@@ -28,8 +28,8 @@ quick reference; details and JSON for each client follow.
 
 | Client | Config location | Top-level key | URL field | Native header/auth support |
 |---|---|---|---|---|
-| [Claude Desktop](#claude-desktop) | `claude_desktop_config.json` | `mcpServers` | `url` | Yes — `headers` |
-| [Claude Code](#claude-code) | `claude mcp add` (stored in `~/.claude.json`; `--scope project` writes `.mcp.json`) | `mcpServers` | `url` | Yes — `--header` |
+| [Claude Desktop](#claude-desktop) | The TDB extension (`tdb.mcpb`); Settings → Extensions | — | Entered in the extension's settings | Yes — the extension adds the key |
+| [Claude Code](#claude-code) | The TDB plugin, or `claude mcp add` (stored in `~/.claude.json`; `--scope project` writes `.mcp.json`) | `mcpServers` | `url` | Yes — `--header` |
 | [VS Code](#vs-code) | The TDB extension, or `.vscode/mcp.json` / user profile | `servers` (not `mcpServers`) | `url` | Yes — `headers`, plus `inputs` for secret prompting |
 | [Cursor](#cursor) | `.cursor/mcp.json` | `mcpServers` | `url` | Yes — `headers` |
 | [Windsurf (Cascade)](#windsurf-cascade) | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | `serverUrl` (not `url`) | Yes — `headers` |
@@ -46,34 +46,55 @@ quick reference; details and JSON for each client follow.
 
 ## Claude Desktop
 
-Edit `claude_desktop_config.json` (Settings → Developer → Edit Config):
+Use the TDB extension:
 
-```json
-{
-  "mcpServers": {
-    "tdb": {
-      "type": "http",
-      "url": "http://localhost:8000/v1/mcp",
-      "headers": { "Authorization": "Bearer YOUR_API_KEY" }
-    }
-  }
-}
-```
+1. Download `tdb.mcpb` from the
+   [latest tdb-connectors release](https://github.com/tdb-project/tdb-connectors/releases/latest)
+   and open it to install.
+2. In Settings → Extensions → **The Data-Bridge (TDB)**, enter the server URL
+   (`http://localhost:8000`) and your API key. Claude Desktop keeps the key in your
+   system's credential store.
 
-Restart Claude Desktop (a full quit, not just closing the window). `query_source`
-(Community) or the Enterprise tools your key may use (all seven unless it has a
-[tool allow-list](../api/mcp.md#tool-allow-lists-per-api-key)) appear in the tools list.
+`query_source` (Community) or the Enterprise tools your key may use (all seven unless it
+has a [tool allow-list](../api/mcp.md#tool-allow-lists-per-api-key)) then appear in the
+tools list. The extension runs a small local bridge that forwards to TDB over HTTP, so it
+works with TDB on your own machine or private network.
 
-!!! tip "Enterprise: OAuth instead of a static key"
-    If you've configured [OAuth 2.1](../auth/oauth.md), drop the `headers` block —
-    Claude Desktop detects the `WWW-Authenticate` challenge and runs the PKCE flow
-    interactively instead. See [Connecting Claude Desktop →](../auth/oauth.md#connecting-claude-desktop).
+TDB's audit log names the client as
+`local-agent-mode-The Data-Bridge (TDB)/1.0.0 (via tdb-bridge/0.1.0)`: Claude Desktop
+reports the extension's name, not its own. Tested on Windows against community 0.12.0.
+
+!!! note "Not `claude_desktop_config.json`"
+    That file is for local servers that Claude Desktop starts itself; a `url` entry there
+    does not connect to TDB. Remote servers are added as custom connectors, which Anthropic's
+    cloud reaches, so they need TDB at a public HTTPS URL — see
+    [Connecting Claude Desktop →](../auth/oauth.md#connecting-claude-desktop).
 
 ---
 
 ## Claude Code
 
-Add TDB with one command:
+### With the TDB plugin (recommended)
+
+In a terminal, with Claude Code 2.1.292 or later:
+
+```bash
+claude plugin install tdb --marketplace tdb-project/tdb-connectors
+```
+
+On earlier versions, run `claude plugin marketplace add tdb-project/tdb-connectors`
+first, then `claude plugin install tdb@tdb-connectors`.
+
+Then, in Claude Code, run `/plugin configure tdb@tdb-connectors` to enter the server URL
+and your API key, and `/reload-plugins` to connect. `/mcp` should show `tdb` as
+connected. The key goes into your system's credential store, not into settings. The
+plugin also teaches Claude how to query TDB: read-only SQL, the table name, and what
+`truncated` means.
+
+Tested with Claude Code 2.1.310 against community 0.12.0; the audit log names the
+client `claude-code/2.1.310`.
+
+### By hand
 
 ```bash
 claude mcp add --transport http tdb http://localhost:8000/v1/mcp --header "Authorization: Bearer YOUR_API_KEY"

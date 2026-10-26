@@ -81,7 +81,7 @@ See [JWT →](jwt.md)
 
 ## OAuth 2.1 with PKCE (for MCP clients)
 
-Claude Desktop, Cursor, and other MCP clients that support OAuth 2.1 can authenticate
+Cursor, Claude and ChatGPT custom connectors, and other MCP clients that support OAuth 2.1 can authenticate
 against TDB's built-in authorization server. TDB implements:
 
 - RFC 9728 — OAuth 2.0 Protected Resource Metadata
@@ -102,7 +102,8 @@ See [OAuth 2.1 →](oauth.md)
 | First-time setup, local testing | Static env key |
 | Production REST API integrations | DB-managed key with expiry + rate limit |
 | Multi-user team access | JWT (one login per user) |
-| Claude Desktop / Cursor / ChatGPT | OAuth 2.1 PKCE |
+| Cursor; Claude or ChatGPT custom connector (public HTTPS) | OAuth 2.1 PKCE |
+| Claude Desktop or Claude Code with TDB on your network | API key, via the [TDB extension or plugin](../getting-started/ide-setup.md) |
 | CI/CD pipelines | DB-managed key (rotate on schedule) |
 
 ---

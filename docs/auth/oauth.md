@@ -1,7 +1,7 @@
 # OAuth 2.1 with PKCE
 
 TDB Enterprise ships a built-in OAuth 2.1 authorization server. This lets
-Claude Desktop, Cursor, ChatGPT, and any other MCP client that supports
+Cursor, Claude and ChatGPT custom connectors, and any other MCP client that supports
 OAuth 2.1 authenticate with TDB without manual token management.
 
 **Implemented specifications:**
@@ -69,29 +69,31 @@ with an absolute URL, built from `TDB_SERVER_URL` when it is set.
 
 ## Connecting Claude Desktop
 
-1. Open **Claude Desktop** → Settings → Developer → Edit Config (`claude_desktop_config.json`)
+Which route works depends on where TDB runs, because Claude Desktop's custom connectors
+are reached from **Anthropic's cloud, not from your computer**.
 
-2. Add a TDB MCP server entry:
+**TDB on your machine or a private network:** use the TDB extension (`tdb.mcpb`), which
+connects with an API key, not OAuth. See
+[Claude Desktop setup →](../getting-started/ide-setup.md#claude-desktop). A `url` entry in
+`claude_desktop_config.json` does not work: that file is for local servers Claude Desktop
+starts itself.
 
-```json
-{
-  "mcpServers": {
-    "tdb": {
-      "url": "http://localhost:8000/v1/mcp"
-    }
-  }
-}
-```
+**TDB at a public HTTPS URL:** add it as a custom connector.
 
-3. Save and restart Claude Desktop.
+1. Set `TDB_SERVER_URL` to the public URL, for example `https://tdb.example.com`, so the
+   discovery documents and the `401` challenge name it.
+2. In Claude Desktop, open Settings → Connectors → **Add custom connector** and enter
+   `https://tdb.example.com/v1/mcp`.
+3. Claude registers itself by dynamic registration, or by its
+   [client metadata document](#client-id-metadata-documents) if you set
+   `TDB_OAUTH_CIMD_HOSTS=claude.ai`. Log in with `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD`
+   when the browser opens.
 
-4. On first use, Claude Desktop will detect the `WWW-Authenticate` header from TDB's
-   MCP endpoint, open a browser window to `http://localhost:8000/oauth/authorize`,
-   and prompt you to log in with `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD`.
+Tokens expire after `TDB_JWT_EXPIRE_MINUTES` (default 60 minutes).
 
-5. After authorising, Claude Desktop receives a JWT and stores it. All subsequent MCP
-   calls use this token automatically. Tokens expire after `TDB_JWT_EXPIRE_MINUTES`
-   (default 60 minutes); Claude Desktop re-authenticates automatically.
+!!! warning "Not yet tested"
+    The custom-connector route has not been run against TDB yet. The extension route has
+    (Windows, community 0.12.0).
 
 ---
 
@@ -101,7 +103,8 @@ with an absolute URL, built from `TDB_SERVER_URL` when it is set.
 
 2. Set the server URL to `http://localhost:8000/v1/mcp`
 
-3. Cursor performs the same OAuth 2.1 discovery and PKCE flow as Claude Desktop.
+3. Cursor runs the OAuth 2.1 discovery and PKCE flow from your machine, so `localhost`
+   works. The flow has been tested with Cursor's redirect URI but not yet inside Cursor.
 
 ---
 
@@ -271,7 +274,7 @@ not use an egress proxy, so this cannot work in an air-gapped deployment.
 For security, TDB only allows redirect URIs that meet one of these criteria:
 
 - `https://` — any HTTPS URI (required for production)
-- `http://localhost` — loopback only (required for native app flows like Claude Desktop)
+- `http://localhost` — loopback only (required for native app flows like Cursor)
 
 Plain `http://` to a non-localhost host is rejected. This follows
 [OAuth 2.1 BCP](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics).
