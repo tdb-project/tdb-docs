@@ -42,7 +42,7 @@ copilot, and with a tamper-evident audit log you own.
 
     ---
 
-    PostgreSQL, MySQL, SQL Server and Snowflake. Database-wide or single-table
+    PostgreSQL, MySQL, SQL Server, Snowflake, and Parquet files. Database-wide or single-table
     registration per source, and multiple simultaneous registered sources.
 
     [:octicons-arrow-right-24: All connectors](connectors/postgresql.md)
@@ -165,7 +165,8 @@ Postgres · MySQL · SQL Server · Snowflake
     [:octicons-arrow-right-24: PostgreSQL](connectors/postgresql.md)<br>
     [:octicons-arrow-right-24: MySQL](connectors/mysql.md)<br>
     [:octicons-arrow-right-24: SQL Server](connectors/sqlserver.md)<br>
-    [:octicons-arrow-right-24: Snowflake](connectors/snowflake.md)
+    [:octicons-arrow-right-24: Snowflake](connectors/snowflake.md)<br>
+    [:octicons-arrow-right-24: Parquet](connectors/parquet.md)
 
 -   **Govern it**
 

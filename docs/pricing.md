@@ -61,7 +61,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Data sources**
 
-    - PostgreSQL, MySQL, SQL Server, Snowflake
+    - PostgreSQL, MySQL, SQL Server, Snowflake, Parquet files
     - Unlimited simultaneous registered sources
 
     **Auth**
@@ -156,6 +156,7 @@ The two commercial editions ship the **same product**. Nothing in the running se
 | MySQL | ❌ | ✅ | ✅ |
 | SQL Server | ❌ | ✅ | ✅ |
 | Snowflake | ❌ | ✅ | ✅ |
+| Parquet files | ❌ | ✅ | ✅ |
 | Simultaneous sources | 1 | Unlimited | Unlimited |
 | **Auth** | | | |
 | Static API key | ✅ | ✅ | ✅ |

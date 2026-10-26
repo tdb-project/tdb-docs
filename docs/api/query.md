@@ -57,8 +57,8 @@ Requires authentication (`Authorization: Bearer <token>`).
 The table name to use in your SQL depends on the connector — there is **no universal
 `data` alias** across connector types:
 
-- **CSV** (Community): always use `data`. TDB loads the file into an in-memory table
-  under that fixed name.
+- **CSV** (Community), and **Parquet** (Enterprise): always use `data`. TDB reads the
+  file in place under that fixed name.
 - **PostgreSQL / MySQL / SQL Server / Snowflake**: use the **actual table name** from the
   source's `connection.table`. Your SQL is passed through to the database unchanged (apart
   from an appended `LIMIT`).

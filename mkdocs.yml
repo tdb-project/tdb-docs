@@ -91,6 +91,7 @@ nav:
     - MySQL: connectors/mysql.md
     - SQL Server: connectors/sqlserver.md
     - Snowflake: connectors/snowflake.md
+    - Parquet: connectors/parquet.md
   - API Reference:
     - Sources: api/sources.md
     - Query: api/query.md
