@@ -52,6 +52,37 @@ Requires authentication (`Authorization: Bearer <token>`).
 
 ---
 
+## How values are returned
+
+Rows come back as JSON, in the same form on REST (`rows`) and MCP (the tool text and
+`structuredContent`), for every source type:
+
+| Source type | Returned as | Example |
+|---|---|---|
+| Integers, floats, booleans, text | JSON number, boolean or string | `42`, `1.5`, `true`, `"EU"` |
+| `NULL` | `null` | `null` |
+| `NaN`, `Infinity`, `-Infinity` | String | `"NaN"`, `"Infinity"`, `"-Infinity"` |
+| `DECIMAL` / `NUMERIC` | String with the exact digits | `"149.99"` |
+| `DATE`, `TIME` | ISO 8601 string | `"2026-01-01"`, `"10:00:00"` |
+| `TIMESTAMP` | ISO 8601 string | `"2026-01-01T10:00:00"`; with a time zone, `"2026-01-01T10:00:00Z"` in UTC or `"…+05:30"` |
+| `INTERVAL` | ISO 8601 duration | `"P1D"` |
+| `UUID` | String | `"4b48af8e-b7dd-45e2-836e-e8efa86e41c2"` |
+| Binary (`BLOB`, `bytea`, `varbinary`, `BINARY`) | Base64 string | `"AP8="` for bytes `00 ff` |
+| Arrays, `LIST`, `STRUCT` | JSON array or object, with these rules applied inside | `["AP8="]`, `{"k": 1}` |
+
+`DECIMAL` is a string so that `0.10` keeps its exact digits instead of becoming a
+binary floating-point number. `NaN` and infinities are strings because JSON has no
+such numbers; they are spelled the way PostgreSQL's `to_json` spells them, and stay
+distinct from `null`.
+
+!!! note "Changed in community 0.12.2 / enterprise 0.20.1"
+    Before these releases a binary value made `POST /v1/query` fail with `500` after
+    the query had run; `NaN` and infinities were `null` on REST and invalid bare
+    tokens on MCP; and MCP wrote timestamps with a space (`2026-01-01 10:00:00`) and
+    intervals as `1 day, 0:00:00`.
+
+---
+
 ## Table name in queries
 
 The table name to use in your SQL depends on the connector — there is **no universal

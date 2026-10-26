@@ -145,7 +145,8 @@ When the header names `2025-06-18` or later:
   (`readOnlyHint: true`, `openWorldHint: false`: every TDB tool reads a
   registered source and changes nothing) and an `outputSchema`;
 - a successful `tools/call` also carries `structuredContent`, the same object as
-  the JSON in the text block, which is still sent;
+  the JSON in the text block, which is still sent. Values in both follow the
+  [Query API rules](query.md#how-values-are-returned), the same as REST;
 - `initialize` adds `serverInfo.title`, `serverInfo.description` and
   `capabilities.tools.listChanged: false`.
 
@@ -202,7 +203,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.20.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.20.1"}
   }
 }
 ```

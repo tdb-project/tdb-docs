@@ -56,24 +56,10 @@ query. One source is one file; to serve several files, register each one as its 
 
 ## How values are returned
 
-Parquet has types a CSV never produces. REST and MCP responses return them as JSON
-like this:
-
-| Parquet / DuckDB type | Returned as | Example |
-|---|---|---|
-| Integers, `DOUBLE`, `BOOLEAN`, `VARCHAR` | JSON number, boolean or string | `42`, `true`, `"EU"` |
-| `DECIMAL` | String with the exact digits | `"0.10"` |
-| `DATE`, `TIMESTAMP` | String | REST `"2026-01-01T10:00:00"`; MCP `"2026-01-01 10:00:00"` |
-| `UUID` | String | `"4b48af8e-b7dd-45e2-836e-e8efa86e41c2"` |
-| `BLOB` | Base64 string | `"AP8="` for bytes `00 ff` |
-| `LIST` | JSON array | `[1, 2]` |
-| `STRUCT` | JSON object | `{"k": 1}` |
-| `NULL` | `null` | `null` |
-
-`DECIMAL` is a string so that a value like `0.10` keeps its exact digits rather than
-becoming a binary floating-point number. Values inside lists and structs follow the same
-rules. Timestamps are separated by `T` on REST and by a space on MCP, the same as for a
-CSV source.
+Parquet values follow the [same rules as every source](../api/query.md#how-values-are-returned):
+`DECIMAL` as a string with its exact digits, `BLOB` as base64, `UUID` as a string,
+`LIST` and `STRUCT` as JSON arrays and objects, and timestamps as ISO 8601. REST and
+MCP return the same values.
 
 ---
 
