@@ -90,6 +90,31 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-10-26 — certifi trusted CAs with compromised keys
+
+**Fixed in enterprise 0.19.1 and community 0.12.1.** `certifi`, the CA bundle
+Python's HTTPS clients verify against, trusted emSign root CAs whose intermediate
+CA keys were compromised (GHSA-6q48-6c7w-9gw2, critical). A certificate issued
+from those keys passed verification for any hostname.
+
+- **Enterprise was exposed** on the three outbound connections that use certifi's
+  bundle: the **Splunk** exporter, the **S3** exporter and the **Snowflake**
+  connector. An attacker already on the network path, holding such a certificate,
+  could have read or altered that traffic, including exported audit entries and
+  Snowflake credentials and results. The CIMD fetch and the PostgreSQL wire
+  gateway use the system trust store and were not affected.
+- **Community's server makes no outbound TLS connection.** Only the `tdb` CLI,
+  pointed at a TDB server over HTTPS, used the bundle.
+
+Enterprise 0.19.1 also reports three `filelock` advisories in image scans
+(GHSA-v4x8-3wr5-3wq8, GHSA-9vhv-jxww-xfm5, GHSA-567q-5qvw-pf92). **TDB is not
+exposed**: they cover locks TDB does not use and Windows-only behaviour, and the
+fixed `filelock` 4.x cannot be installed alongside the Snowflake connector yet.
+
+**Action:** upgrade. If you export to Splunk or S3, or query Snowflake, over a
+network you do not control, treat the credentials those connections carry as
+worth rotating.
+
 ### 2026-10-10 — Enterprise 0.16.0 and 0.17.0: two hardening fixes
 
 **Fixed in enterprise 0.16.0 and 0.17.0.** Community is not affected.
