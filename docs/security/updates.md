@@ -90,6 +90,26 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-10-27 — Log lines could be forged through caller input
+
+**Fixed in enterprise 0.20.2 and community 0.12.3.** TDB writes source names, SQL
+fragments and database error messages into its plain-text application log (the
+container's standard output). A value containing a line break was written as is, so
+a caller with query access could make text appear as a separate log line, for
+example one that looks like an unrelated event. Database errors also spanned several
+lines on their own.
+
+Line breaks in everything TDB logs are now escaped (`\n`, `\r`), so each log call is
+one line. Ordinary values log exactly as before, and tracebacks are unchanged.
+
+- **The signed audit log was never affected.** It is JSON, one entry per line, and
+  hash-chained; this concerns only the application log.
+- Medium severity: it needs a valid API key, and it misleads a reader of the log
+  rather than exposing data.
+
+**Action:** upgrade. If you alert on, or parse, the application log, a log line
+can no longer be split by caller input; nothing needs changing on your side.
+
 ### 2026-10-26 — certifi trusted CAs with compromised keys
 
 **Fixed in enterprise 0.19.1 and community 0.12.1.** `certifi`, the CA bundle
