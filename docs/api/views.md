@@ -214,13 +214,15 @@ A key's `allowed_tools` scope applies to both: the MCP tools above, and — from
 | Unknown parameter supplied | 400 | `Unknown parameters: ['typo']` |
 | Type coercion failure | 400 | `Parameter 'limit' expects integer, got 'abc'` |
 | Source not registered | 400 | `View 'name' references source 'x' which is not registered.` |
-| View SQL failed to execute | 500 | `View execution failed: <error from the source>` |
+| Source rejected the view's SQL | 400 | `View failed: <error from the source>` |
+| Source failed while running it | 500 | `View execution failed: <error from the source>` |
 
-The 400s are all caused by the *caller* — a missing, unknown or mistyped
-parameter. The **500 is caused by the view definition**: the SQL in the YAML was
-accepted at load time but rejected by the source when it ran, so it surfaces on
-whoever calls the view rather than on whoever wrote it. A parser error in the
-`sql:` field is the common case — check the view against
+The first four 400s are caused by the *caller* — a missing, unknown or mistyped
+parameter. **`View failed` is usually caused by the view definition**: the SQL in
+the YAML was accepted at load time but rejected by the source when it ran (an
+unknown column, a syntax error, a value that does not convert), so it surfaces on
+whoever calls the view rather than on whoever wrote it. Before enterprise 0.20.3
+this was a 500. A parser error in the `sql:` field is the common case — check the view against
 [the parameter syntax](#parameter-types-and-sql-safety) (`:name`, not `{{ name }}`)
 and run the same SQL through [`POST /v1/query`](query.md) to see the source's own
 error message.

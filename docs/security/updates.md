@@ -90,6 +90,30 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-10-27 — Enterprise wrote API keys to the application log
+
+**Fixed in enterprise 0.20.3.** Community is not affected. TDB Enterprise wrote the
+caller's **full API key** into its plain-text application log (the container's
+standard output) as `by=…` on every successful query, source registration and
+deletion, refused, failed or timed-out query, and view run, and on a prompt-injection
+refusal over MCP. Anyone able to read those logs, or a log store they are shipped to,
+could use the keys. Every enterprise release before 0.20.3 is affected.
+
+Log lines now carry only the first six characters, as the audit log always has. The
+signed audit log never held a full key.
+
+**Action:**
+
+1. Upgrade to 0.20.3.
+2. **Rotate API keys** (`POST /v1/auth/keys/{id}/rotate`, or a new value in
+   `TDB_API_KEYS`) unless everyone with access to TDB's application logs, including
+   any log store they are forwarded to, is trusted with every key.
+3. **Purge retained application logs** from before the upgrade, or restrict them as
+   you would a secrets store.
+
+JWTs and OAuth tokens were not written: for those, the log carried the token's
+subject.
+
 ### 2026-10-27 — Log lines could be forged through caller input
 
 **Fixed in enterprise 0.20.2 and community 0.12.3.** TDB writes source names, SQL

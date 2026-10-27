@@ -316,10 +316,11 @@ See [Audit Log](../security/audit.md) for the full `action` and `reason` sets.
 | Status | Meaning |
 |---|---|
 | 400 | SQL validation failed (not a SELECT) |
+| 400 | `Query failed: …` — the source rejected the SQL: an unknown column or table, a syntax error, a value that does not convert. The source's own message follows. *From community 0.12.4 / enterprise 0.20.3; earlier releases returned 500.* |
 | 401 | Missing or invalid auth token |
 | 404 | `source_id` (name or UUID) not found |
 | 429 | Rate limit exceeded (DB-managed keys only) |
-| 500 | Query execution error — check that the source is reachable |
+| 500 | Query execution error — the source or TDB failed (unreachable source, out of memory). Not the caller's SQL. |
 
 ---
 
