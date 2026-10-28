@@ -40,6 +40,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     **MCP**
 
     - `query_source` tool only
+    - [Lean Mode](api/mcp.md#saving-tokens-lean-mode) — smaller results for AI agents (rows as arrays, optional cell trimming), opt-in
     - Free [VS Code extension](getting-started/ide-setup.md#vs-code) — connect in one command; the same extension serves every edition
 
     **Audit**
@@ -84,6 +85,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     - Schema annotations — describe what a cryptic column holds, so an AI assistant reads it correctly instead of guessing
     - Prompt injection filtering (input + output)
     - Per-key MCP tool allow-lists
+    - [Lean Mode](api/mcp.md#saving-tokens-lean-mode) — smaller results for AI agents, set per call, per API key or server-wide; schema detail levels for database-wide sources
     - Free [VS Code extension](getting-started/ide-setup.md#vs-code) — the same one community uses; your extra tools appear with no extension change
 
     **Access control**
@@ -172,6 +174,8 @@ The two commercial editions ship the **same product**. Nothing in the running se
 | Row limit per response † | 1,000 | 1,000 by default, configurable | 1,000 by default, configurable |
 | MCP tools | `query_source` | All 7 | All 7 |
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |
+| Lean Mode: compact rows, cell trimming (per call / server default) | ✅ | ✅ | ✅ |
+| Lean Mode: per-key default, schema detail levels | ❌ | ✅ | ✅ |
 | Prompt injection filtering | ❌ | ✅ | ✅ |
 | YAML named views | ❌ | ✅ | ✅ |
 | Schema annotations for AI clients | ❌ | ✅ | ✅ |
