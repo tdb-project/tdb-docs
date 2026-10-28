@@ -313,6 +313,14 @@ source without risking a malformed query — see the
 
 ---
 
+### Smaller results for the assistant
+
+From community 0.13.0 / enterprise 0.21.0, TDB can send results in a smaller form
+([Lean Mode](../api/mcp.md#saving-tokens-lean-mode)): rows as arrays, and optionally
+long text cut with a marker. Nothing in the client changes. Ask for it in the prompt
+(*"use lean: true"*), or have the operator turn it on for everyone with
+`TDB_LEAN_MODE=on` or, in enterprise, for one API key.
+
 ## Troubleshooting
 
 | Symptom | Likely cause |

@@ -65,7 +65,8 @@ TDB Enterprise exposes **seven tools**:
 Tools that return rows pass their output through the
 [prompt-injection filter](#prompt-injection-filtering) before the result reaches
 the MCP client. API keys can be restricted to a subset of tools — see
-[Tool allow-lists per key](#tool-allow-lists-per-api-key).
+[Tool allow-lists per key](#tool-allow-lists-per-api-key). To make results smaller
+for an agent, see [Saving tokens (Lean Mode)](#saving-tokens-lean-mode).
 
 ---
 
@@ -250,12 +251,18 @@ Every other caller is listed all seven.
 
 ### `tools/call` — `query_source`
 
-Executes a SQL query against a registered source. Maximum 1,000 rows returned.
+Executes a SQL query against a registered source. Rows are capped at 1,000 in
+community and at `TDB_MAX_ROWS` in enterprise; `truncated` is `true` when more matched.
 
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `sql` | string | Yes | — | SQL SELECT statement |
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `lean` | boolean | No | off | Rows as arrays — see [Lean Mode](#saving-tokens-lean-mode) (from 0.13.0 / 0.21.0) |
+| `max_cell_chars` | integer | No | off | Cut longer text cells, marked — see [Lean Mode](#saving-tokens-lean-mode) |
+
+The other row-returning tools take `lean` and `max_cell_chars` too, and
+`schema_source` takes `detail`.
 
 Use the table name that matches the source: CSV sources are queried as `data`;
 database sources use **real table names**. Database-wide sources can JOIN across
@@ -644,6 +651,55 @@ See [API Keys → tool allow-lists](../auth/api-keys.md) for how to set
 
 ---
 
+## Saving tokens (Lean Mode)
+
+**From community 0.13.0 / enterprise 0.21.0.** Every MCP result an AI agent reads is
+paid for in its context window. Lean Mode makes results smaller, **opt-in at every
+level**: with nothing set, every response is exactly what it was before.
+
+| Setting | Effect | Lossless? | Tools |
+|---|---|---|---|
+| `lean: true` | Rows are arrays in `columns` order instead of objects that repeat every column name; `schema_source` returns `{column: type}` | Yes | All tools that return rows; `schema_source` (enterprise) |
+| `format` | `objects` (default) or `table`, to set the row shape explicitly | Yes | Same |
+| `max_cell_chars` | Text cells longer than this are cut, and each cut is marked `…[+N chars]`. Minimum 50; `0` turns it off | **No** — never part of `lean: true` | Same |
+| `detail` | `schema_source` only: `full` (default), `types` (`{column: type}`), `names` (column names only), `tables` (table names only) | `types` yes; `names`, `tables` no | `schema_source` (enterprise) |
+
+Measured with Claude Code (Claude Opus 5.5): a 100-row result went from **10,412 to
+6,868 tokens** with `lean: true`, and a 30-table, 292-column database schema from
+**5,235** tokens to **3,025** (`types`), **1,400** (`names`) or **113** (`tables`).
+On an answer-quality check of 21 questions, Lean results gave the same answers as
+today's.
+
+**Where a setting comes from.** A tool call's own arguments win, then the API key's
+stored setting (enterprise — see [API Keys](../auth/api-keys.md#set-a-keys-lean-mode)),
+then the server default [`TDB_LEAN_MODE`](../reference/environment-variables.md), then
+off. Layers merge field by field, and `lean: false` in a layer clears everything
+below it — so an agent can always ask for today's format.
+
+**What the agent sees.** A Lean result says what was applied, so the model never has
+to guess:
+
+```json
+{"source":"orders","columns":["id","note"],"rows":[[1,"Customer called about the delayed courier and aske…[+2700 chars]"]],
+ "rows_returned":1,"truncated":false,
+ "lean":{"format":"table","max_cell_chars":50,"trimmed_cells":1}}
+```
+
+`trimmed_cells` counts cut values; it is separate from `truncated`, which still means
+*rows* were withheld. A marked cell tells the agent to query that value on its own if
+it needs all of it. `structuredContent` carries the same Lean payload as the text.
+
+**Safety is unchanged.** Results are shaped after the
+[prompt-injection filter](#prompt-injection-filtering) has run, so a Lean format or a
+cut can never bring back a value the filter redacted, and if the filter fails the
+call is still refused. A bad value (`format: "csv"`, `max_cell_chars: 10`) is refused
+with a tool error naming the allowed values, never ignored.
+
+**Audit.** The `query` entry records the settings served, as `lean` (see
+[Audit log](#audit-log)).
+
+---
+
 ## Prompt-injection filtering
 
 Two filters protect the MCP path:
@@ -716,3 +772,8 @@ handshake-era client is named by its `User-Agent`, because it names itself only
 at `initialize`, which a stateless server cannot tie to later calls. Both are
 self-reported by the client: use them to tell AI tools apart, not as proof of
 identity. The key that made the call is still `key_hint`.
+
+From community 0.13.0 / enterprise 0.21.0, an entry for a call served in
+[Lean Mode](#saving-tokens-lean-mode) also carries `lean`: the settings applied, for
+example `{"format": "table", "max_cell_chars": 500}`. It is absent when nothing was
+applied.

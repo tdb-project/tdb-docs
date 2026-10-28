@@ -50,6 +50,7 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 | `PUT /v1/auth/keys/{id}/rate-limit` | `admin` |
 | `PUT /v1/auth/keys/{id}/role` | `admin` |
 | `PUT /v1/auth/keys/{id}/tools` | `admin` |
+| `PUT /v1/auth/keys/{id}/lean-mode` | `admin` |
 | `GET /v1/audit/verify` | `admin` |
 | `GET /v1/audit/history` | `admin` |
 | `POST /v1/audit/rotate` | `admin` |

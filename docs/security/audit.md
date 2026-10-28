@@ -38,6 +38,7 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 | `prev_hash` | SHA-256 hash of the previous entry (genesis entry uses `000...0`) |
 | `hash` | SHA-256 hash of this entry (computed over all fields except `hash` itself) |
 | `mcp_client`, `mcp_protocol` | MCP entries only (from community 0.12.0 / enterprise 0.18.0): the client's self-reported name, `name/version` from its `clientInfo` or else its `User-Agent`, at most 200 characters; and the protocol version it was served at. See [the MCP audit notes](../api/mcp.md#audit-log) |
+| `lean` | MCP entries served in [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) only (from community 0.13.0 / enterprise 0.21.0): the settings applied, e.g. `{"format": "table"}` |
 | `transport`, `client_user`, `statement_kind`, `params`, `outcome`, `sqlstate` | Wire gateway entries only — see [the gateway's audit trail](../integrations/postgres-wire.md#audit-trail) |
 
 ---

@@ -198,6 +198,28 @@ See [Role-based access control →](../security/rbac.md) for the full access mat
 
 ---
 
+## Set a key's Lean Mode
+
+**From 0.21.0.** Give a key a default [Lean Mode](../api/mcp.md#saving-tokens-lean-mode)
+for its MCP calls, so an agent gets smaller results without changing its client. The
+key's setting overrides `TDB_LEAN_MODE`; a call's own arguments still win.
+
+```
+PUT /v1/auth/keys/<key_id>/lean-mode
+```
+
+```bash
+curl -X PUT http://localhost:8000/v1/auth/keys/<key_id>/lean-mode \
+  -H "Authorization: Bearer <YOUR_ADMIN_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"lean": true, "max_cell_chars": 500}'
+```
+
+Fields: `lean` (true/false), `format` (`objects` | `table`), `detail` (`full` |
+`types` | `names` | `tables`), `max_cell_chars` (minimum 50, `0` = off). Send `{}` to
+clear the key's setting. An invalid value is `400`. The setting is shown as
+`lean_mode` on `GET /v1/auth/keys`. Requires `admin`.
+
 ## Restrict MCP tools
 
 Limit which MCP tools a key is allowed to call. From 0.19.0 the key's `tools/list`
