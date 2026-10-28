@@ -188,6 +188,7 @@ inside the image. Defaults in parentheses.
 | `TDB_CORS_ALLOW_CREDENTIALS` | `false` | `Access-Control-Allow-Credentials`. Don't combine with `*`. |
 | `TDB_SERVER_URL` | *(derived)* | Public base URL TDB advertises as the OAuth **issuer**. Set to your external HTTPS URL behind a proxy. From 0.18.0 it is also the base of the absolute `resource_metadata` URL in the MCP `401` challenge. |
 | `TDB_OAUTH_CIMD_HOSTS` | *(empty: off)* | Comma-separated hosts whose OAuth Client ID Metadata Documents TDB may fetch (0.18.0 and later). Enabling it makes TDB fetch HTTPS URLs that clients choose, from inside your network; every fetch is guarded (public addresses only, no redirects, size and time limits). Leave empty unless a client needs it. Not usable air-gapped. |
+| `TDB_LEAN_MODE` | `off` | Default [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) for MCP results (0.21.0 and later): `off`, `on`, or a JSON object such as `{"lean": true, "max_cell_chars": 500}`. Smaller results for AI agents; a key's setting or a call's own arguments override it. MCP only — REST is unchanged. An invalid value refuses every MCP tool call until fixed, naming this variable, rather than being ignored. |
 
 ### 3.4 SIEM export (optional — Splunk)
 
