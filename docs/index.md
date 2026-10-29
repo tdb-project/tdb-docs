@@ -1,25 +1,13 @@
 ---
+template: home.html
 hide:
   # With navigation.tabs, "Home" is already a tab. The left sidebar on this page
   # then renders a single entry that says "Home" too, so the landing page of the
   # docs showed the same link twice, side by side. Hiding the sidebar here drops
   # the duplicate and gives the feature cards the full content width.
   - navigation
+  - toc
 ---
-
-# The Data-Bridge
-
-**TDB** is a self-hosted, auditable API layer that turns your databases into secure
-REST, SQL and MCP endpoints — governed, queryable, and AI-ready. And lean by
-design: what an agent reads from TDB is sized for its context window, so its
-tokens go on your answer rather than on overhead.
-
-Register a data source once. Query it over REST, from any MCP-compatible AI tool, or
-from the PostgreSQL clients and BI tools you already use. Every query is logged.
-
-[Install it :material-arrow-right:](getting-started/installation.md){ .md-button .md-button--primary }
-[First query in 5 minutes](getting-started/quickstart.md){ .md-button }
-[Why TDB](why-tdb.md){ .md-button }
 
 !!! info "Evaluating rather than deploying?"
     The **free community edition** runs one CSV source in a single Docker command,

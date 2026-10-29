@@ -6,27 +6,26 @@ docs_dir: docs
 
 theme:
   name: material
+  custom_dir: overrides
   # The landing page's mark, so the two sites read as one product.
   logo: assets/logo.svg
   favicon: assets/logo.svg
   palette:
-    # Dark FIRST, and deliberately not gated on prefers-color-scheme. The landing
-    # page at tdb.jiracorp.co.in is dark-only, so following the OS setting meant a
-    # reader on a light-mode machine crossed from a dark site into a white one and
-    # read it as an unstyled page. Dark is the product's look; light stays one
-    # click away for anyone who wants it.
-    - scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/weather-night
-        name: Switch to light mode
+    # Light FIRST: the landing page at tdb.jiracorp.co.in is light and editorial,
+    # and a reader crossing from it should land on the same surface. Dark stays
+    # one click away for anyone who prefers it.
     - scheme: default
       primary: indigo
       accent: indigo
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
   font:
     text: Inter
     code: JetBrains Mono
