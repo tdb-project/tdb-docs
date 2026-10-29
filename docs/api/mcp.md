@@ -653,8 +653,21 @@ See [API Keys → tool allow-lists](../auth/api-keys.md) for how to set
 
 ## Saving tokens (Lean Mode)
 
-**From community 0.13.0 / enterprise 0.21.0.** Every MCP result an AI agent reads is
-paid for in its context window. Lean Mode makes results smaller, **opt-in at every
+Every MCP result an AI agent reads is paid for in its context window. TDB is built to
+keep that bill small, and most of it needs no setting:
+
+- **Ask for the answer, not the rows.** SQL aggregates run in the database, and in
+  enterprise `aggregate_source` and `filter_source` do it without the agent writing SQL.
+- **A ceiling and an honest flag.** A response stops at the row ceiling and says
+  `truncated: true` when it did, so an agent never pulls a whole table by accident and
+  never re-fetches to check that it has everything.
+- **Only the tools a key may use.** In enterprise, a key with `allowed_tools` sees only
+  those tools in `tools/list` (from 0.19.0), and every tool's schema is sent on every
+  request — so a narrow key is also a cheaper one. Tool descriptions are kept short for
+  the same reason.
+- **Lean Mode**, below, for the results themselves.
+
+**Lean Mode is from community 0.13.0 / enterprise 0.21.0, and opt-in at every
 level**: with nothing set, every response is exactly what it was before.
 
 | Setting | Effect | Lossless? | Tools |

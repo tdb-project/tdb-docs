@@ -126,6 +126,17 @@ The extension needs desktop VS Code 1.101 or later. It also sends the
 titles, read-only hints and structured results. Without the header, TDB answers with
 the oldest protocol version. **TDB: Disconnect** removes the key and the server.
 
+!!! warning "Use a local Agent session, not a Copilot CLI session"
+    The extension's key reaches only VS Code's own (local) agent. VS Code passes MCP
+    servers on to **Copilot CLI** chat sessions without their headers — by design, a
+    Copilot CLI session cannot read VS Code's secret storage — so TDB refuses those
+    calls with `missing_api_key` (seen with VS Code 1.144). Start a local chat in
+    **Agent** mode instead. To use TDB from Copilot CLI itself, add it to
+    `~/.copilot/mcp-config.json` as GitHub documents in
+    [Adding MCP servers to Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers),
+    with the header `"Authorization": "Bearer ${TDB_API_KEY}"` and the key in the
+    `TDB_API_KEY` environment variable rather than in the file.
+
 ### By hand
 
 Add a `.vscode/mcp.json` in your workspace (or run **MCP: Add Server** from the
@@ -317,9 +328,16 @@ source without risking a malformed query — see the
 
 From community 0.13.0 / enterprise 0.21.0, TDB can send results in a smaller form
 ([Lean Mode](../api/mcp.md#saving-tokens-lean-mode)): rows as arrays, and optionally
-long text cut with a marker. Nothing in the client changes. Ask for it in the prompt
-(*"use lean: true"*), or have the operator turn it on for everyone with
-`TDB_LEAN_MODE=on` or, in enterprise, for one API key.
+long text cut with a marker — about a third fewer tokens on a 100-row answer. Nothing
+in the client changes, and none of the clients on this page has a Lean setting of its
+own: it is set on the server. Ask for it in the prompt (*"use lean: true"*), or have
+the operator turn it on for everyone with `TDB_LEAN_MODE=on` or, in enterprise, for
+one API key ([API Keys](../auth/api-keys.md#set-a-keys-lean-mode)).
+
+Each result reaches the model once. TDB sends a text copy and a structured copy, as
+the MCP specification asks, and Claude Code, Claude Desktop and VS Code each pass
+only the structured copy to the model (checked October 2026), so the tokens aren't
+spent twice.
 
 ## Troubleshooting
 

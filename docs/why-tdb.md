@@ -10,6 +10,11 @@ an AI tool straight into a production database — with no access control and no
 what it asked — is how data leaks. Teams need governed, auditable, read-only access that
 works across the databases they already run, without handing everything to a third party.
 
+And once it works, it has to stay affordable. An agent pays for every row and every
+schema it reads in its context window — in money, in latency, and in room left to
+think. A data layer that answers in bulky, repetitive JSON makes every question cost
+more than it should.
+
 ## The common approaches today — and where they leave a gap
 
 Most teams reach for one of three existing options. Each is good at what it does. None
@@ -44,11 +49,13 @@ sources — **all of them** — on **your own infrastructure**:
 - **Current with MCP** — one endpoint speaks the `2026-07-28` MCP specification as well as the handshake-era revisions from `2024-11-05` to `2025-11-25`, so new and older AI clients both connect without configuration. Claude Code uses the newest revision, and a free [VS Code extension](getting-started/ide-setup.md#vs-code) sets TDB up in one command.
 - **Audited by default** — every query, result, and tool call is logged to a tamper-evident audit log that *you* own, including which AI client made the call.
 - **Governed** — OAuth 2.1, role-based access control, per-key rate limiting, and prompt-injection filtering.
+- **Lean by design** — results are sized for an agent's context window. [Lean Mode](api/mcp.md#saving-tokens-lean-mode) sends rows as arrays and schemas as `{column: type}` — about a third fewer tokens on a 100-row answer, with the same answers — and can trim long text with a visible marker. Aggregates and filters run in the database, so an agent fetches the answer rather than the rows behind it.
 - **Open-core** — start free on the community edition; upgrade for production and multi-source.
 
 In short: the others answer *"AI on the data that already lives inside our platform."*
 TDB answers **"governed AI access to the data you already have, wherever it already is —
-without moving it, and without surrendering the audit trail."**
+without moving it, without surrendering the audit trail, and without wasting the agent's
+tokens."**
 
 ## Who it's for
 

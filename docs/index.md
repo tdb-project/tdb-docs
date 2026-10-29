@@ -10,7 +10,9 @@ hide:
 # The Data-Bridge
 
 **TDB** is a self-hosted, auditable API layer that turns your databases into secure
-REST, SQL and MCP endpoints — governed, queryable, and AI-ready.
+REST, SQL and MCP endpoints — governed, queryable, and AI-ready. And lean by
+design: what an agent reads from TDB is sized for its context window, so its
+tokens go on your answer rather than on overhead.
 
 Register a data source once. Query it over REST, from any MCP-compatible AI tool, or
 from the PostgreSQL clients and BI tools you already use. Every query is logged.
@@ -75,13 +77,24 @@ copilot, and with a tamper-evident audit log you own.
     that speaks the `2026-07-28` specification and the earlier handshake-era
     revisions. Tools
     are marked read-only and return structured output, with prompt-injection
-    filtering and per-key tool allow-lists. Opt-in
-    [Lean Mode](api/mcp.md#saving-tokens-lean-mode) sends smaller results, a third
-    fewer tokens on a 100-row answer. Claude Code connects on the newest
+    filtering and per-key tool allow-lists. Claude Code connects on the newest
     revision, and a free [VS Code extension](getting-started/ide-setup.md#vs-code)
     sets TDB up in one command.
 
     [:octicons-arrow-right-24: MCP reference](api/mcp.md)
+
+-   :material-feather:{ .lg .middle } **Lean by design**
+
+    ---
+
+    Every token an agent spends reading a result is a token it can't spend on
+    your question. [Lean Mode](api/mcp.md#saving-tokens-lean-mode) cuts a 100-row
+    answer from 10,412 to 6,868 tokens and a 30-table schema from 5,235 to 3,025,
+    with the same answers on our 21-question check. Agents can also aggregate and
+    filter in the database instead of pulling rows, and a scoped key lists only
+    its own tools. Set it per call, per key or server-wide.
+
+    [:octicons-arrow-right-24: Saving tokens](api/mcp.md#saving-tokens-lean-mode)
 
 -   :material-elephant:{ .lg .middle } **PostgreSQL wire gateway**
 
