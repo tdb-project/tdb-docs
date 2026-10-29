@@ -19,6 +19,7 @@ To see what you are running: `GET /v1/version`.
 
 | Date | Enterprise | Community | What changed | Action on upgrade |
 |---|---|---|---|---|
+| 10-29 | 0.21.1 | — | Licence check hardening: the licence verification key can no longer be changed through configuration. | None. |
 | 10-28 | **0.21.0** | **0.13.0** | **Lean Mode**: smaller MCP results for agents — rows as arrays, marked cell trimming, and in enterprise schema detail levels and a per-key setting. [Saving tokens](api/mcp.md#saving-tokens-lean-mode) | None. Opt-in; with nothing set, responses are unchanged. |
 | 10-27 | **0.20.3** | 0.12.4 | **Security (enterprise):** API keys were written to the application log; now a six-character hint. Both: a mistake in the caller's SQL is a 400, not a 500. | **Enterprise: rotate API keys and purge retained application logs.** [Advisory](security/updates.md) |
 | 10-27 | 0.20.2 | 0.12.3 | Line breaks in logged values are escaped, so caller input can't forge a log line. | None. |
