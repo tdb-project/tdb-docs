@@ -1,0 +1,641 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "The Data-Bridge (TDB)",
+  "description": "A secure, auditable API layer over your existing data sources. Register a data source once, query it anywhere.",
+  "version": "0.13.0"
+ },
+ "paths": {
+  "/v1/sources": {
+   "get": {
+    "tags": [
+     "Source Registry"
+    ],
+    "summary": "List all registered sources",
+    "operationId": "list_sources_v1_sources_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/SourceSummary"
+         },
+         "type": "array",
+         "title": "Response List Sources V1 Sources Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "Source Registry"
+    ],
+    "summary": "Register a new data source",
+    "description": "Register a data source so it can be queried through TDB.\n\n**source_type** values supported today:\n- `csv` \u2014 local CSV file; connection: `{ \"file_path\": \"/path/to/file.csv\" }`\n\nMore connector types come in later days.",
+    "operationId": "register_source_v1_sources_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SourceRegistrationRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SourceRecord"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/v1/sources/{source_id}": {
+   "get": {
+    "tags": [
+     "Source Registry"
+    ],
+    "summary": "Get details of a specific source (UUID or name)",
+    "operationId": "get_source_v1_sources__source_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "source_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Source Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SourceRecord"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "Source Registry"
+    ],
+    "summary": "Remove a registered source (UUID or name)",
+    "operationId": "delete_source_v1_sources__source_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "source_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Source Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/sources/{source_id}/schema": {
+   "get": {
+    "tags": [
+     "Source Registry"
+    ],
+    "summary": "Inspect column names and types for a registered source (UUID or name)",
+    "description": "Returns the column names and inferred DuckDB types for the registered CSV.\nNo rows are returned \u2014 schema introspection only.",
+    "operationId": "get_source_schema_v1_sources__source_id__schema_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "source_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Source Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SourceSchema"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/query": {
+   "post": {
+    "tags": [
+     "Query"
+    ],
+    "summary": "Run a SQL query against a registered data source",
+    "description": "Execute a **read-only** SQL SELECT against a registered source.\n\n### Example\n```json\n{\n  \"source_id\": \"abc-123\",\n  \"sql\": \"SELECT * FROM data LIMIT 50\",\n  \"limit\": 50\n}\n```\n\nAlways use `data` as the table name: the registered CSV is loaded into an\nin-memory table under that fixed name, regardless of the source name or the\nfile name.",
+    "operationId": "run_query_v1_query_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/QueryRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QueryResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/v1/mcp": {
+   "post": {
+    "tags": [
+     "MCP"
+    ],
+    "summary": "MCP-compatible JSON-RPC 2.0 endpoint",
+    "description": "Model Context Protocol endpoint (JSON-RPC 2.0).\n\nConnects Claude Desktop, Cursor, and other MCP clients directly to\nthe registered data source without extra configuration.\n\nSupported methods: `initialize`, `ping`, `tools/list`, `tools/call`, and\nfrom 2026-07-28 `server/discover`",
+    "operationId": "mcp_endpoint_v1_mcp_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/health": {
+   "get": {
+    "tags": [
+     "Meta"
+    ],
+    "summary": "Health",
+    "description": "Liveness probe \u2014 used by Docker / k8s health checks.",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "QueryRequest": {
+    "properties": {
+     "source_id": {
+      "type": "string",
+      "title": "Source Id"
+     },
+     "sql": {
+      "type": "string",
+      "maxLength": 10000,
+      "minLength": 1,
+      "title": "Sql"
+     },
+     "limit": {
+      "type": "integer",
+      "maximum": 1000.0,
+      "minimum": 1.0,
+      "title": "Limit",
+      "description": "Max rows to return (default 100, hard cap 1,000)",
+      "default": 100
+     }
+    },
+    "type": "object",
+    "required": [
+     "source_id",
+     "sql"
+    ],
+    "title": "QueryRequest"
+   },
+   "QueryResponse": {
+    "properties": {
+     "source_id": {
+      "type": "string",
+      "title": "Source Id"
+     },
+     "sql": {
+      "type": "string",
+      "title": "Sql"
+     },
+     "columns": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Columns"
+     },
+     "rows": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Rows"
+     },
+     "rows_returned": {
+      "type": "integer",
+      "title": "Rows Returned"
+     },
+     "truncated": {
+      "type": "boolean",
+      "title": "Truncated",
+      "default": false
+     },
+     "executed_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Executed At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "source_id",
+     "sql",
+     "columns",
+     "rows",
+     "rows_returned"
+    ],
+    "title": "QueryResponse"
+   },
+   "SchemaColumn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "type": {
+      "type": "string",
+      "title": "Type"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "type"
+    ],
+    "title": "SchemaColumn"
+   },
+   "SourceRecord": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "source_type": {
+      "$ref": "#/components/schemas/SourceType"
+     },
+     "connection": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Connection"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description",
+      "default": ""
+     },
+     "tags": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Tags"
+     },
+     "registered_by": {
+      "type": "string",
+      "title": "Registered By",
+      "default": ""
+     },
+     "registered_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Registered At"
+     },
+     "status": {
+      "$ref": "#/components/schemas/SourceStatus",
+      "default": "active"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "source_type",
+     "connection"
+    ],
+    "title": "SourceRecord"
+   },
+   "SourceRegistrationRequest": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "source_type": {
+      "$ref": "#/components/schemas/SourceType"
+     },
+     "connection": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Connection"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 500,
+      "title": "Description",
+      "default": ""
+     },
+     "tags": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Tags"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "source_type",
+     "connection"
+    ],
+    "title": "SourceRegistrationRequest"
+   },
+   "SourceSchema": {
+    "properties": {
+     "source_id": {
+      "type": "string",
+      "title": "Source Id"
+     },
+     "source_name": {
+      "type": "string",
+      "title": "Source Name"
+     },
+     "columns": {
+      "items": {
+       "$ref": "#/components/schemas/SchemaColumn"
+      },
+      "type": "array",
+      "title": "Columns"
+     },
+     "inspected_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Inspected At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "source_id",
+     "source_name",
+     "columns"
+    ],
+    "title": "SourceSchema"
+   },
+   "SourceStatus": {
+    "type": "string",
+    "enum": [
+     "active",
+     "inactive",
+     "error"
+    ],
+    "title": "SourceStatus"
+   },
+   "SourceSummary": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "source_type": {
+      "$ref": "#/components/schemas/SourceType"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description",
+      "default": ""
+     },
+     "tags": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Tags"
+     },
+     "registered_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Registered At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "source_type"
+    ],
+    "title": "SourceSummary"
+   },
+   "SourceType": {
+    "type": "string",
+    "enum": [
+     "csv"
+    ],
+    "title": "SourceType"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  },
+  "securitySchemes": {
+   "HTTPBearer": {
+    "type": "http",
+    "scheme": "bearer"
+   }
+  }
+ }
+}

@@ -367,3 +367,9 @@
 .tdb-flow b { font-size: .8rem; }
 .tdb-flow small { color: var(--tdb-ink-dim); font-size: .66rem; }
 @media (prefers-reduced-motion: reduce) { .tdb-flow a { transition: none; } .tdb-flow a:hover { transform: none; } }
+
+/* ============================ OpenAPI (Swagger UI) ======================== */
+.tdb-openapi .swagger-ui { font-family: var(--md-text-font-family); }
+.tdb-openapi .swagger-ui .info { display: none; }
+.tdb-openapi .swagger-ui .scheme-container { display: none; }
+[data-md-color-scheme="slate"] .tdb-openapi { background: #fff; border-radius: var(--tdb-radius); padding: .4rem .8rem; }

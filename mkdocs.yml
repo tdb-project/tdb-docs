@@ -116,6 +116,7 @@ nav:
     - CLI: reference/cli.md
     - Environment Variables: reference/environment-variables.md
     - Errors & Audit Reasons: reference/errors.md
+    - OpenAPI: reference/openapi.md
     - Release Notes: release-notes.md
   - Editions: pricing.md
 
