@@ -85,6 +85,7 @@ nav:
     - Connect an IDE / AI Tool (MCP): getting-started/ide-setup.md
   - Deployment:
     - IT Administrator Guide: deployment/it-admin-guide.md
+    - Kubernetes (Helm): deployment/kubernetes.md
     - Prometheus Metrics: observability/metrics.md
     - Performance: deployment/performance.md
   - Recipes:
