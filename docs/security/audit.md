@@ -96,6 +96,13 @@ Two fields describe the refusal:
 | `row_cap_exceeded` | Wire gateway: a result exceeded `TDB_PG_MAX_ROWS`; the connection was closed |
 | `statement_after_transaction_end` | Wire gateway: a statement followed `COMMIT`/`ROLLBACK` in the same batch |
 | `privileged_db_role` | Enterprise, from 0.12.0: the source connects as a database role that can reach the database server's files or programs (see [connectors](../connectors/postgresql.md#use-a-least-privileged-role)) |
+| `missing_api_key` | An MCP request carried no bearer token |
+| `invalid_connection` | Registration: the `connection` block is not valid for the `source_type` |
+| `query_timeout` | The query ran past `TDB_QUERY_TIMEOUT` and was cancelled at the source (enterprise) |
+| `insufficient_role_required_<role>_have_<role>` | The key's role is below what the endpoint needs (enterprise) |
+| `tool_not_permitted_<tool>` | The key's `allowed_tools` does not include the tool (enterprise) |
+
+What the caller sees for each reason, and what to do: [Errors & audit reasons](../reference/errors.md).
 
 To review refusals only:
 
