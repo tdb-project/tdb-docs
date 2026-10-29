@@ -86,6 +86,12 @@ nav:
   - Deployment:
     - IT Administrator Guide: deployment/it-admin-guide.md
     - Prometheus Metrics: observability/metrics.md
+    - Performance: deployment/performance.md
+  - Recipes:
+    - Overview: recipes/index.md
+    - PostgreSQL for an AI agent: recipes/postgres-agent.md
+    - HTTPS with Caddy: recipes/https-caddy.md
+    - Production checklist: recipes/production-checklist.md
   - Connectors:
     - PostgreSQL: connectors/postgresql.md
     - MySQL: connectors/mysql.md
