@@ -28,6 +28,50 @@ from the PostgreSQL clients and BI tools you already use. Every query is logged.
     [Community Edition](getting-started/community.md), or compare the two at
     [Editions](pricing.md).
 
+## Start here
+
+<div class="grid cards" markdown>
+
+-   **Evaluating it**
+
+    ---
+
+    Run the free edition against one CSV in a single Docker command, then compare
+    editions.
+
+    [:octicons-arrow-right-24: Community Edition](getting-started/community.md) ·
+    [Editions](pricing.md)
+
+-   **Deploying and running it**
+
+    ---
+
+    Requirements, topologies, configuration, TLS, capacity and day-2 operations.
+
+    [:octicons-arrow-right-24: IT Administrator Guide](deployment/it-admin-guide.md) ·
+    [Release notes](release-notes.md)
+
+-   **Reviewing its security**
+
+    ---
+
+    What a request passes through, what each layer guarantees, and what TDB does not
+    protect you from.
+
+    [:octicons-arrow-right-24: Architecture & security model](architecture.md) ·
+    [Advisories](security/updates.md)
+
+-   **Connecting AI agents**
+
+    ---
+
+    Set up Claude, Cursor or VS Code, scope a key to its tools, and keep results lean.
+
+    [:octicons-arrow-right-24: IDE / AI tool setup](getting-started/ide-setup.md) ·
+    [MCP reference](api/mcp.md)
+
+</div>
+
 Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, and
 CSV files — and every team now wants AI agents to query it. TDB makes that
 **existing, multi-source** data safely accessible **on your own infrastructure**,

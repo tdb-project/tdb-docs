@@ -78,6 +78,7 @@ nav:
   - Home:
     - Overview: index.md
     - Why TDB: why-tdb.md
+    - Architecture & Security Model: architecture.md
   - Getting Started:
     - Community Edition (CSV, free): getting-started/community.md
     - Enterprise — Installation: getting-started/installation.md
@@ -115,6 +116,7 @@ nav:
   - Reference:
     - CLI: reference/cli.md
     - Environment Variables: reference/environment-variables.md
+    - Release Notes: release-notes.md
   - Editions: pricing.md
 
 extra:
