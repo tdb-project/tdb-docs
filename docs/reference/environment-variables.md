@@ -7,12 +7,12 @@ file in the project directory, or pass them directly to the process.
 
 ## Core
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_API_KEYS` | `dev-insecure-key-change-me` | Comma-separated list of static API keys. Evaluated by constant-time comparison on every request. **Change this before exposing TDB to any network.** |
-| `TDB_LOG_LEVEL` | `INFO` | Log verbosity. One of: `DEBUG`, `INFO`, `WARNING`, `ERROR`. |
-| `TDB_LOG_FILE` | `tdb_audit.jsonl` | Path to the NDJSON audit log. Relative paths are resolved from the working directory. |
-| `TDB_REGISTRY_DB` | `data/tdb_registry.db` | Path to the SQLite registry database. Created automatically on first startup. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_API_KEYS` | All releases | `dev-insecure-key-change-me` | Comma-separated list of static API keys. Evaluated by constant-time comparison on every request. **Change this before exposing TDB to any network.** |
+| `TDB_LOG_LEVEL` | All releases | `INFO` | Log verbosity. One of: `DEBUG`, `INFO`, `WARNING`, `ERROR`. |
+| `TDB_LOG_FILE` | All releases | `tdb_audit.jsonl` | Path to the NDJSON audit log. Relative paths are resolved from the working directory. |
+| `TDB_REGISTRY_DB` | All releases | `data/tdb_registry.db` | Path to the SQLite registry database. Created automatically on first startup. |
 
 ---
 
@@ -20,9 +20,9 @@ file in the project directory, or pass them directly to the process.
 
 *Enterprise only.*
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_ENCRYPTION_KEY` | *(unset — a key file is generated)* | Urlsafe-base64 32-byte key used to encrypt source `connection` blobs (including database passwords) in the registry database. Generate with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. When unset, TDB generates a key on first start and stores it beside the registry database as `.tdb_secret_key` (mode `0600`). |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_ENCRYPTION_KEY` | 0.2.0 | *(unset — a key file is generated)* | Urlsafe-base64 32-byte key used to encrypt source `connection` blobs (including database passwords) in the registry database. Generate with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. When unset, TDB generates a key on first start and stores it beside the registry database as `.tdb_secret_key` (mode `0600`). |
 
 !!! warning "The generated key defends against a stolen database, not a stolen host"
     Credentials are always encrypted at rest — there is no plaintext mode. But if
@@ -45,9 +45,9 @@ file in the project directory, or pass them directly to the process.
 
 ## CSV Source Security
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_ALLOWED_DATA_DIR` | *(unset — no restriction)* | Confines registered CSV `file_path` values to this directory. When set, a `file_path` that resolves (symlinks and `..` are expanded first) to a location **outside** this directory is rejected with `403` at register, schema, and query time. When unset, paths are accepted as-is. Applies to the **CSV connector in both editions** and the enterprise **Parquet** connector; database connectors take a table name (not a path) and are unaffected. **The Docker images set this to `/data` by default**, so the bundled deployment is confined out of the box. For a bare `tdb serve`, set it to the directory holding your CSVs. **It also bounds SQL**, from community 0.7.0 / enterprise 0.11.0: a query can read only files in this directory (or, when unset, in the registered CSV's own directory) — `read_csv('/etc/passwd')` inside a query returns 403. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_ALLOWED_DATA_DIR` | Enterprise: all · Community 0.4.2 | *(unset — no restriction)* | Confines registered CSV `file_path` values to this directory. When set, a `file_path` that resolves (symlinks and `..` are expanded first) to a location **outside** this directory is rejected with `403` at register, schema, and query time. When unset, paths are accepted as-is. Applies to the **CSV connector in both editions** and the enterprise **Parquet** connector; database connectors take a table name (not a path) and are unaffected. **The Docker images set this to `/data` by default**, so the bundled deployment is confined out of the box. For a bare `tdb serve`, set it to the directory holding your CSVs. **It also bounds SQL**, from community 0.7.0 / enterprise 0.11.0: a query can read only files in this directory (or, when unset, in the registered CSV's own directory) — `read_csv('/etc/passwd')` inside a query returns 403. |
 
 !!! warning "Set this for any non-Docker CSV deployment exposed beyond localhost"
     Without `TDB_ALLOWED_DATA_DIR`, the CSV connector reads any path the server
@@ -62,10 +62,10 @@ file in the project directory, or pass them directly to the process.
 TDB Enterprise requires a valid, signed license to serve data. Trial images have the
 license baked in, so you normally set nothing here. See [Licensing & expiry](../getting-started/installation.md#licensing-expiry).
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_LICENSE` | *(empty)* | A signed license token. Takes precedence over the baked file — use it to drop in a renewed license without rebuilding the image. |
-| `TDB_LICENSE_FILE` | `/app/license.jwt` | Path to the license token baked into the image. Read only when `TDB_LICENSE` is unset. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_LICENSE` | All releases | *(empty)* | A signed license token. Takes precedence over the baked file — use it to drop in a renewed license without rebuilding the image. |
+| `TDB_LICENSE_FILE` | All releases | `/app/license.jwt` | Path to the license token baked into the image. Read only when `TDB_LICENSE` is unset. |
 
 When the license is missing, invalid, or expired, the server keeps running and
 `/health` stays `200`, but all data/API requests return `403 license_expired`.
@@ -74,85 +74,85 @@ When the license is missing, invalid, or expired, the server keeps running and
 
 ## JWT Authentication
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_JWT_SECRET` | *(required)* | HMAC secret for signing JWT tokens. Generate with: `python -c "import secrets; print(secrets.token_hex(32))"`. TDB returns HTTP 503 if this is not set and JWT/OAuth is used. |
-| `TDB_JWT_EXPIRE_MINUTES` | `60` | JWT token lifetime in minutes. Increase for longer-lived sessions. |
-| `TDB_ADMIN_USER` | *(required)* | Admin login username. Used by `POST /v1/auth/token` and the OAuth authorize form. |
-| `TDB_ADMIN_PASSWORD` | *(required)* | Admin login password. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_JWT_SECRET` | All releases | *(required)* | HMAC secret for signing JWT tokens. Generate with: `python -c "import secrets; print(secrets.token_hex(32))"`. TDB returns HTTP 503 if this is not set and JWT/OAuth is used. |
+| `TDB_JWT_EXPIRE_MINUTES` | All releases | `60` | JWT token lifetime in minutes. Increase for longer-lived sessions. |
+| `TDB_ADMIN_USER` | All releases | *(required)* | Admin login username. Used by `POST /v1/auth/token` and the OAuth authorize form. |
+| `TDB_ADMIN_PASSWORD` | All releases | *(required)* | Admin login password. |
 
 ---
 
 ## Rate Limiting
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_DEFAULT_RATE_LIMIT` | `60` | Default requests per minute for DB-managed API keys. Per-key overrides take precedence. Static env keys and JWTs are not rate-limited. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_DEFAULT_RATE_LIMIT` | All releases | `60` | Default requests per minute for DB-managed API keys. Per-key overrides take precedence. Static env keys and JWTs are not rate-limited. |
 
 ---
 
 ## CORS
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_CORS_ORIGINS` | *(empty — disabled)* | Comma-separated list of allowed origins. Empty means CORS middleware is not added (safe default for self-hosted deployments). Use `*` to allow all origins (dev only). |
-| `TDB_CORS_ALLOW_CREDENTIALS` | `false` | Set to `true` to include `Access-Control-Allow-Credentials: true`. Do not combine with `TDB_CORS_ORIGINS=*` — browsers reject this combination. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_CORS_ORIGINS` | All releases | *(empty — disabled)* | Comma-separated list of allowed origins. Empty means CORS middleware is not added (safe default for self-hosted deployments). Use `*` to allow all origins (dev only). |
+| `TDB_CORS_ALLOW_CREDENTIALS` | All releases | `false` | Set to `true` to include `Access-Control-Allow-Credentials: true`. Do not combine with `TDB_CORS_ORIGINS=*` — browsers reject this combination. |
 
 ---
 
 ## OAuth / Reverse Proxy
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_SERVER_URL` | *(derived from request)* | Public base URL of the TDB server. Required when running behind a reverse proxy so OAuth discovery endpoints return correct URLs. Example: `https://tdb.yourcompany.com`. |
-| `TDB_OAUTH_CIMD_HOSTS` | *(empty: off)* | Comma-separated hosts whose [Client ID Metadata Document](../auth/oauth.md#client-id-metadata-documents) URLs TDB may fetch. Empty disables the feature and clients register as before. Enterprise, from 0.18.0. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_SERVER_URL` | All releases | *(derived from request)* | Public base URL of the TDB server. Required when running behind a reverse proxy so OAuth discovery endpoints return correct URLs. Example: `https://tdb.yourcompany.com`. |
+| `TDB_OAUTH_CIMD_HOSTS` | 0.18.0 | *(empty: off)* | Comma-separated hosts whose [Client ID Metadata Document](../auth/oauth.md#client-id-metadata-documents) URLs TDB may fetch. Empty disables the feature and clients register as before. Enterprise, from 0.18.0. |
 
 ---
 
 ## Views (YAML-defined queries)
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_VIEWS_DIR` | *(empty — disabled)* | Path to a directory containing YAML view definition files. If not set, the views feature is disabled (safe default). See [YAML views guide](../api/views.md). |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_VIEWS_DIR` | All releases | *(empty — disabled)* | Path to a directory containing YAML view definition files. If not set, the views feature is disabled (safe default). See [YAML views guide](../api/views.md). |
 
 ---
 
 ## Schema Cache
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_SCHEMA_CACHE_TTL` | `300` | Time-to-live for the in-process schema cache, in seconds. Set to `0` to disable caching. The cache is keyed by source ID and invalidated automatically when a source is deleted. |
-| `TDB_MAX_ROWS` | `1000` | Maximum rows any single query response may contain (**enterprise only** — community is fixed at 1,000). A request whose `limit` exceeds this is rejected with `400` (on MCP, a tool error), on every path that returns rows: `POST /v1/query`, and from 0.16.0 the MCP tools and view runs, which until then held a fixed 1,000 whatever this said; a result larger than `limit` is cut and flagged `truncated: true`, whatever the SQL's own `LIMIT` says. Every returned row is held in memory, so raise this deliberately and size RAM to match. An unparseable or non-positive value falls back to `1000` — a typo never means "unlimited". |
-| `TDB_LEAN_MODE` | `off` | **From community 0.13.0 / enterprise 0.21.0.** Server default for [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) on MCP results: `off`, `on` (= `lean: true`: rows as arrays, `{column: type}` schemas), or a JSON object of Lean fields, e.g. `{"lean": true, "max_cell_chars": 500}`. A key's setting (enterprise) and a call's arguments override it. An invalid value is not ignored: every MCP tool call is refused with an error naming this variable until it is fixed. MCP only — REST responses never change. |
-| `TDB_QUERY_TIMEOUT` | `30` | Seconds a single query may run at the source before it is cancelled (**enterprise only**). Enforced by the database itself — `statement_timeout` (PostgreSQL), `max_execution_time` (MySQL), the ODBC query timeout (SQL Server), `STATEMENT_TIMEOUT_IN_SECONDS` (Snowflake) — so the engine stops doing the work, rather than TDB merely stopping waiting for it. A cancelled query returns `504` and is recorded in the audit log as a `query_timeout` denial. Set `0` to disable, which is the only way to get pre-0.3.0 behaviour. **CSV and Parquet run in TDB's own DuckDB engine, which has no server to ask, and are not interruptible.** An unparseable or negative value falls back to `30` — as with `TDB_MAX_ROWS`, a typo never removes a limit. |
-| `TDB_AUDIT_ROTATE_MAX_BYTES` | `0` | Seal the audit log into a timestamped segment once the live file exceeds this many bytes (**enterprise only**). `0` disables rotation, which is pre-0.4.0 behaviour: the log grows without bound. TDB never *deletes* an entry — rotation decides when the live log is sealed, not when anything is dropped, and each sealed segment stays independently verifiable. Pruning old segments is the operator's decision. An unparseable or negative value falls back to `0`. See [audit retention](../security/audit.md#retention-sealed-segments). |
-| `TDB_AUDIT_ROTATE_MAX_DAYS` | `0` | Seal the audit log once its oldest entry is older than this many days (**enterprise only**). Useful where retention is a calendar policy rather than a size budget. May be combined with `TDB_AUDIT_ROTATE_MAX_BYTES`; whichever threshold is crossed first seals the log. `0` disables. |
-| `TDB_POOL_SIZE` | `0` | Maximum database connections TDB keeps open and reuses per registered source (**enterprise only, PostgreSQL only**). `0` disables pooling, which is the default and the pre-0.5.0 behaviour: every query opens a connection and closes it. Set a positive integer to reuse connections instead — on a network where the connection handshake dominates a short query, this is the difference between most of a query's database time being spent connecting and almost none of it. **Off by default deliberately:** pooling holds idle sessions open on *your* database server, so it is something you turn on rather than something an upgrade does to you. Count it against that server's `max_connections` — the ceiling is `TDB_POOL_SIZE` × (number of registered PostgreSQL sources) × (number of TDB processes). Idle connections are closed after 5 minutes, and pooled sessions stay read-only across reuse. MySQL, SQL Server and Snowflake ignore this. An unparseable or negative value falls back to `0` — a typo never silently starts holding connections. |
-| `TDB_ALLOW_PRIVILEGED_DB_ROLE` | unset | **Enterprise only, from 0.12.0.** Set to exactly `true` to let a PostgreSQL, MySQL or SQL Server source connect as a role that can reach the database server's files or programs — a PostgreSQL superuser or member of `pg_read_server_files` / `pg_write_server_files` / `pg_execute_server_program`, a MySQL user with `FILE`, a SQL Server `sysadmin` / `bulkadmin` login. Unset, such a source is refused on every query (403, audited `privileged_db_role`), because a read-only session does not stop those roles reading host files and every key allowed to query the source would inherit that reach. Any value other than `true` keeps the check on. See [use a least-privileged role](../connectors/postgresql.md#use-a-least-privileged-role). |
-| `TDB_PG_PORT` | unset | **Enterprise, from 0.14.0.** Port for the [PostgreSQL wire gateway](../integrations/postgres-wire.md). Unset = gateway off. Run one worker process when set. |
-| `TDB_PG_HOST` | `0.0.0.0` | Address the gateway listens on. |
-| `TDB_PG_TLS_CERT` / `TDB_PG_TLS_KEY` | unset | Certificate and key the gateway presents. Unset = a generated self-signed certificate, which clients cannot verify — set these in production. |
-| `TDB_PG_ALLOW_INSECURE` | unset | Exactly `true` lets clients connect without TLS. Otherwise they are refused before a password is requested. |
-| `TDB_PG_MAX_ROWS` | `TDB_MAX_ROWS` | Rows one wire statement may return; a larger result ends the connection (`54000`). `0` = no ceiling. |
-| `TDB_PG_MAX_CLIENTS` | `50` | Wire connections at once, authenticated or not. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_SCHEMA_CACHE_TTL` | All releases | `300` | Time-to-live for the in-process schema cache, in seconds. Set to `0` to disable caching. The cache is keyed by source ID and invalidated automatically when a source is deleted. |
+| `TDB_MAX_ROWS` | 0.2.0 | `1000` | Maximum rows any single query response may contain (**enterprise only** — community is fixed at 1,000). A request whose `limit` exceeds this is rejected with `400` (on MCP, a tool error), on every path that returns rows: `POST /v1/query`, and from 0.16.0 the MCP tools and view runs, which until then held a fixed 1,000 whatever this said; a result larger than `limit` is cut and flagged `truncated: true`, whatever the SQL's own `LIMIT` says. Every returned row is held in memory, so raise this deliberately and size RAM to match. An unparseable or non-positive value falls back to `1000` — a typo never means "unlimited". |
+| `TDB_LEAN_MODE` | Community 0.13.0 · Enterprise 0.21.0 | `off` | **From community 0.13.0 / enterprise 0.21.0.** Server default for [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) on MCP results: `off`, `on` (= `lean: true`: rows as arrays, `{column: type}` schemas), or a JSON object of Lean fields, e.g. `{"lean": true, "max_cell_chars": 500}`. A key's setting (enterprise) and a call's arguments override it. An invalid value is not ignored: every MCP tool call is refused with an error naming this variable until it is fixed. MCP only — REST responses never change. |
+| `TDB_QUERY_TIMEOUT` | 0.3.0 | `30` | Seconds a single query may run at the source before it is cancelled (**enterprise only**). Enforced by the database itself — `statement_timeout` (PostgreSQL), `max_execution_time` (MySQL), the ODBC query timeout (SQL Server), `STATEMENT_TIMEOUT_IN_SECONDS` (Snowflake) — so the engine stops doing the work, rather than TDB merely stopping waiting for it. A cancelled query returns `504` and is recorded in the audit log as a `query_timeout` denial. Set `0` to disable, which is the only way to get pre-0.3.0 behaviour. **CSV and Parquet run in TDB's own DuckDB engine, which has no server to ask, and are not interruptible.** An unparseable or negative value falls back to `30` — as with `TDB_MAX_ROWS`, a typo never removes a limit. |
+| `TDB_AUDIT_ROTATE_MAX_BYTES` | 0.4.0 | `0` | Seal the audit log into a timestamped segment once the live file exceeds this many bytes (**enterprise only**). `0` disables rotation, which is pre-0.4.0 behaviour: the log grows without bound. TDB never *deletes* an entry — rotation decides when the live log is sealed, not when anything is dropped, and each sealed segment stays independently verifiable. Pruning old segments is the operator's decision. An unparseable or negative value falls back to `0`. See [audit retention](../security/audit.md#retention-sealed-segments). |
+| `TDB_AUDIT_ROTATE_MAX_DAYS` | 0.4.0 | `0` | Seal the audit log once its oldest entry is older than this many days (**enterprise only**). Useful where retention is a calendar policy rather than a size budget. May be combined with `TDB_AUDIT_ROTATE_MAX_BYTES`; whichever threshold is crossed first seals the log. `0` disables. |
+| `TDB_POOL_SIZE` | 0.5.0 | `0` | Maximum database connections TDB keeps open and reuses per registered source (**enterprise only, PostgreSQL only**). `0` disables pooling, which is the default and the pre-0.5.0 behaviour: every query opens a connection and closes it. Set a positive integer to reuse connections instead — on a network where the connection handshake dominates a short query, this is the difference between most of a query's database time being spent connecting and almost none of it. **Off by default deliberately:** pooling holds idle sessions open on *your* database server, so it is something you turn on rather than something an upgrade does to you. Count it against that server's `max_connections` — the ceiling is `TDB_POOL_SIZE` × (number of registered PostgreSQL sources) × (number of TDB processes). Idle connections are closed after 5 minutes, and pooled sessions stay read-only across reuse. MySQL, SQL Server and Snowflake ignore this. An unparseable or negative value falls back to `0` — a typo never silently starts holding connections. |
+| `TDB_ALLOW_PRIVILEGED_DB_ROLE` | 0.12.0 | unset | **Enterprise only, from 0.12.0.** Set to exactly `true` to let a PostgreSQL, MySQL or SQL Server source connect as a role that can reach the database server's files or programs — a PostgreSQL superuser or member of `pg_read_server_files` / `pg_write_server_files` / `pg_execute_server_program`, a MySQL user with `FILE`, a SQL Server `sysadmin` / `bulkadmin` login. Unset, such a source is refused on every query (403, audited `privileged_db_role`), because a read-only session does not stop those roles reading host files and every key allowed to query the source would inherit that reach. Any value other than `true` keeps the check on. See [use a least-privileged role](../connectors/postgresql.md#use-a-least-privileged-role). |
+| `TDB_PG_PORT` | 0.14.0 | unset | **Enterprise, from 0.14.0.** Port for the [PostgreSQL wire gateway](../integrations/postgres-wire.md). Unset = gateway off. Run one worker process when set. |
+| `TDB_PG_HOST` | 0.14.0 | `0.0.0.0` | Address the gateway listens on. |
+| `TDB_PG_TLS_CERT` / `TDB_PG_TLS_KEY` | 0.14.0 | unset | Certificate and key the gateway presents. Unset = a generated self-signed certificate, which clients cannot verify — set these in production. |
+| `TDB_PG_ALLOW_INSECURE` | 0.14.0 | unset | Exactly `true` lets clients connect without TLS. Otherwise they are refused before a password is requested. |
+| `TDB_PG_MAX_ROWS` | 0.14.0 | `TDB_MAX_ROWS` | Rows one wire statement may return; a larger result ends the connection (`54000`). `0` = no ceiling. |
+| `TDB_PG_MAX_CLIENTS` | 0.14.0 | `50` | Wire connections at once, authenticated or not. |
 
 ---
 
 ## Splunk HEC Export
 
-| Variable | Default | Description |
-|---|---|---|
-| `TDB_SPLUNK_HEC_URL` | *(empty — disabled)* | Full URL of the Splunk HTTP Event Collector endpoint. Example: `https://splunk.corp.com:8088/services/collector/event`. If not set, `POST /v1/audit/export` returns `{"disabled": true}`. |
-| `TDB_SPLUNK_HEC_TOKEN` | *(required if URL set)* | Splunk HEC authentication token. Generate one in the Splunk UI under Settings → Data Inputs → HTTP Event Collector. |
-| `TDB_SPLUNK_INDEX` | *(HEC default)* | Splunk index to write events to. Omit to use the index configured on the HEC token. |
-| `TDB_SPLUNK_SOURCETYPE` | `tdb:audit` | Splunk sourcetype assigned to exported events. |
-| `TDB_SPLUNK_VERIFY_TLS` | `true` | Set to `false` to disable TLS certificate verification. Only use in development with self-signed certs. |
-| `TDB_S3_BUCKET` | — | Bucket for the [S3 audit archive](../integrations/s3.md) (**enterprise only**). Unset disables the exporter, which is the default. |
-| `TDB_S3_PREFIX` | `tdb-audit` | Key prefix within the bucket. |
-| `TDB_S3_REGION` | SDK default | AWS region. Credentials come from the standard AWS chain — TDB takes no access keys of its own. |
-| `TDB_S3_ENDPOINT_URL` | — | Override for S3-compatible storage (MinIO, Ceph, R2). |
-| `TDB_S3_SSE` | — | Server-side encryption: `AES256` or `aws:kms`. |
-| `TDB_S3_SSE_KMS_KEY_ID` | — | KMS key ID, used when `TDB_S3_SSE` is `aws:kms`. |
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_SPLUNK_HEC_URL` | All releases | *(empty — disabled)* | Full URL of the Splunk HTTP Event Collector endpoint. Example: `https://splunk.corp.com:8088/services/collector/event`. If not set, `POST /v1/audit/export` returns `{"disabled": true}`. |
+| `TDB_SPLUNK_HEC_TOKEN` | All releases | *(required if URL set)* | Splunk HEC authentication token. Generate one in the Splunk UI under Settings → Data Inputs → HTTP Event Collector. |
+| `TDB_SPLUNK_INDEX` | All releases | *(HEC default)* | Splunk index to write events to. Omit to use the index configured on the HEC token. |
+| `TDB_SPLUNK_SOURCETYPE` | All releases | `tdb:audit` | Splunk sourcetype assigned to exported events. |
+| `TDB_SPLUNK_VERIFY_TLS` | All releases | `true` | Set to `false` to disable TLS certificate verification. Only use in development with self-signed certs. |
+| `TDB_S3_BUCKET` | 0.4.0 | — | Bucket for the [S3 audit archive](../integrations/s3.md) (**enterprise only**). Unset disables the exporter, which is the default. |
+| `TDB_S3_PREFIX` | 0.4.0 | `tdb-audit` | Key prefix within the bucket. |
+| `TDB_S3_REGION` | 0.4.0 | SDK default | AWS region. Credentials come from the standard AWS chain — TDB takes no access keys of its own. |
+| `TDB_S3_ENDPOINT_URL` | 0.4.0 | — | Override for S3-compatible storage (MinIO, Ceph, R2). |
+| `TDB_S3_SSE` | 0.4.0 | — | Server-side encryption: `AES256` or `aws:kms`. |
+| `TDB_S3_SSE_KMS_KEY_ID` | 0.4.0 | — | KMS key ID, used when `TDB_S3_SSE` is `aws:kms`. |
 
 ---
 
