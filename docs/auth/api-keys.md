@@ -151,7 +151,9 @@ already revoked.
 ## Rotate a key
 
 Atomically revokes the existing key and issues a replacement with the same name,
-expiry, and rate limit. The new raw key is returned once.
+expiry, rate limit, role, allowed tools and Lean Mode setting. The new raw key is
+returned once. (Before enterprise 0.21.2 the allowed tools and Lean Mode setting were
+not carried over — see [Security & updates](../security/updates.md).)
 
 ```
 POST /v1/auth/keys/<key_id>/rotate

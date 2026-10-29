@@ -19,6 +19,7 @@ To see what you are running: `GET /v1/version`.
 
 | Date | Enterprise | Community | What changed | Action on upgrade |
 |---|---|---|---|---|
+| 10-29 | **0.21.2** | — | **Security:** a rotated API key keeps its `allowed_tools` and Lean Mode setting. Rotation used to drop them, so a scoped key came back able to call every tool. | **Check keys you rotated** (`GET /v1/auth/keys`) and re-scope any that lost their tools. [Advisory](security/updates.md) |
 | 10-29 | 0.21.1 | — | Licence check hardening: the licence verification key can no longer be changed through configuration. | None. |
 | 10-28 | **0.21.0** | **0.13.0** | **Lean Mode**: smaller MCP results for agents — rows as arrays, marked cell trimming, and in enterprise schema detail levels and a per-key setting. [Saving tokens](api/mcp.md#saving-tokens-lean-mode) | None. Opt-in; with nothing set, responses are unchanged. |
 | 10-27 | **0.20.3** | 0.12.4 | **Security (enterprise):** API keys were written to the application log; now a six-character hint. Both: a mistake in the caller's SQL is a 400, not a 500. | **Enterprise: rotate API keys and purge retained application logs.** [Advisory](security/updates.md) |

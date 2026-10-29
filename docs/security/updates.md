@@ -90,6 +90,28 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-10-29 — A rotated API key could call every MCP tool
+
+**Fixed in enterprise 0.21.2.** Community is not affected (it has no key management).
+Rotating a DB-managed key (`POST /v1/auth/keys/{id}/rotate`) issued a replacement with
+the same name, expiry, rate limit and role, but **without its `allowed_tools` list or
+its Lean Mode setting**. A key with no `allowed_tools` may call every tool, so a key
+limited to, for example, `query_source` came back from rotation able to call all seven
+MCP tools. Every enterprise release from per-key tool scoping up to 0.21.1
+is affected.
+
+This matters most if you followed the 2026-10-27 advice below and rotated keys after
+upgrading to 0.20.3.
+
+**Action:**
+
+1. Upgrade to 0.21.2.
+2. List your keys (`GET /v1/auth/keys`). For any key that should be limited and shows
+   `"allowed_tools": null`, set its tools again (`PUT /v1/auth/keys/{id}/tools`), and its
+   Lean Mode default if it had one (`PUT /v1/auth/keys/{id}/lean-mode`).
+
+Roles were always carried over; no key gained a role it did not have.
+
 ### 2026-10-27 — Enterprise wrote API keys to the application log
 
 **Fixed in enterprise 0.20.3.** Community is not affected. TDB Enterprise wrote the
