@@ -1,5 +1,5 @@
 site_name: The Data-Bridge
-site_description: The Data-Bridge — secure, auditable API layer over your data sources
+site_description: Docs for The Data-Bridge — a self-hosted gateway giving AI agents, scripts and BI tools read-only, audited, token-lean access to your databases.
 site_author: TDB Project
 site_url: https://docs.tdb.jiracorp.co.in
 docs_dir: docs
