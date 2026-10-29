@@ -2,6 +2,7 @@ site_name: The Data-Bridge
 site_description: Docs for The Data-Bridge — a self-hosted gateway giving AI agents, scripts and BI tools read-only, audited, token-lean access to your databases.
 site_author: TDB Project
 site_url: https://docs.tdb.jiracorp.co.in
+copyright: '© 2026 The Data-Bridge · Page counts by <a href="https://www.goatcounter.com/">GoatCounter</a>: no cookies, no personal data.'
 docs_dir: docs
 
 theme:
