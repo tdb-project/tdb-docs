@@ -3,7 +3,7 @@
  "info": {
   "title": "The Data-Bridge (TDB)",
   "description": "A secure, auditable API layer over your existing data sources. Register a data source once, query it anywhere.",
-  "version": "0.22.0"
+  "version": "0.23.0"
  },
  "paths": {
   "/v1/auth/token": {
