@@ -179,8 +179,8 @@ reason, never passed through:
 
 Callers **without** a rule on the source are unaffected: no parsing, no allow-list.
 
-Verified against real PostgreSQL, MySQL and SQL Server, and DuckDB (CSV and Parquet
-sources). **Snowflake has not yet been verified against a real Snowflake account.**
+Verified against real PostgreSQL, MySQL and SQL Server, and DuckDB (CSV, Parquet and,
+from 0.23.0, DuckDB database sources). **Snowflake has not yet been verified against a real Snowflake account.**
 
 ### What a policied caller sees
 

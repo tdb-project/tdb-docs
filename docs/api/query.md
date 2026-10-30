@@ -90,7 +90,7 @@ The table name to use in your SQL depends on the connector — there is **no uni
 
 - **CSV** (Community), and **Parquet** (Enterprise): always use `data`. TDB reads the
   file in place under that fixed name.
-- **PostgreSQL / MySQL / SQL Server / Snowflake**: use the **actual table name** from the
+- **PostgreSQL / MySQL / SQL Server / Snowflake / DuckDB**: use the **actual table name** from the
   source's `connection.table`. Your SQL is passed through to the database unchanged (apart
   from an appended `LIMIT`).
 

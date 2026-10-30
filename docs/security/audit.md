@@ -101,6 +101,7 @@ Two fields describe the refusal:
 | `missing_api_key` | An MCP request carried no bearer token |
 | `invalid_connection` | Registration: the `connection` block is not valid for the `source_type` |
 | `query_timeout` | The query ran past `TDB_QUERY_TIMEOUT` and was cancelled at the source (enterprise) |
+| `source_busy` | Another process had the DuckDB file open for writing (enterprise, from 0.23.0). See [DuckDB](../connectors/duckdb.md#the-file-stays-yours) |
 | `insufficient_role_required_<role>_have_<role>` | The key's role is below what the endpoint needs (enterprise) |
 | `tool_not_permitted_<tool>` | The key's `allowed_tools` does not include the tool (enterprise) |
 

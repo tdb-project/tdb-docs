@@ -101,6 +101,7 @@ nav:
     - SQL Server: connectors/sqlserver.md
     - Snowflake: connectors/snowflake.md
     - Parquet: connectors/parquet.md
+    - DuckDB: connectors/duckdb.md
   - API Reference:
     - Sources: api/sources.md
     - Query: api/query.md

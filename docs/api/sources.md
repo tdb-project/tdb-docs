@@ -123,7 +123,7 @@ TDB supports two registration modes:
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `name` | string (1–100) | Yes | Unique human-readable identifier — used in all subsequent commands |
-| `source_type` | string | Yes | Connector type: `"postgres"`, `"mysql"`, `"sqlserver"`, `"snowflake"`, `"csv"`, `"parquet"` (enterprise, from 0.20.0) |
+| `source_type` | string | Yes | Connector type: `"postgres"`, `"mysql"`, `"sqlserver"`, `"snowflake"`, `"csv"`, `"parquet"` (enterprise, from 0.20.0), `"duckdb"` (enterprise, from 0.23.0) |
 | `connection` | object | Yes | Connector-specific config — see [PostgreSQL →](../connectors/postgresql.md) |
 | `description` | string (max 500) | No | Human-readable description |
 | `tags` | array of strings | No | Arbitrary labels for organisation |

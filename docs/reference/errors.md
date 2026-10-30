@@ -24,7 +24,7 @@ for the entry format.
 | 401 | `invalid_or_expired_token` | A JWT failed its signature or has expired | Issue a fresh token |
 | 403 | `insufficient_role_required_<role>_have_<role>` | The key's role is below what the endpoint needs (enterprise) | Use a key with the role named in the reason. See [RBAC](../security/rbac.md) |
 | 403 | `tool_not_permitted_<tool>` | The key's `allowed_tools` does not include the tool this endpoint uses (enterprise) | Add the tool to the key, or use another key |
-| 403 | `sql_file_access` | The SQL named a file outside the source's data directory (CSV, Parquet) | Query the registered table (`data`) only |
+| 403 | `sql_file_access` | The SQL named a file outside the source's data directory (CSV, Parquet), or any other file (DuckDB) | Query the registered table (`data`) only |
 | 403 | `path_outside_allowed_dir` | The registered file resolves outside `TDB_ALLOWED_DATA_DIR` | Move the file under the data directory |
 | 403 | `privileged_db_role` | The source connects as a database role that can reach the server's files or programs (enterprise, from 0.12.0) | Register it with a least-privileged role. See [PostgreSQL](../connectors/postgresql.md#use-a-least-privileged-role) |
 | 403 | `invalid_origin` | A request from a browser page on another origin | Add the origin to `TDB_CORS_ORIGINS` (enterprise) |
@@ -35,7 +35,8 @@ for the entry format.
 | 422 | — | The request body failed validation (wrong type, value out of range; in community a `limit` over 1,000) | Read the `detail` array; it names the field |
 | 429 | `rate_limit_exceeded` | The key's per-minute budget is used up (DB-managed keys) | Retry after the `X-RateLimit-Reset` time |
 | 500 | — | TDB or the source failed: unreachable source, out of memory. Not the caller's SQL | Check the source and the application log |
-| 503 | `file_unreadable` | The file behind a CSV or Parquet source is missing or unreadable | Restore the file or fix its permissions |
+| 503 | `file_unreadable` | The file behind a CSV, Parquet or DuckDB source is missing or unreadable | Restore the file or fix its permissions |
+| 503 | `source_busy` | Another process has the DuckDB file open for writing (enterprise, from 0.23.0) | Retry once the writer has closed the file. See [DuckDB](../connectors/duckdb.md#the-file-stays-yours) |
 | 503 | — | `TDB_JWT_SECRET` is not set and a JWT was presented (enterprise) | Set it, or use API keys |
 | 504 | `query_timeout` | The query ran longer than `TDB_QUERY_TIMEOUT` and was cancelled at the source (enterprise database sources) | Narrow the query, add an index, or raise the timeout |
 
@@ -53,7 +54,7 @@ protocol problems. The JSON-RPC codes are listed in
 
 **As a tool error** (HTTP 200, `isError: true`, a readable message in `content`): the
 same refusals as REST — `sql_validation_failed`, `sql_file_access`,
-`source_not_found`, `limit_exceeds_max`, `privileged_db_role`, `query_timeout` — plus:
+`source_not_found`, `limit_exceeds_max`, `privileged_db_role`, `query_timeout`, `source_busy` — plus:
 
 | Audit `reason` | What it means | What to do |
 |---|---|---|

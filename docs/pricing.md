@@ -62,7 +62,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Data sources**
 
-    - PostgreSQL, MySQL, SQL Server, Snowflake, Parquet files
+    - PostgreSQL, MySQL, SQL Server, Snowflake, Parquet files, DuckDB databases
     - Unlimited simultaneous registered sources
 
     **Auth**
@@ -159,6 +159,7 @@ The two commercial editions ship the same product with one exception: **column a
 | SQL Server | ❌ | ✅ | ✅ |
 | Snowflake | ❌ | ✅ | ✅ |
 | Parquet files | ❌ | ✅ | ✅ |
+| DuckDB databases | ❌ | ✅ | ✅ |
 | Simultaneous sources | 1 | Unlimited | Unlimited |
 | **Auth** | | | |
 | Static API key | ✅ | ✅ | ✅ |

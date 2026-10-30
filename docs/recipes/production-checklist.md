@@ -25,7 +25,7 @@ Before TDB serves real data to anyone but you. Each item links to where it is ex
       `TDB_ALLOW_PRIVILEGED_DB_ROLE` is unset —
       [PostgreSQL](../connectors/postgresql.md#use-a-least-privileged-role)
 - [ ] Databases reached over an untrusted network use `"sslmode": "verify-full"`
-- [ ] CSV and Parquet files sit under `TDB_ALLOWED_DATA_DIR`
+- [ ] CSV, Parquet and DuckDB files sit under `TDB_ALLOWED_DATA_DIR`
 
 ## Data at rest
 
