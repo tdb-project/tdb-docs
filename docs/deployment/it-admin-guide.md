@@ -20,7 +20,8 @@ FastAPI/uvicorn process that exposes:
 - operational endpoints: `/health`, `/metrics` (Prometheus), `/` (version banner).
 
 It is **read-only middleware** in front of *your* data sources (CSV files and, in
-enterprise, PostgreSQL / MySQL / SQL Server / Snowflake). It does not copy or
+enterprise, PostgreSQL / MySQL / SQL Server / Snowflake, Parquet files and DuckDB
+database files). It does not copy or
 warehouse your data — it proxies governed `SELECT`-only queries and writes an
 audit record for each one. Access is gated by a signed **license** (see the
 build/licensing playbook).
@@ -135,8 +136,8 @@ What each mount is for:
   startup, and a read-only mount makes the container exit at migration
   (`unable to open database file`).
 - `/app/logs` — the audit log (if you point `TDB_LOG_FILE` here). Persist it.
-- `/data` (read-only) — where you place CSV inputs. The image confines registered CSV
-  paths to this directory by default (`TDB_ALLOWED_DATA_DIR=/data`). Mounting it `:ro`
+- `/data` (read-only) — where you place CSV, Parquet and DuckDB files. The image confines
+  registered file paths to this directory by default (`TDB_ALLOWED_DATA_DIR=/data`). Mounting it `:ro`
   is correct and recommended — it's a *separate* path from `/app/data`.
 
 Confirm it came up:
@@ -171,7 +172,7 @@ inside the image. Defaults in parentheses.
 | Variable | Default | Purpose |
 |---|---|---|
 | `TDB_REGISTRY_DB` | `data/tdb_registry.db` | SQLite path for the source registry + API keys. |
-| `TDB_ALLOWED_DATA_DIR` | `/data` *(set in image)* | Confines registered **CSV** file paths to this dir (symlinks/`..` resolved). Empty = no restriction. DB connectors unaffected. |
+| `TDB_ALLOWED_DATA_DIR` | `/data` *(set in image)* | Confines registered **CSV, Parquet and DuckDB** file paths to this dir (symlinks/`..` resolved). Empty = no restriction. DB connectors unaffected. |
 | `TDB_LOG_FILE` | `tdb_audit.jsonl` | Audit log path (NDJSON). Point at a persisted volume, e.g. `/app/logs/...`. |
 | `TDB_LOG_LEVEL` | `INFO` | `DEBUG`/`INFO`/`WARNING`/`ERROR`. |
 | `TDB_VIEWS_DIR` | *(unset)* | Directory of YAML named-view definitions. Unset = views disabled. |
@@ -526,8 +527,14 @@ grants nothing beyond what was issued.
 
 ### 6.4 DuckDB / query engine access
 
-- CSV sources are queried **in-process by DuckDB**; there is no DuckDB server and no
-  persisted DuckDB database file. DuckDB reads the CSV file directly per query.
+- CSV and Parquet sources are queried **in-process by DuckDB**; there is no DuckDB
+  server, and TDB keeps no DuckDB database of its own. DuckDB reads the file directly per
+  query.
+- A **DuckDB source** (enterprise, from 0.23.0) is a DuckDB database file *you* provide.
+  TDB opens it read-only, in an engine of its own that can open no other file, and only
+  while a query runs, so the process that maintains the file can write between queries.
+  While that process holds the file, queries return `503` (`source_busy` in the audit
+  log). A `:ro` mount works, including after a writer crash that left a `.wal` file.
 - CSV file access is **confined to `TDB_ALLOWED_DATA_DIR`** (default `/data`); symlinks
   and `..` are resolved and paths outside are rejected. Keep that mount read-only.
   From 0.11.0 this also bounds the **SQL**: DuckDB refuses any file outside that
@@ -637,8 +644,8 @@ What to expect qualitatively:
   already contain the word `LIMIT`, so a query carrying its own `LIMIT 100000` — or one
   that merely mentions the word, such as a `credit_limit` column — reaches the source
   uncapped. The *fetch* is therefore what enforces the ceiling: a server-side cursor on
-  PostgreSQL, an unbuffered cursor on MySQL, a bounded fetch on SQL Server, Snowflake
-  and CSV. A two-million-row query returning ten rows costs the TDB host under a
+  PostgreSQL, an unbuffered cursor on MySQL, a bounded fetch on SQL Server, Snowflake,
+  CSV, Parquet and DuckDB. A two-million-row query returning ten rows costs the TDB host under a
   megabyte. **On 0.2.0 and earlier this was not true** — the full result set was read
   before being cut to the ceiling, so size those hosts for the largest result a
   permitted query can produce.
@@ -650,8 +657,9 @@ What to expect qualitatively:
   audit log as a `query_timeout` denial. Set `TDB_QUERY_TIMEOUT=0` to disable it, which
   is what a deployment with genuinely long-running analytical queries will want. **On
   0.2.2 and earlier there was no timeout at all.**
-- **Two limits this does not remove.** **CSV/DuckDB is not interruptible** — it runs
-  in-process with no server to ask, so a long CSV query still runs to completion. And a
+- **Two limits this does not remove.** **CSV, Parquet and DuckDB sources are not
+  interruptible** — they run in TDB's own DuckDB engine with no server to ask, so a long
+  query on them still runs to completion. And a
   timeout bounds *duration*, not *cost*: a heavy join still consumes the source for as
   long as it is allowed to run. Giving TDB its own read-only database role with a
   statement timeout and memory limits (PostgreSQL `statement_timeout` and `work_mem`,
