@@ -142,7 +142,7 @@ What each mount is for:
 Confirm it came up:
 
 ```bash
-docker logs tdb | grep license_ok      # INFO: license_ok customer=... edition=... days_left=...
+docker logs tdb | grep license_ok      # INFO: license_ok customer=... edition=... tier=... days_left=...
 curl -fsS http://localhost:8000/health  # {"status":"ok",...}
 ```
 
@@ -669,7 +669,7 @@ Run these after deploying.
 1. **Liveness:** `curl -fsS http://localhost:8000/health` → `{"status":"ok"}`. The
    version banner is `GET /`.
 2. **License accepted:** `docker logs tdb | grep license_ok` shows
-   `customer=... edition=... days_left=N`. (If you see 403s on data routes with
+   `customer=... edition=... tier=... days_left=N`. (If you see 403s on data routes with
    `reason: missing|expired`, the license isn't being picked up.)
 3. **Auth enforced:** a query **without** a bearer key → `401`; with a valid key → `200`.
 4. **Register + query a source** ([§5.1](#51-registering-a-data-source)) → rows returned.
