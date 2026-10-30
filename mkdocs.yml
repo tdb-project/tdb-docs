@@ -92,6 +92,7 @@ nav:
   - Recipes:
     - Overview: recipes/index.md
     - PostgreSQL for an AI agent: recipes/postgres-agent.md
+    - Two keys, one table (policies): recipes/governed-access.md
     - HTTPS with Caddy: recipes/https-caddy.md
     - Production checklist: recipes/production-checklist.md
   - Connectors:
@@ -113,6 +114,7 @@ nav:
       - OAuth 2.1 (MCP): auth/oauth.md
     - Access & audit:
       - RBAC: security/rbac.md
+      - Column & Row Policies: security/policies.md
       - Audit Log: security/audit.md
       - Credentials at Rest: security/credentials.md
       - Security & Updates: security/updates.md

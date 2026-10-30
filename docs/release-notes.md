@@ -19,6 +19,7 @@ To see what you are running: `GET /v1/version`.
 
 | Date | Enterprise | Community | What changed | Action on upgrade |
 |---|---|---|---|---|
+| 10-30 | **0.22.0** | — | **Column and row policies** (Mid-Market): per-key rules that withhold, mask and filter rows, enforced in the database on REST, MCP, views and the wire gateway, with the rule in the audit log. Plus key attributes, `GET /v1/policies` and suggested policies. [Policies](security/policies.md) | None. Off unless `TDB_POLICIES_FILE` is set; an SMB licence with it set refuses to start. |
 | 10-29 | **0.21.2** | — | **Security:** a rotated API key keeps its `allowed_tools` and Lean Mode setting. Rotation used to drop them, so a scoped key came back able to call every tool. | **Check keys you rotated** (`GET /v1/auth/keys`) and re-scope any that lost their tools. [Advisory](security/updates.md) |
 | 10-29 | 0.21.1 | — | Licence check hardening: the licence verification key can no longer be changed through configuration. | None. |
 | 10-28 | **0.21.0** | **0.13.0** | **Lean Mode**: smaller MCP results for agents — rows as arrays, marked cell trimming, and in enterprise schema detail levels and a per-key setting. [Saving tokens](api/mcp.md#saving-tokens-lean-mode) | None. Opt-in; with nothing set, responses are unchanged. |

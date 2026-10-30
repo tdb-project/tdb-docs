@@ -51,6 +51,9 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 | `PUT /v1/auth/keys/{id}/role` | `admin` |
 | `PUT /v1/auth/keys/{id}/tools` | `admin` |
 | `PUT /v1/auth/keys/{id}/lean-mode` | `admin` |
+| `PUT /v1/auth/keys/{id}/attributes` | `admin` |
+| `GET /v1/policies` | `admin` |
+| `GET /v1/sources/{ref}/policy-suggestions` | `admin` |
 | `GET /v1/audit/verify` | `admin` |
 | `GET /v1/audit/history` | `admin` |
 | `POST /v1/audit/rotate` | `admin` |
@@ -59,6 +62,13 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 
 Grouped by minimum role rather than by path, since the question this table
 answers is "what can a key with role X do".
+
+!!! note "Column and row policies narrow this further"
+
+    A role says which endpoints a key may call; a [policy](policies.md) (Mid-Market,
+    from 0.22.0) says which columns and rows its queries see. A non-admin key that a
+    policy restricts also cannot register or delete sources (403,
+    `policy_registry_change`): a copy of a source under a new name would carry no rule.
 
 !!! note "Rate limiting is checked before the role"
 

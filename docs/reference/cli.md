@@ -8,6 +8,7 @@ API enforces (read-only SQL, the row ceiling, RBAC) applies identically here.
 tdb serve       # start the REST + MCP server
 tdb register    # register a CSV file as a source
 tdb query       # run a read-only SQL query
+tdb policy suggest <source>   # enterprise: draft column policies for personal data
 ```
 
 !!! warning "The `tdb` command is not inside the Docker image"
@@ -175,6 +176,26 @@ cell, which is the correct display but is lossy.
 ```console
 $ tdb query "SELECT id, country FROM data" --output json
 [{"id": 1, "country": "UK"}, {"id": 2, "country": null}]
+```
+
+---
+
+## `tdb policy suggest`
+
+**Enterprise, from 0.22.0. Needs an admin key.** Prints a draft
+[policy file](../security/policies.md#suggested-policies) for the source's columns that
+look like personal data, judged by name and type (no value is read). Nothing is enforced.
+
+```bash
+tdb policy suggest clinic > policies.yml      # YAML on stdout, a summary on stderr
+tdb policy suggest clinic --output json       # findings + the draft, as JSON
+```
+
+The enterprise image has no `tdb` script, but runs the same CLI as a module. Inside the
+container the admin key and URL are already set:
+
+```bash
+docker exec tdb python -m tdb.cli policy suggest clinic > policies.yml
 ```
 
 ---

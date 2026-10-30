@@ -151,8 +151,9 @@ already revoked.
 ## Rotate a key
 
 Atomically revokes the existing key and issues a replacement with the same name,
-expiry, rate limit, role, allowed tools and Lean Mode setting. The new raw key is
-returned once. (Before enterprise 0.21.2 the allowed tools and Lean Mode setting were
+expiry, rate limit, role, allowed tools, Lean Mode setting and attributes. The new raw
+key is returned once. A [policy](../security/policies.md) rule that names the key by name
+keeps applying to the new key. (Before enterprise 0.21.2 the allowed tools and Lean Mode setting were
 not carried over — see [Security & updates](../security/updates.md).)
 
 ```
@@ -221,6 +222,28 @@ Fields: `lean` (true/false), `format` (`objects` | `table`), `detail` (`full` |
 `types` | `names` | `tables`), `max_cell_chars` (minimum 50, `0` = off). Send `{}` to
 clear the key's setting. An invalid value is `400`. The setting is shown as
 `lean_mode` on `GET /v1/auth/keys`. Requires `admin`.
+
+## Set a key's attributes
+
+**Enterprise, from 0.22.0.** Values that [column and row policies](../security/policies.md)
+read as `:name` in a row filter: `rows: "region = :region"` gives each key only its own
+region's rows.
+
+```
+PUT /v1/auth/keys/<key_id>/attributes
+```
+
+```bash
+curl -X PUT http://localhost:8000/v1/auth/keys/<key_id>/attributes \
+  -H "Authorization: Bearer <YOUR_ADMIN_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"attributes": {"region": "EMEA"}}'
+```
+
+Up to 20 attributes; names start with a letter or `_` and hold letters, digits and `_` (at
+most 64 characters); values are strings of at most 200 characters. Send `{"attributes": {}}` to clear them. Shown as `attributes` on
+`GET /v1/auth/keys`. Requires `admin`. A key whose rule needs an attribute it does not
+have is refused (`policy_missing_attribute`), never served unfiltered.
 
 ## Restrict MCP tools
 

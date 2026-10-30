@@ -118,6 +118,18 @@ JWT tokens currently carry the `"admin"` role. For fine-grained, role-scoped acc
 use [DB-managed API keys with RBAC](../security/rbac.md) (read / readwrite / admin);
 per-user JWT roles are planned for a future release.
 
+### Attributes for column and row policies
+
+**Enterprise, from 0.22.0.** A JWT signed with `TDB_JWT_SECRET` may carry an `attributes`
+claim, an object of string values. [Column and row policies](../security/policies.md)
+bind them into row filters (`rows: "region = :region"`):
+
+```json
+{"sub": "ann", "role": "read", "attributes": {"region": "EMEA"}, "exp": 1716375600}
+```
+
+Non-string values are ignored. A policy rule is matched by the token's `role`.
+
 ---
 
 ## Token expiry and refresh

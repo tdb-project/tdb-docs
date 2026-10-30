@@ -117,6 +117,14 @@ When the license is missing, invalid, or expired, the server keeps running and
 
 ---
 
+## Column and Row Policies
+
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_POLICIES_FILE` | 0.22.0 | *(empty — no policies)* | **Enterprise, Mid-Market.** Path to the YAML policy file. Read once at startup; **an invalid file stops startup**, and so does an SMB licence with this set. Restart to load a change; `GET /v1/policies` shows the loaded file's SHA-256. See [Column and row policies](../security/policies.md). |
+
+---
+
 ## Schema Cache
 
 | Variable | Since | Default | Description |
@@ -185,6 +193,9 @@ TDB_CORS_ORIGINS=https://app.yourcompany.com
 
 # YAML views (optional)
 # TDB_VIEWS_DIR=/etc/tdb/views
+
+# Column and row policies (optional, Mid-Market)
+# TDB_POLICIES_FILE=/etc/tdb/policies.yml
 ```
 
 ---

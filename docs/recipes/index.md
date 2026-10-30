@@ -5,6 +5,9 @@ Task-sized guides, each run end to end against a real TDB before it was publishe
 - **[Give an AI agent governed access to PostgreSQL](postgres-agent.md)** — a read-only
   role, a database-wide source, an agent key limited to two tools with Lean Mode on.
   *Enterprise.*
+- **[Two keys, one table: column and row policies](governed-access.md)** — one key sees
+  everything, the other gets masked SSNs, no diagnoses and its own region's rows, on
+  REST, MCP and the wire gateway; the audit log names the rule. *Enterprise, Mid-Market.*
 - **[Serve TDB over HTTPS with Caddy](https-caddy.md)** — TLS in front of TDB with
   automatic certificates. *Both editions.*
 - **[Production checklist](production-checklist.md)** — network, keys, sources, data at

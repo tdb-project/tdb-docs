@@ -175,6 +175,7 @@ inside the image. Defaults in parentheses.
 | `TDB_LOG_FILE` | `tdb_audit.jsonl` | Audit log path (NDJSON). Point at a persisted volume, e.g. `/app/logs/...`. |
 | `TDB_LOG_LEVEL` | `INFO` | `DEBUG`/`INFO`/`WARNING`/`ERROR`. |
 | `TDB_VIEWS_DIR` | *(unset)* | Directory of YAML named-view definitions. Unset = views disabled. |
+| `TDB_POLICIES_FILE` | *(unset)* | YAML [column and row policy](../security/policies.md) file (from 0.22.0, Mid-Market). Unset = no policies. An invalid file, or an SMB licence, **stops startup**. |
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Schema cache TTL (seconds). `0` disables caching. |
 | `TDB_MAX_ROWS` | `1000` | Ceiling on rows in a single query response, on every path: `POST /v1/query`, the MCP tools, and view runs (the MCP tools and view runs from 0.16.0; before that they clamped at a fixed 1,000). A request asking for more is rejected with `400`; a result larger than the request's `limit` is cut and flagged `truncated`. Raising it trades host RAM for bigger responses — size with §1.2. From 0.2.1 it caps both the response **and** the rows TDB reads from the source to produce it, so raising it raises both; on 0.2.0 and earlier it capped the response only (see §8). A bad value falls back to `1000` rather than uncapping. |
 
@@ -371,6 +372,28 @@ curl -fsS -X POST http://localhost:8000/v1/sources \
 Set `TDB_VIEWS_DIR=/app/views` and mount a directory of YAML view definitions to expose
 curated, reusable queries. Leave unset to disable the feature.
 
+### 5.2.1 Column and row policies (optional, Mid-Market)
+
+From 0.22.0. Mount a policy file read-only and set `TDB_POLICIES_FILE`:
+
+```bash
+-v /srv/tdb/policies.yml:/config/policies.yml:ro -e TDB_POLICIES_FILE=/config/policies.yml
+```
+
+- Read **once at startup**: restart to load a change. The log line
+  `policies_loaded sources=… rules=… sha256=…` names the file's hash, which every audit
+  entry carries as `policy_sha256`.
+- **TDB refuses to start** when the file is missing, invalid, or the licence's tier is
+  `smb` (`policies_tier_refused`, with the reason on the console). It never serves a
+  source without the rules written for it. Plan the restart like any other.
+- Check a file against the live schema before relying on it:
+  `GET /v1/policies?validate=true` (admin).
+- Row filters read **key attributes** (`PUT /v1/auth/keys/{id}/attributes`) or a JWT's
+  `attributes` claim. Set them before handing out the key: a key missing one is refused.
+- A draft for your sources: `docker exec tdb python -m tdb.cli policy suggest <source>`.
+
+Full reference: [Column and row policies](../security/policies.md).
+
 ### 5.3 Logging & audit
 
 - The audit log is **append-only NDJSON** at `TDB_LOG_FILE`, **hash-chained** (each entry
@@ -432,6 +455,9 @@ The connector defaults to `Encrypt=yes`. For self-signed SQL Server certs set
   [Installation → License](../getting-started/installation.md) and the
   `TDB_LICENSE` / `TDB_LICENSE_FILE` entries in the
   [environment variable reference](../reference/environment-variables.md).
+- **Tier** (from 0.22.0): the startup line `license_ok … tier=smb|midmarket` shows it.
+  Column and row policies need `midmarket`; a licence issued before 0.22.0 counts as
+  Mid-Market.
 - To extend a trial or renew a commercial license, contact
   [hello@tdb.jiracorp.co.in](mailto:hello@tdb.jiracorp.co.in).
 

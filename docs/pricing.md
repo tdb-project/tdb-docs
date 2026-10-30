@@ -119,7 +119,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     For regulated industries — healthcare-tech, fintech, and any team that needs a supported deployment and enterprise identity.
 
-    **Every product feature is included in both commercial editions.** Mid-Market adds the support commitment around them, and the identity and access-control work below as it ships.
+    **Everything in SMB, plus column and row policies.** Mid-Market adds the support commitment, fine-grained access control, and the enterprise identity work below as it ships.
 
     **Everything in SMB, plus:**
 
@@ -134,7 +134,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Fine-grained access control**
 
-    - Column-level access control *(on the roadmap, not yet built)*
+    - [Column and row policies](security/policies.md): per-key rules that withhold or mask columns (PII masking) and filter rows, on REST, MCP, views and the PostgreSQL wire gateway, with the rule recorded in the audit log *(from 0.22.0)*
 
     [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
 
@@ -148,7 +148,7 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 
 ## Edition comparison
 
-The two commercial editions ship the **same product**. Nothing in the running server is switched off by edition — SMB and Mid-Market differ on the support commitment, and on identity and access-control features that are still on the roadmap.
+The two commercial editions ship the same product with one exception: **column and row policies are Mid-Market** (from 0.22.0). An SMB licence with a policy file set refuses to start rather than serve without the rules. Otherwise SMB and Mid-Market differ on the support commitment and on the identity features still on the roadmap.
 
 | Feature | Community | SMB | Mid-Market |
 |---|---|---|---|
@@ -181,7 +181,8 @@ The two commercial editions ship the **same product**. Nothing in the running se
 | Schema annotations for AI clients | ❌ | ✅ | ✅ |
 | **Access control** | | | |
 | RBAC (read / readwrite / admin) | ❌ | ✅ | ✅ |
-| Column-level access control | ❌ | ❌ | On roadmap |
+| Column and row policies, PII masking | ❌ | ❌ | ✅ |
+| Suggested policies for personal-data columns | ❌ | ✅ | ✅ |
 | **Audit** | | | |
 | Local NDJSON audit log | ✅ | ✅ | ✅ |
 | Hash-chained tamper-evident log | ❌ | ✅ | ✅ |

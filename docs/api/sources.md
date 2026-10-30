@@ -386,6 +386,35 @@ here as well as in MCP:
 Each is `null` when unset, so a deployment with no annotations sees exactly the
 response shown above this section.
 
+### Under a column or row policy
+
+!!! info "Enterprise, from 0.22.0"
+
+For a key with a [policy rule](../security/policies.md) on the source, the response
+leaves out withheld columns and tables the rule does not name, and a masked column
+carries `"masked": "redact" | "partial" | "hash"`. The field is absent otherwise.
+
+### Suggested policies
+
+`GET /v1/sources/{ref}/policy-suggestions` (admin, enterprise from 0.22.0) returns the
+columns that look like personal data and a draft policy file:
+
+```json
+{
+  "source": "clinic",
+  "findings": [
+    {"table": "patients", "column": "ssn", "type": "text",
+     "category": "government_id", "action": "partial", "matched": "ssn"},
+    {"table": "patients", "column": "diagnosis", "type": "text",
+     "category": "health", "action": "hidden", "matched": "diagnosis"}
+  ],
+  "policy_yaml": "# Suggested by `tdb policy suggest clinic`. ..."
+}
+```
+
+Names and types only; no value is read. `502` if the source's schema cannot be read.
+See [Suggested policies](../security/policies.md#suggested-policies).
+
 **Error responses:**
 
 | Status | Meaning |

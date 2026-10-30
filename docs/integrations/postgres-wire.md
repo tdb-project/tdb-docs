@@ -144,6 +144,14 @@ session, as on every other path — see
 The source's `sslmode`, `sslrootcert` and `require_auth` apply to TDB's own
 connection to the database.
 
+**Column and row policies apply here too** (Mid-Market, from 0.22.0). Each statement is
+rewritten to the caller's rule, in both protocols and inside `DECLARE`, and a refusal is
+`42501`. A query that reads only `pg_catalog` / `information_schema` passes as written,
+so drivers and BI tools can list tables and columns. **Known limit:** that catalog shows
+a policied key the *names* of withheld columns and of tables outside its rule, and
+approximate row counts; their values stay protected. See
+[Column and row policies](../security/policies.md#through-the-postgresql-wire-gateway).
+
 ---
 
 ## Limits

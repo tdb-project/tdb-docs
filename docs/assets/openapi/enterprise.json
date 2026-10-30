@@ -3,7 +3,7 @@
  "info": {
   "title": "The Data-Bridge (TDB)",
   "description": "A secure, auditable API layer over your existing data sources. Register a data source once, query it anywhere.",
-  "version": "0.21.0"
+  "version": "0.22.0"
  },
  "paths": {
   "/v1/auth/token": {
@@ -439,35 +439,65 @@
     }
    }
   },
-  "/v1/sources": {
-   "get": {
+  "/v1/auth/keys/{key_id}/attributes": {
+   "put": {
     "tags": [
-     "Source Registry"
+     "API Keys"
     ],
-    "summary": "List all registered sources",
-    "operationId": "list_sources_v1_sources_get",
+    "summary": "Set a key's policy attributes",
+    "description": "Attributes a column/row policy reads, such as the region a row filter keeps. Names are identifiers; values are strings of at most 200 characters; at most 20 attributes. Send {} to clear them.",
+    "operationId": "update_attributes_v1_auth_keys__key_id__attributes_put",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "key_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Key Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SetAttributesRequest"
+       }
+      }
+     }
+    },
     "responses": {
      "200": {
       "description": "Successful Response",
       "content": {
        "application/json": {
         "schema": {
-         "items": {
-          "$ref": "#/components/schemas/SourceSummary"
-         },
-         "type": "array",
-         "title": "Response List Sources V1 Sources Get"
+         "$ref": "#/components/schemas/ApiKeyRecord"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
         }
        }
       }
      }
-    },
-    "security": [
-     {
-      "HTTPBearer": []
-     }
-    ]
-   },
+    }
+   }
+  },
+  "/v1/sources": {
    "post": {
     "tags": [
      "Source Registry"
@@ -475,15 +505,38 @@
     "summary": "Register a new data source",
     "description": "Register a data source so it can be queried through TDB.\n\n**source_type** values are validated against the internal connector\nregistry (ADR-001 step 2). New types can be added by an overlay\npackage calling `tdb.connectors.registry.register()` at startup.",
     "operationId": "register_source_v1_sources_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
     "requestBody": {
+     "required": true,
      "content": {
       "application/json": {
        "schema": {
         "$ref": "#/components/schemas/SourceRegistrationRequest"
        }
       }
-     },
-     "required": true
+     }
     },
     "responses": {
      "201": {
@@ -506,12 +559,35 @@
        }
       }
      }
-    },
+    }
+   },
+   "get": {
+    "tags": [
+     "Source Registry"
+    ],
+    "summary": "List all registered sources",
+    "operationId": "list_sources_v1_sources_get",
     "security": [
      {
       "HTTPBearer": []
      }
-    ]
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/SourceSummary"
+         },
+         "title": "Response List Sources V1 Sources Get"
+        }
+       }
+      }
+     }
+    }
    }
   },
   "/v1/sources/{source_id}": {
@@ -580,6 +656,22 @@
        "type": "string",
        "title": "Source Id"
       }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
      }
     ],
     "responses": {
@@ -605,7 +697,7 @@
      "Source Registry"
     ],
     "summary": "Inspect column names and types for a registered source (UUID or name)",
-    "description": "Returns the column names and inferred types for the registered source.\nNo rows are returned \u2014 schema introspection only.",
+    "description": "Returns the column names and inferred types for the registered source.\nNo rows are returned — schema introspection only.",
     "operationId": "get_source_schema_v1_sources__source_id__schema_get",
     "security": [
      {
@@ -620,6 +712,22 @@
       "schema": {
        "type": "string",
        "title": "Source Id"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
       }
      }
     ],
@@ -653,7 +761,7 @@
      "Sources"
     ],
     "summary": "List a source's schema annotations",
-    "description": "Every annotation stored for the source.\n\nTargets are checked when they are written, but a schema moves underneath\nthem: a column that is renamed or dropped leaves an annotation that matches\nnothing and says nothing, surfacing only as a description that quietly stops\nappearing in `schema_source`. `?validate=true` re-runs the write-time check\nagainst the live schema and marks each annotation `stale` with the reason.\n\nAs on the write path, `validated: false` means the source could not be read\n\u2014 never that nothing matched. An unreachable database is not evidence that\nan annotation is wrong, so nothing is flagged stale on that path.",
+    "description": "Every annotation stored for the source.\n\nTargets are checked when they are written, but a schema moves underneath\nthem: a column that is renamed or dropped leaves an annotation that matches\nnothing and says nothing, surfacing only as a description that quietly stops\nappearing in `schema_source`. `?validate=true` re-runs the write-time check\nagainst the live schema and marks each annotation `stale` with the reason.\n\nAs on the write path, `validated: false` means the source could not be read\n— never that nothing matched. An unreachable database is not evidence that\nan annotation is wrong, so nothing is flagged stale on that path.",
     "operationId": "list_annotations_v1_sources__ref__annotations_get",
     "security": [
      {
@@ -713,7 +821,7 @@
      "Sources"
     ],
     "summary": "Create or replace schema annotations",
-    "description": "Upserts each annotation. Existing entries for the same table/column are\nreplaced; annotations not mentioned are left alone. Use DELETE to remove one.\n\nTargets are validated against the live schema by default: an annotation on a\nmisspelled column never matches anything and would otherwise fail silently,\nsurfacing as \"the description I wrote isn't showing up\" long after the typo.\nIf the source cannot be reached the write still succeeds and the response\nreports `validated: false` \u2014 an unreachable database is not evidence that an\nannotation is wrong.",
+    "description": "Upserts each annotation. Existing entries for the same table/column are\nreplaced; annotations not mentioned are left alone. Use DELETE to remove one.\n\nTargets are validated against the live schema by default: an annotation on a\nmisspelled column never matches anything and would otherwise fail silently,\nsurfacing as \"the description I wrote isn't showing up\" long after the typo.\nIf the source cannot be reached the write still succeeds and the response\nreports `validated: false` — an unreachable database is not evidence that an\nannotation is wrong.",
     "operationId": "put_annotations_v1_sources__ref__annotations_put",
     "security": [
      {
@@ -864,17 +972,40 @@
      "Query"
     ],
     "summary": "Run a SQL query against a registered data source",
-    "description": "Execute a **read-only** SQL SELECT against a registered source.\n\n### Example\n```json\n{\n  \"source_id\": \"abc-123\",\n  \"sql\": \"SELECT * FROM orders LIMIT 50\",\n  \"limit\": 50\n}\n```\n\nUse the table name that matches the connector: CSV sources are exposed as\n`data`, while database connectors (Postgres, MySQL, SQL Server, Snowflake)\ntake the **actual table name** from the source's `connection.table` \u2014 the\nSQL is passed through to the database unchanged apart from an appended\n`LIMIT`, so there is no `data` alias for database sources.",
+    "description": "Execute a **read-only** SQL SELECT against a registered source.\n\n### Example\n```json\n{\n  \"source_id\": \"abc-123\",\n  \"sql\": \"SELECT * FROM orders LIMIT 50\",\n  \"limit\": 50\n}\n```\n\nUse the table name that matches the connector: CSV sources are exposed as\n`data`, while database connectors (Postgres, MySQL, SQL Server, Snowflake)\ntake the **actual table name** from the source's `connection.table` — the\nSQL is passed through to the database unchanged apart from an appended\n`LIMIT`, so there is no `data` alias for database sources.",
     "operationId": "run_query_v1_query_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
     "requestBody": {
+     "required": true,
      "content": {
       "application/json": {
        "schema": {
         "$ref": "#/components/schemas/QueryRequest"
        }
       }
-     },
-     "required": true
+     }
     },
     "responses": {
      "200": {
@@ -897,12 +1028,7 @@
        }
       }
      }
-    },
-    "security": [
-     {
-      "HTTPBearer": []
-     }
-    ]
+    }
    }
   },
   "/v1/mcp": {
@@ -1025,6 +1151,22 @@
        "type": "string",
        "title": "Name"
       }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
      }
     ],
     "requestBody": {
@@ -1044,6 +1186,107 @@
        "application/json": {
         "schema": {
          "$ref": "#/components/schemas/RunViewResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/policies": {
+   "get": {
+    "tags": [
+     "Policies"
+    ],
+    "summary": "Column and row policies in force",
+    "operationId": "get_policies_v1_policies_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "validate",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "description": "Check each source's live schema.",
+       "default": false,
+       "title": "Validate"
+      },
+      "description": "Check each source's live schema."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Policies V1 Policies Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/sources/{ref}/policy-suggestions": {
+   "get": {
+    "tags": [
+     "Policies"
+    ],
+    "summary": "Suggest column policies for a source's personal data",
+    "operationId": "get_policy_suggestions_v1_sources__ref__policy_suggestions_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "ref",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Ref"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Policy Suggestions V1 Sources  Ref  Policy Suggestions Get"
         }
        }
       }
@@ -1125,7 +1368,7 @@
      "Audit"
     ],
     "summary": "Seal the audit log into a segment now",
-    "description": "Seals the live audit log into a timestamped segment and starts a fresh chain.\n\nThe segment keeps its chain intact and stays independently verifiable. TDB\nnever deletes a segment \u2014 removing old ones is the operator's decision.\n\nReturns ``{\"rotated\": true, \"segment\": \"...\", \"entries_sealed\": N}``, or\n``{\"rotated\": false, \"reason\": \"log is empty\"}`` when there is nothing to seal.",
+    "description": "Seals the live audit log into a timestamped segment and starts a fresh chain.\n\nThe segment keeps its chain intact and stays independently verifiable. TDB\nnever deletes a segment — removing old ones is the operator's decision.\n\nReturns ``{\"rotated\": true, \"segment\": \"...\", \"entries_sealed\": N}``, or\n``{\"rotated\": false, \"reason\": \"log is empty\"}`` when there is nothing to seal.",
     "operationId": "audit_rotate_v1_audit_rotate_post",
     "responses": {
      "200": {
@@ -1154,7 +1397,7 @@
      "Audit"
     ],
     "summary": "Export audit log to a SIEM destination",
-    "description": "Ships audit entries the destination has not yet received, to Splunk HEC or S3. Each destination keeps its own cursor, so a scheduled export is incremental rather than re-sending the whole log every run. Configure Splunk via TDB_SPLUNK_HEC_URL / TDB_SPLUNK_HEC_TOKEN, or S3 via TDB_S3_BUCKET. An unconfigured destination is a no-op and reports `disabled`. Pass `since_seq=0` to re-send history.\n\nRuns synchronously by default and returns what it shipped. Pass `wait=false` to get 202 immediately and let it run in the background \u2014 read the outcome afterwards from GET /v1/audit/export/status, which reports `last_run` per destination. Either way a destination exports one run at a time: an overlapping call gets 409, because two runs share a cursor and would ship the same entries twice.",
+    "description": "Ships audit entries the destination has not yet received, to Splunk HEC or S3. Each destination keeps its own cursor, so a scheduled export is incremental rather than re-sending the whole log every run. Configure Splunk via TDB_SPLUNK_HEC_URL / TDB_SPLUNK_HEC_TOKEN, or S3 via TDB_S3_BUCKET. An unconfigured destination is a no-op and reports `disabled`. Pass `since_seq=0` to re-send history.\n\nRuns synchronously by default and returns what it shipped. Pass `wait=false` to get 202 immediately and let it run in the background — read the outcome afterwards from GET /v1/audit/export/status, which reports `last_run` per destination. Either way a destination exports one run at a time: an overlapping call gets 409, because two runs share a cursor and would ship the same entries twice.",
     "operationId": "trigger_export_v1_audit_export_post",
     "security": [
      {
@@ -1268,7 +1511,7 @@
      "Meta"
     ],
     "summary": "Health",
-    "description": "Liveness probe \u2014 used by Docker / k8s health checks.",
+    "description": "Liveness probe — used by Docker / k8s health checks.",
     "operationId": "health_health_get",
     "responses": {
      "200": {
@@ -1288,7 +1531,7 @@
      "Meta"
     ],
     "summary": "Version",
-    "description": "Report the running version and build SHA (authenticated).\n\nUsed to confirm a deployment's exact patch level after a security update \u2014\ne.g. an operator comparing against the latest released image, with no\nphone-home. The unauthenticated `/` banner also carries `version`.",
+    "description": "Report the running version and build SHA (authenticated).\n\nUsed to confirm a deployment's exact patch level after a security update —\ne.g. an operator comparing against the latest released image, with no\nphone-home. The unauthenticated `/` banner also carries `version`.",
     "operationId": "version_v1_version_get",
     "responses": {
      "200": {
@@ -1469,6 +1712,20 @@
        }
       ],
       "title": "Lean Mode"
+     },
+     "attributes": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "type": "string"
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Attributes"
      }
     },
     "type": "object",
@@ -1520,7 +1777,7 @@
      "role": {
       "type": "string",
       "title": "Role",
-      "description": "RBAC role for this key: 'read', 'readwrite', or 'admin'. Defaults to 'read' \u2014 a key handed to an AI agent should not be able to manage keys or sources unless that is asked for.",
+      "description": "RBAC role for this key: 'read', 'readwrite', or 'admin'. Defaults to 'read' — a key handed to an AI agent should not be able to manage keys or sources unless that is asked for.",
       "default": "read"
      }
     },
@@ -1798,6 +2055,17 @@
        }
       ],
       "title": "Description"
+     },
+     "masked": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Masked"
      }
     },
     "type": "object",
@@ -1827,6 +2095,20 @@
     },
     "type": "object",
     "title": "SetAllowedToolsRequest"
+   },
+   "SetAttributesRequest": {
+    "properties": {
+     "attributes": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Attributes",
+      "description": "Values column and row policies read as :name in a row filter, e.g. {\"region\": \"EMEA\"}. {} clears them."
+     }
+    },
+    "type": "object",
+    "title": "SetAttributesRequest"
    },
    "SetLeanModeRequest": {
     "properties": {
@@ -2154,7 +2436,7 @@
      "columns"
     ],
     "title": "TableSchema",
-    "description": "Column listing for one table \u2014 used in database-wide schema responses."
+    "description": "Column listing for one table — used in database-wide schema responses."
    },
    "TokenRequest": {
     "properties": {
