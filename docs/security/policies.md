@@ -103,7 +103,8 @@ Check a loaded file with [`GET /v1/policies`](#checking-a-policy-file).
 | Field | Meaning |
 |---|---|
 | `version` | `1` |
-| `sources.<name>` | A registered source, by name. Sources the file does not name are unaffected |
+| `unlisted_sources` | From 0.30.0, top level. `deny` (the default) or `allow`: what a source the file **does not name** does. See [Sources the file does not name](#sources-the-file-does-not-name) |
+| `sources.<name>` | A registered source, by name, matched exactly |
 | `default` | **Required.** `allow` or `deny`: what a caller **no rule names** gets on this source. `allow` = today's behaviour, unrestricted |
 | `rules[].name` | Shown in the audit log. Unique per source |
 | `rules[].applies_to` | `roles: [read, readwrite, admin]`, `keys: [key names]` and/or, from 0.24.0, `groups: [IdP groups]` ([single sign-on](../auth/sso.md#rules-and-tools-by-group)). A key name beats a group, and a group beats a role; a person in two groups gets the first matching rule in the file. A role, key or group in two rules of one source is refused at load |
@@ -288,6 +289,36 @@ Policies are a **Mid-Market** feature. Licences carry a `tier`; a licence issued
 stops TDB from starting**, with a message that names both ways out: unset the variable,
 or ask us for a Mid-Market licence. TDB never serves a source without the rules written
 for it.
+
+---
+
+## Sources the file does not name
+
+!!! warning "Changed in 0.30.0"
+    Before 0.30.0 a source the file did not name was open to every key. If you use a policy
+    file, list every source before upgrading, or set `unlisted_sources: allow` to keep that
+    behaviour.
+
+Once a policy file is loaded, a source it does not name refuses every caller, **admin keys
+included**, on every path: REST, MCP, views, schema reads and the wire gateway. The refusal is
+audited as `policy_source_unlisted`. So a typo in the file, or a source registered or renamed
+after the file was written, cannot silently remove your rules.
+
+An admin can still register a new source, and draft its policy with
+`GET /v1/sources/{ref}/policy-suggestions`. Add it to the file and restart. With no policy file,
+none of this applies.
+
+```yaml title="policies.yml"
+version: 1
+unlisted_sources: allow   # opt out: sources this file does not name are unrestricted
+sources:
+  clinic: ...
+```
+
+TDB logs a warning at startup for a file entry matching no registered source
+(`policy_names_no_source`) and a registered source the file does not name
+(`policy_source_unlisted`). `GET /v1/policies` reports `unlisted_sources` and `unlisted`, and
+`?validate=true` flags an entry whose name does not exactly match a source.
 
 ---
 

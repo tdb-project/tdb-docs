@@ -100,6 +100,7 @@ wire gateway, audited with the reason below. Under a rule the entry also carries
 
 | Audit `reason` | What it means | What to do |
 |---|---|---|
+| `policy_source_unlisted` | A policy file is loaded and does not name this source (from 0.30.0) | Add the source to the file and restart, or set `unlisted_sources: allow` |
 | `policy_no_rule` | No rule names this key or its role, and the source's `default` is `deny` | Add a rule for the key, or use a key that has one |
 | `policy_missing_attribute` | The key's rule has a row filter needing an attribute the caller lacks | Set it: `PUT /v1/auth/keys/{id}/attributes`, or the JWT `attributes` claim |
 | `policy_table_not_permitted` | The SQL reads a table, view or copy the caller's rule does not name | Query only the rule's tables, or add the table to the rule |
