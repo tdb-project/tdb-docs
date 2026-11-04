@@ -15,6 +15,9 @@ OAuth 2.1 authenticate with TDB without manual token management.
 
 ## Required environment variables
 
+The values below are for signing in with TDB's own admin password. To sign people in
+through your identity provider instead, see [Single sign-on and SCIM](sso.md).
+
 ```bash
 TDB_JWT_SECRET=<64-char hex>         # Required — signs the access tokens
 TDB_ADMIN_USER=admin                 # Required — OAuth login credentials

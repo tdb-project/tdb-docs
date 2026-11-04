@@ -86,7 +86,7 @@ copilot, and with a tamper-evident audit log you own.
     ---
 
     Static API keys plus DB-managed keys (create / rotate / revoke), role-based
-    access control (read / readwrite / admin), JWT, OAuth 2.1 with PKCE on MCP,
+    access control (read / readwrite / admin), JWT, OAuth 2.1 with PKCE on MCP, single sign-on and SCIM,
     per-API-key rate limiting and CORS configuration.
 
     [:octicons-arrow-right-24: Authentication](auth/overview.md)

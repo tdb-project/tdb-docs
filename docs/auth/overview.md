@@ -1,6 +1,8 @@
 # Authentication Overview
 
-TDB Enterprise supports three authentication mechanisms. They are evaluated in
+TDB Enterprise supports three authentication mechanisms. People can also sign in through
+your identity provider, which issues them a JWT: see
+[Single sign-on and SCIM](sso.md) (Mid-Market, from 0.24.0). They are evaluated in
 waterfall order on every authenticated request:
 
 ```

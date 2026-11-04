@@ -90,6 +90,19 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-04 — filelock advisories closed
+
+Enterprise 0.23.1 moves `filelock` to 4.2.7, which closes the advisories image scans
+reported against it (GHSA-8mx5-7m5m-r77g, GHSA-cwqr-hh33-gh44, GHSA-rfpc-qcw5-3pc4,
+GHSA-69hj-f68j-2879, GHSA-j8f7-rjxc-mr56, GHSA-fq56-3cx3-fjxp and earlier ones).
+
+**TDB was not known to be exposed.** Only the Snowflake connector uses `filelock`, for
+caches in a private directory, in a container that runs as one user.
+
+**Action:** upgrade, so your image scans stop reporting them. If you use Snowflake, try it
+on the new version first: the connector's own limit on `filelock` is overridden, and this
+pairing has not yet run against a real Snowflake account.
+
 ### 2026-10-29 — A rotated API key could call every MCP tool
 
 **Fixed in enterprise 0.21.2.** Community is not affected (it has no key management).
