@@ -113,6 +113,7 @@ nav:
       - API Keys: auth/api-keys.md
       - JWT: auth/jwt.md
       - OAuth 2.1 (MCP): auth/oauth.md
+      - Single Sign-On & SCIM: auth/sso.md
     - Access & audit:
       - RBAC: security/rbac.md
       - Column & Row Policies: security/policies.md

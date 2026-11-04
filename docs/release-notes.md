@@ -19,6 +19,7 @@ To see what you are running: `GET /v1/version`.
 
 | Date | Enterprise | Community | What changed | Action on upgrade |
 |---|---|---|---|---|
+| __RELEASE_DATE__ | **0.24.0** | — | **Single sign-on and SCIM** (Mid-Market): people sign in through your IdP, groups decide role, rules and tools, and removal ends access. A `user` field in audit. [Single sign-on and SCIM](auth/sso.md) | Audit entries from JWTs gain `user`. Changing `TDB_JWT_SECRET` now also ends open gateway sessions. |
 | 11-04 | 0.23.1 | — | **Security:** filelock 4.2.7 closes the advisories image scans reported against it. Only the Snowflake connector's local caches use it. | None. |
 
 ## October 2026

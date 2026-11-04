@@ -130,7 +130,8 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Enterprise identity**
 
-    - SSO / SAML / SCIM *(on the roadmap, not yet built)*
+    - Single sign-on (OIDC), SCIM provisioning, and IdP groups in access rules
+    - SAML *(built on request)*
 
     **Fine-grained access control**
 
@@ -166,7 +167,8 @@ The two commercial editions ship the same product with one exception: **column a
 | API key rotation & management | ❌ | ✅ | ✅ |
 | JWT authentication | ❌ | ✅ | ✅ |
 | OAuth 2.1 with PKCE | ❌ | ✅ | ✅ |
-| SSO / SAML / SCIM | ❌ | ❌ | On roadmap |
+| Single sign-on (OIDC) and SCIM | ❌ | ❌ | ✅ |
+| SAML | ❌ | ❌ | On request |
 | Per-key rate limiting | ❌ | ✅ | ✅ |
 | CORS configuration | ❌ | ✅ | ✅ |
 | **Query & MCP** | | | |
@@ -229,5 +231,5 @@ Paid editions are a flat self-hosted license (no per-query or per-row metering).
 **Is the source code for the enterprise tier available?**
 No. The enterprise tier is a closed-source commercial product. The community edition is fully open under AGPLv3.
 
-**I need BigQuery / Datadog / SSO now. When do those ship?**
+**I need BigQuery / Datadog / SAML now. When do those ship?**
 They are on the roadmap and not yet built. We deliberately don't publish dates we haven't committed engineering to — a date we miss is worse than no date, particularly in a product you're evaluating for compliance. If one of these is blocking your evaluation, [email us](mailto:hello@tdb.jiracorp.co.in): that's the signal that moves it up, and design partners get built first.

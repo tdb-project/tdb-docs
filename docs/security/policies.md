@@ -106,7 +106,7 @@ Check a loaded file with [`GET /v1/policies`](#checking-a-policy-file).
 | `sources.<name>` | A registered source, by name. Sources the file does not name are unaffected |
 | `default` | **Required.** `allow` or `deny`: what a caller **no rule names** gets on this source. `allow` = today's behaviour, unrestricted |
 | `rules[].name` | Shown in the audit log. Unique per source |
-| `rules[].applies_to` | `roles: [read, readwrite, admin]` and/or `keys: [key names]`. A key-name match beats a role match. A role or key in two rules of one source is refused at load |
+| `rules[].applies_to` | `roles: [read, readwrite, admin]`, `keys: [key names]` and/or, from 0.24.0, `groups: [IdP groups]` ([single sign-on](../auth/sso.md#rules-and-tools-by-group)). A key name beats a group, and a group beats a role; a person in two groups gets the first matching rule in the file. A role, key or group in two rules of one source is refused at load |
 | `rules[].tables.<table>` | The tables this rule's callers may query. **Any other table, view or copy on the source is refused for them** |
 | `columns` | The visible columns. A column added to the database later is **hidden** until you list it. Omit (with `hidden`) for all columns |
 | `hidden` | Instead of `columns`: the withheld columns. A column added later is **visible** |

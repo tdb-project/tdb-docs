@@ -83,6 +83,23 @@ When the license is missing, invalid, or expired, the server keeps running and
 
 ---
 
+## Single sign-on and SCIM
+
+**Enterprise, Mid-Market.** See [Single sign-on and SCIM](../auth/sso.md).
+
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_OIDC_ISSUER` | 0.24.0 | *(empty: off)* | Your identity provider's issuer URL. Setting it turns single sign-on on; https, or loopback for testing. An SMB licence refuses to start with it set |
+| `TDB_OIDC_CLIENT_ID` | 0.24.0 | *(required with SSO)* | TDB's client ID at the IdP |
+| `TDB_OIDC_CLIENT_SECRET` | 0.24.0 | *(required with SSO)* | TDB's client secret at the IdP |
+| `TDB_OIDC_SCOPES` | 0.24.0 | `openid email profile` | Scopes to request. Add `offline_access` if your IdP needs it to issue refresh tokens, or `groups` to send groups |
+| `TDB_SSO_FILE` | 0.24.0 | *(required with SSO)* | YAML file mapping IdP groups to role, attributes and tools. Read once at startup; an invalid file stops startup |
+| `TDB_SSO_JIT` | 0.24.0 | `true` | `false` refuses anyone SCIM has not provisioned, rather than creating them at first sign-in |
+| `TDB_SSO_TRUST_EMAIL` | 0.24.0 | `false` | `true` accepts the `email` claim as verified when the IdP sends no `email_verified`. Only if users cannot change it themselves |
+| `TDB_SSO_RATE_LIMIT` | 0.24.0 | `TDB_DEFAULT_RATE_LIMIT` | Requests per minute per person |
+| `TDB_SSO_DISABLE_PASSWORD` | 0.24.0 | `false` | `true` turns off `POST /v1/auth/token` |
+| `TDB_SCIM_TOKEN` | 0.24.0 | *(empty: off)* | Bearer token for `/scim/v2`, 32 characters or more. Needs SSO. It can grant admin through group membership |
+
 ## Rate Limiting
 
 | Variable | Since | Default | Description |

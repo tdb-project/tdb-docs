@@ -34,6 +34,7 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 | `sql` | The SQL statement executed (or `<view:name>` for named views) |
 | `rows_returned` | Number of rows included in the response (`query` entries only) |
 | `key_hint` | First 6 characters of the key that made the request, then `...`. The raw key is never written to the log |
+| `user`, `user_id`, `user_inactive` | From 0.24.0, entries made with a JWT: `user` is the person (the full value, so two people cannot look alike). [SSO](../auth/sso.md) entries add `user_id`, and `user_inactive` when a removed person is refused. API key entries do not have these |
 | `seq` | Monotonically increasing sequence number, starting from 1 |
 | `prev_hash` | SHA-256 hash of the previous entry (genesis entry uses `000...0`) |
 | `hash` | SHA-256 hash of this entry (computed over all fields except `hash` itself) |

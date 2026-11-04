@@ -111,7 +111,7 @@ an impostor, so a key is exposed to anyone able to intercept the connection.
 `TDB_PG_ALLOW_INSECURE=true` accepts plaintext; use it only on a trusted
 loopback.
 
-**Only read-role credentials.** A DB-managed key whose role is `read`, or a JWT
+**Only read-role credentials.** A person using [single sign-on](../auth/sso.md) gets a token from `/sso/token` (0.24.0), and removing them ends an open session before its next statement. Otherwise, a DB-managed key whose role is `read`, or a JWT
 whose `role` claim is `read`. Static `TDB_API_KEYS` keys are admin keys and are
 refused. The wire can only read, so a higher role adds nothing there — except
 the damage if a connection string leaks. The key, its role and the licence are

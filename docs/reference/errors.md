@@ -123,6 +123,29 @@ missing, not valid YAML or has an invalid field, or when the licence's tier is `
 
 ---
 
+## Single sign-on and SCIM
+
+Reasons in the audit log from [single sign-on](../auth/sso.md). A person sees a plain page with no
+detail; the entry has the rest.
+
+| Audit `reason` | What it means | What to do |
+|---|---|---|
+| `sso_no_mapped_group` | No group this person is in is in `TDB_SSO_FILE` | Add them to a mapped group; check the IdP sends the groups claim |
+| `sso_groups_overflow` | The IdP sent a pointer in place of a long group list | Limit the groups the IdP sends to TDB |
+| `sso_user_inactive` | The person is deactivated or has no access | Reactivate them in the IdP |
+| `sso_user_not_provisioned` | `TDB_SSO_JIT=false`, and SCIM has not provisioned them | Assign them in the IdP |
+| `sso_email_unverified` | A provisioned account exists for this address, and nothing vouches for it | Have the IdP send `email_verified`; see `TDB_SSO_TRUST_EMAIL` |
+| `sso_id_token_invalid` | The IdP's ID token failed a check: signature, issuer, audience, expiry or nonce | Check `TDB_OIDC_ISSUER` and `TDB_OIDC_CLIENT_ID`; the entry's `detail` says which |
+| `sso_idp_unavailable` | The IdP could not be reached, or answered with an error | Check the IdP and the network; nobody is signed out by this |
+| `sso_idp_refused`, `sso_idp_error` | The IdP refused the sign-in | Check the client secret and the IdP's own log |
+| `sso_state_mismatch`, `sso_state_unknown` | The sign-in expired, or finished in another browser | Start again; repeated, it can be an attempted login forgery |
+| `sso_consent_csrf`, `sso_consent_expired` | The consent page expired, or was posted from another browser | Start again; repeated, it can be an attempted forgery |
+| `sso_consent_denied` | The person chose Deny | None |
+| `sso_refresh_replay` | A used refresh token came back. All of that sign-in's tokens are revoked | Sign in again; if unexplained, the token may have been stolen |
+| `sso_refresh_refused`, `sso_refresh_unknown`, `sso_refresh_wrong_user` | The IdP refused the refresh, or the token is not valid | Sign in again |
+| `scim_invalid_token` | A request to `/scim/v2` had the wrong token | Check `TDB_SCIM_TOKEN` at the IdP |
+| `tool_not_permitted_<tool>` | The person's groups do not allow this tool | Change `allowed_tools` in `TDB_SSO_FILE` |
+
 ## Not refusals
 
 - **`truncated: true`** — not an error. More rows existed than the row ceiling or your

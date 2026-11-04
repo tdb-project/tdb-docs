@@ -555,8 +555,9 @@ client made it and at what protocol version (`mcp_client`, `mcp_protocol`). Clie
 report these themselves, so treat them as a label, not proof of identity.
 
 > **Directory / AD integration is not supported today:**
-> - **No SSO / SAML / OIDC-IdP / LDAP / Active Directory login** to TDB itself (this is
->   on the post-launch roadmap, not in the current edition).
+> - **Single sign-on is OIDC only**, from 0.24.0 on Mid-Market ([setup](../auth/sso.md)).
+>   SAML and direct LDAP login are not supported; Active Directory works through an IdP
+>   that speaks OIDC, such as Entra. Okta and Entra have not yet been run against TDB.
 > - **No Kerberos / keytab / Windows-integrated auth to data sources.** All DB
 >   connectors use **SQL username/password** auth only (SQL Server uses `UID/PWD`, not
 >   `Trusted_Connection`). If your security policy mandates AD/Kerberos service accounts
