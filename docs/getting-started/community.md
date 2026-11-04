@@ -45,8 +45,8 @@ where you run the command.
 
 !!! tip "Image tags"
     `:latest` always points to the newest **stable release** (not the tip of `main`). For
-    production, pin an immutable release tag like `:0.16.0` — or a `@sha256:` digest, which
-    is the only tag that cannot move under you; `:0.16` floats to the newest patch within
+    production, pin an immutable release tag like `:0.17.0` — or a `@sha256:` digest, which
+    is the only tag that cannot move under you; `:0.17` floats to the newest patch within
     that minor. Pull `:edge` to try the latest unreleased `main` build.
 
 Wait for it to come up. The first start takes about five seconds, and a request sent
