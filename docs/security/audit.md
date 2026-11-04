@@ -80,9 +80,9 @@ if you rely on the log to reconstruct exactly what someone asked. A value other 
 `redacted` stops TDB at startup, so a typo cannot silently leave values in the log. Entries from
 before and after a change of mode sit in one log, and in enterprise the hash chain verifies across it.
 
-From the same releases, a **new** audit file is created with mode `0640`, so it is not world-readable.
-An existing file keeps its mode, so check it with `ls -l`. A log shipper that runs as another user
-outside the file's group needs access granted.
+From the same releases, a **new** audit file is created with mode `0600`, readable only by the user
+TDB runs as. An existing file keeps its mode, so check it with `ls -l`. A log shipper that runs as
+another user needs access granted to a new file, for example by running it as the same user.
 
 ---
 
