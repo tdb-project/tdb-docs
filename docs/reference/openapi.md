@@ -6,17 +6,17 @@ hide:
 # OpenAPI
 
 The full REST API, as each edition describes itself. These are the `openapi.json`
-files served at `/openapi.json` by **enterprise 0.27.0** and **community 0.16.0**,
+files served at `/openapi.json` by **enterprise 0.28.0** and **community 0.17.0**,
 unchanged. A running server shows the same thing, interactively, at `/docs`.
 
-[Download enterprise 0.27.0 :material-download:](../assets/openapi/enterprise.json){ .md-button }
-[Download community 0.16.0 :material-download:](../assets/openapi/community.json){ .md-button }
+[Download enterprise 0.28.0 :material-download:](../assets/openapi/enterprise.json){ .md-button }
+[Download community 0.17.0 :material-download:](../assets/openapi/community.json){ .md-button }
 
-=== "Enterprise 0.26.0"
+=== "Enterprise 0.28.0"
 
     <div id="oa-enterprise" class="tdb-openapi"></div>
 
-=== "Community 0.15.0"
+=== "Community 0.17.0"
 
     <div id="oa-community" class="tdb-openapi"></div>
 
