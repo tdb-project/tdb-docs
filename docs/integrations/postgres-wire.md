@@ -184,6 +184,8 @@ each truncated to 256 characters, with binary values in hex. REST already
 audits the literal values written into SQL, and this keeps the wire's audit
 able to say what was asked. Refusals are `denied` entries — see
 [audit reasons](../security/audit.md).
+With [`TDB_AUDIT_SQL=redacted`](../security/audit.md#keeping-values-out-of-the-log), from 0.27.0,
+the values are not stored and `params_count` replaces `params`.
 
 ---
 
