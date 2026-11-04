@@ -93,6 +93,11 @@ actually asks: *who tried what, and was turned away?* TDB records refusals as
 first-class audit events, signed into the same chain, so a deleted denial breaks
 verification exactly as a deleted query does.
 
+A query that was accepted and then failed is recorded the same way, under a `reason`
+saying why. From community 0.17.0 / enterprise 0.28.0 that covers every failure; before
+them, only a timeout or a busy source on REST. Agents often send a query that fails, so an
+alert on `event: "denied"` should filter on `reason`.
+
 **`event: "denied"` — an attempt that was refused:**
 
 ```json
@@ -141,6 +146,11 @@ Two fields describe the refusal:
 | `privileged_db_role` | Enterprise, from 0.12.0: the source connects as a database role that can reach the database server's files or programs (see [connectors](../connectors/postgresql.md#use-a-least-privileged-role)) |
 | `missing_api_key` | An MCP request carried no bearer token |
 | `invalid_connection` | Registration: the `connection` block is not valid for the `source_type` |
+| `query_failed` | The engine rejected the query, for example a column that does not exist (from community 0.17.0 / enterprise 0.28.0). The engine's error text is in the application log only, because it can quote data |
+| `source_unavailable` | The source's file was missing or unreadable when the query ran (from community 0.17.0 / enterprise 0.28.0) |
+| `internal_error` | The query failed for any other reason, including a driver error from a source that cannot be reached; see the application log (from community 0.17.0 / enterprise 0.28.0) |
+| `invalid_arguments` | An enterprise MCP tool or a view run refused its arguments: a column or function it does not know, or a view parameter that does not fit (from 0.28.0) |
+| `view_not_found` | A view run named a view that does not exist (enterprise, from 0.28.0) |
 | `query_timeout` | The query ran past `TDB_QUERY_TIMEOUT` and was cancelled at the source (enterprise) |
 | `source_busy` | Another process had the DuckDB file open for writing (enterprise, from 0.23.0). See [DuckDB](../connectors/duckdb.md#the-file-stays-yours) |
 | `insufficient_role_required_<role>_have_<role>` | The key's role is below what the endpoint needs (enterprise) |

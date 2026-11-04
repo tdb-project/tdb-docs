@@ -15,7 +15,7 @@ for the entry format.
 | Status | Audit `reason` | What it means | What to do |
 |---|---|---|---|
 | 400 | `sql_validation_failed` | The SQL is not a single read-only `SELECT` (or `WITH … SELECT`) | Remove the write or the second statement. See [Query](../api/query.md) |
-| 400 | — | `Query failed: …` — the source rejected the SQL: unknown column or table, syntax error, a value that does not convert (from community 0.12.4 / enterprise 0.20.3) | Fix the SQL; the source's own message follows |
+| 400 | `query_failed` | `Query failed: …` — the source rejected the SQL: unknown column or table, syntax error, a value that does not convert (from community 0.12.4 / enterprise 0.20.3) | Fix the SQL; the source's own message follows |
 | 400 | `limit_exceeds_max` | `limit` is above the deployment's row ceiling (`TDB_MAX_ROWS`, enterprise) | Lower `limit`, aggregate in SQL, or raise `TDB_MAX_ROWS` |
 | 400 | `invalid_connection` | Registration: the `connection` block is not valid for the `source_type` | Check the connector page for the required fields |
 | 400 | `unsupported_source_type` | Registration: the `source_type` is not available in this edition | Use `csv` (community) or a commercial connector |
@@ -34,8 +34,8 @@ for the entry format.
 | 409 | — | An audit export to the same destination is already running (enterprise) | Wait for it, or treat 409 as "still running" |
 | 422 | — | The request body failed validation (wrong type, value out of range; in community a `limit` over 1,000) | Read the `detail` array; it names the field |
 | 429 | `rate_limit_exceeded` | The key's per-minute budget is used up (DB-managed keys) | Retry after the `X-RateLimit-Reset` time |
-| 500 | — | TDB or the source failed: unreachable source, out of memory. Not the caller's SQL | Check the source and the application log |
-| 503 | `file_unreadable` | The file behind a CSV, Parquet or DuckDB source is missing or unreadable | Restore the file or fix its permissions |
+| 500 | `internal_error` | TDB or the source failed: unreachable source, out of memory. Not the caller's SQL | Check the source and the application log |
+| 503 | `source_unavailable` | The file behind a CSV, Parquet or DuckDB source is missing or unreadable | Restore the file or fix its permissions |
 | 503 | `source_busy` | Another process has the DuckDB file open for writing (enterprise, from 0.23.0) | Retry once the writer has closed the file. See [DuckDB](../connectors/duckdb.md#the-file-stays-yours) |
 | 503 | — | `TDB_JWT_SECRET` is not set and a JWT was presented (enterprise) | Set it, or use API keys |
 | 504 | `query_timeout` | The query ran longer than `TDB_QUERY_TIMEOUT` and was cancelled at the source (enterprise database sources) | Narrow the query, add an index, or raise the timeout |
@@ -54,7 +54,8 @@ protocol problems. The JSON-RPC codes are listed in
 
 **As a tool error** (HTTP 200, `isError: true`, a readable message in `content`): the
 same refusals as REST — `sql_validation_failed`, `sql_file_access`,
-`source_not_found`, `limit_exceeds_max`, `privileged_db_role`, `query_timeout`, `source_busy` — plus:
+`source_not_found`, `limit_exceeds_max`, `privileged_db_role`, `query_timeout`, `source_busy`,
+`query_failed`, `source_unavailable`, `internal_error` — plus:
 
 | Audit `reason` | What it means | What to do |
 |---|---|---|
