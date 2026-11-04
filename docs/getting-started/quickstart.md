@@ -15,9 +15,7 @@ your first query — REST and MCP. Estimated time: **5 minutes**.
 
 !!! tip "Finding your Bearer token"
     Your token is the value you passed to `TDB_API_KEYS` when starting the container.
-    If you started TDB via Docker Desktop without setting that variable, the fallback
-    token is `dev-insecure-key-change-me` — use that to complete this guide, then
-    replace it with a real key before going to production.
+    TDB has no built-in key, so it will not start without one.
 
 !!! tip "Windows users — use PowerShell 7+"
     The **PowerShell** tabs below use `Invoke-RestMethod`, which is built into

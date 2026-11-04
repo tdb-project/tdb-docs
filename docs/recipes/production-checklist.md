@@ -12,7 +12,7 @@ Before TDB serves real data to anyone but you. Each item links to where it is ex
 
 ## Keys and identities
 
-- [ ] `TDB_API_KEYS` holds a strong secret, not `dev-insecure-key-change-me`
+- [ ] `TDB_API_KEYS` holds a generated secret
 - [ ] Agents and integrations use DB-managed keys with the `read` role and an expiry
       (enterprise) — [API keys](../auth/api-keys.md)
 - [ ] Each agent's key is limited to the tools it needs with `allowed_tools` —

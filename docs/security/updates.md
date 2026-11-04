@@ -90,6 +90,29 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-04 — A built-in API key worked when none was set
+
+**Fixed in community 0.14.0 and enterprise 0.25.0.** Found by an independent review.
+
+With `TDB_API_KEYS` unset, TDB fell back to `dev-insecure-key-change-me`, which is published in
+its own source and in these docs. Our docs also told Docker Desktop users to use it.
+
+**Who was affected:** any deployment started without `TDB_API_KEYS`, on every earlier release.
+The community Compose file used the same default and published the port on every interface.
+
+- **Enterprise:** static keys are always admin, so anyone who could reach the port had admin
+  access: all sources, keys and audit. It printed no warning.
+- **Community:** anyone who could reach the port could query and replace the source. It printed a
+  warning at startup.
+
+**How to check:** `curl -H "Authorization: Bearer dev-insecure-key-change-me" http://<host>:8000/v1/sources`.
+A 200 means you are exposed. The audit log's `key_hint` for that key starts with `dev-in`.
+
+**Action:** upgrade, and set a generated `TDB_API_KEYS`. TDB now refuses to start with an example
+value, or when unset unless another login exists (enterprise). If the port was reachable by
+anyone you do not trust, review the audit log, and rotate your API keys and the credentials of your
+registered sources.
+
 ### 2026-11-04 — filelock advisories closed
 
 Enterprise 0.23.1 moves `filelock` to 4.2.7, which closes the advisories image scans

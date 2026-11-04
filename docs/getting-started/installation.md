@@ -59,9 +59,11 @@ for it.
 
     ```bash
     mkdir -p data   # BEFORE docker run — see the warning below
+    export TDB_API_KEYS=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+    echo "$TDB_API_KEYS"   # keep this: it is your admin key
     docker run -d --name tdb \
       -p 8000:8000 \
-      -e TDB_API_KEYS=your-secret-key-here \
+      -e TDB_API_KEYS \
       -e TDB_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))") \
       -e TDB_ADMIN_USER=admin \
       -e TDB_ADMIN_PASSWORD=your-strong-password \
@@ -93,31 +95,28 @@ for it.
 
     Database connectors are unaffected — they take a table name, not a path.
 
-    Your Bearer token for all API requests is the value you set for `TDB_API_KEYS`
-    (here: `your-secret-key-here`). Use it as:
+    Your Bearer token for all API requests is the value you set for `TDB_API_KEYS`.
+    Use it as:
 
     ```
-    Authorization: Bearer your-secret-key-here
+    Authorization: Bearer <value-of-TDB_API_KEYS>
     ```
 
 === "Docker Desktop"
 
-    If you started the container from Docker Desktop without setting environment
-    variables, TDB falls back to a built-in development key:
+    Set `TDB_API_KEYS` under **Optional settings → Environment variables** when you start the
+    container: TDB will not start without it. Generate a value with
+    `python3 -c "import secrets; print(secrets.token_hex(32))"`, then use it as:
 
     ```
-    Authorization: Bearer dev-insecure-key-change-me
+    Authorization: Bearer <value-of-TDB_API_KEYS>
     ```
-
-    Use this key to complete the Quickstart. Before exposing TDB to any network,
-    stop the container and re-run it with `-e TDB_API_KEYS=<your-own-key>` (or set
-    it in Docker Desktop's **Optional settings → Environment variables**).
 
 Check the logs — you should see the license confirmed and the server start:
 
 ```
 INFO:     license_ok customer=ACME Corp edition=trial tier=midmarket expires=2026-07-01T00:00:00+00:00 days_left=30
-INFO:     tdb_startup version=0.24.0 build_sha=c446f2f dev_mode=False
+INFO:     tdb_startup version=0.24.0 build_sha=c446f2f
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 
@@ -128,9 +127,9 @@ curl http://localhost:8000/health
 # {"status":"ok"}
 ```
 
-!!! warning "Never use the default dev key in production"
-    Always set a strong `TDB_API_KEYS` value before exposing TDB to any network.
-    The fallback key (`dev-insecure-key-change-me`) is for local evaluation only.
+!!! warning "TDB needs a real key to start"
+    From community 0.14.0 and enterprise 0.25.0 there is no built-in key. TDB will not start
+    with an example value, or, unless another login is set up, without `TDB_API_KEYS`.
 
 ---
 
@@ -141,7 +140,7 @@ TDB is configured entirely through environment variables, passed with `-e` (or a
 
 ```bash title="tdb.env  (use with: docker run --env-file tdb.env ...)"
 # --- Required ---
-TDB_API_KEYS=your-secret-key-here         # Comma-separated; used for initial setup
+TDB_API_KEYS=<output of: python3 -c "import secrets; print(secrets.token_hex(32))">  # Comma-separated
 
 # --- Required for JWT + OAuth ---
 TDB_JWT_SECRET=<64-char hex>              # python -c "import secrets; print(secrets.token_hex(32))"

@@ -161,7 +161,7 @@ inside the image. Defaults in parentheses.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `TDB_API_KEYS` | `dev-insecure-key-change-me` | Comma-separated static API keys (`Authorization: Bearer <key>`). **Always override.** |
+| `TDB_API_KEYS` | *(required)* | Comma-separated static API keys (`Authorization: Bearer <key>`), each with admin rights. From 0.25.0 there is no default, and TDB will not start with an example value, or when unset unless another login exists. |
 | `TDB_JWT_SECRET` | *(empty)* | HMAC secret for JWT auth. **Required** for JWT/OAuth login flows. |
 | `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD` | *(empty)* | Admin credentials for the login/OAuth consent flow. |
 | `TDB_LICENSE` | *(empty)* | Runtime license token. **Takes precedence** over the baked file (commercial/renewals). |

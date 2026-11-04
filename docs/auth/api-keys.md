@@ -10,24 +10,15 @@ any authenticated request), you need the **static env key** — the value you se
 Authorization: Bearer <value-of-TDB_API_KEYS>
 ```
 
-If you started the container without setting `TDB_API_KEYS` (e.g. via Docker Desktop),
-the fallback key is `dev-insecure-key-change-me`. Use it to bootstrap, then replace it:
+**There is no built-in key.** From 0.25.0, TDB will not start with an example value such as
+`dev-insecure-key-change-me`, and those values are never accepted as credentials. With
+`TDB_API_KEYS` unset, TDB starts only if another login exists: an active DB-managed key, the
+admin login (`TDB_JWT_SECRET`, `TDB_ADMIN_USER`, `TDB_ADMIN_PASSWORD`), or
+[single sign-on](sso.md). Static keys are always admin, so generate them:
 
 ```bash
-# Bootstrap: create a real admin key using the dev fallback
-curl -X POST http://localhost:8000/v1/auth/keys \
-  -H "Authorization: Bearer dev-insecure-key-change-me" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"admin","role":"admin"}'
-
-# Save the raw_key from the response — that is now your permanent admin key.
-# Then restart the container with TDB_API_KEYS set to a strong value:
-#   docker run ... -e TDB_API_KEYS=your-strong-key-here ...
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
-
-!!! warning
-    `dev-insecure-key-change-me` is a public default. Replace it before exposing
-    TDB to any network outside your local machine.
 
 ---
 
