@@ -3,7 +3,7 @@
  "info": {
   "title": "The Data-Bridge (TDB)",
   "description": "A secure, auditable API layer over your existing data sources. Register a data source once, query it anywhere.",
-  "version": "0.15.0"
+  "version": "0.16.0"
  },
  "paths": {
   "/v1/sources": {
@@ -40,7 +40,7 @@
      "Source Registry"
     ],
     "summary": "Register a new data source",
-    "description": "Register a data source so it can be queried through TDB.\n\n**source_type** values supported today:\n- `csv` \u2014 local CSV file; connection: `{ \"file_path\": \"/path/to/file.csv\" }`\n\nMore connector types come in later days.",
+    "description": "Register a data source so it can be queried through TDB.\n\n**source_type** values supported today:\n- `csv` — local CSV file; connection: `{ \"file_path\": \"/path/to/file.csv\" }`\n\nMore connector types come in later days.",
     "operationId": "register_source_v1_sources_post",
     "requestBody": {
      "content": {
@@ -172,7 +172,7 @@
      "Source Registry"
     ],
     "summary": "Inspect column names and types for a registered source (UUID or name)",
-    "description": "Returns the column names and inferred DuckDB types for the registered CSV.\nNo rows are returned \u2014 schema introspection only.",
+    "description": "Returns the column names and inferred DuckDB types for the registered CSV.\nNo rows are returned — schema introspection only.",
     "operationId": "get_source_schema_v1_sources__source_id__schema_get",
     "security": [
      {
@@ -287,7 +287,7 @@
      "Meta"
     ],
     "summary": "Health",
-    "description": "Liveness probe \u2014 used by Docker / k8s health checks.",
+    "description": "Liveness probe — used by Docker / k8s health checks.",
     "operationId": "health_health_get",
     "responses": {
      "200": {
