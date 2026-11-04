@@ -1,6 +1,6 @@
 # Audit Log & Tamper Verification
 
-TDB writes a tamper-evident, hash-chained audit log for every query **and every refused attempt**. Every request — REST or MCP — produces one entry. The log is the primary compliance artifact for SOC 2, HIPAA, and EU AI Act readiness.
+TDB writes a tamper-evident, hash-chained audit log for every query, **every refused attempt and every query that fails**. Every request — REST or MCP — produces one entry. The log is the primary compliance artifact for SOC 2, HIPAA, and EU AI Act readiness.
 
 ---
 

@@ -70,7 +70,7 @@ Notes that drive sizing:
   stays light regardless of how large the result set would have been. On **0.2.0 and
   earlier** they read the whole result set first: size those hosts for the largest result
   a permitted query can return (see [§8](#8-performance-capacity)).
-- Disk grows mainly with the **audit log** (one NDJSON line per successful query,
+- Disk grows mainly with the **audit log** (one NDJSON line per query, refusal or failure,
   append-only). Plan rotation/retention — see [§5.3](#53-logging-audit).
 
 ### 1.3 Network & ports
@@ -175,6 +175,7 @@ inside the image. Defaults in parentheses.
 | `TDB_ALLOWED_DATA_DIR` | `/data` *(set in image)* | Confines registered **CSV, Parquet and DuckDB** file paths to this dir (symlinks/`..` resolved). Empty = no restriction. DB connectors unaffected. |
 | `TDB_LOG_FILE` | `tdb_audit.jsonl` | Audit log path (NDJSON). Point at a persisted volume, e.g. `/app/logs/...`. |
 | `TDB_LOG_LEVEL` | `INFO` | `DEBUG`/`INFO`/`WARNING`/`ERROR`. |
+| `TDB_AUDIT_SQL` | `full` | From 0.27.0. `redacted` keeps values in statements out of the audit and application logs ([§5.3](#53-logging-audit)). Any other value stops startup. |
 | `TDB_VIEWS_DIR` | *(unset)* | Directory of YAML named-view definitions. Unset = views disabled. |
 | `TDB_POLICIES_FILE` | *(unset)* | YAML [column and row policy](../security/policies.md) file (from 0.22.0, Mid-Market). Unset = no policies. An invalid file, or an SMB licence, **stops startup**. |
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Schema cache TTL (seconds). `0` disables caching. |
@@ -190,6 +191,7 @@ inside the image. Defaults in parentheses.
 | `TDB_CORS_ALLOW_CREDENTIALS` | `false` | `Access-Control-Allow-Credentials`. Don't combine with `*`. |
 | `TDB_SERVER_URL` | *(derived)* | Public base URL TDB advertises as the OAuth **issuer**. Set to your external HTTPS URL behind a proxy. From 0.18.0 it is also the base of the absolute `resource_metadata` URL in the MCP `401` challenge. |
 | `TDB_OAUTH_CIMD_HOSTS` | *(empty: off)* | Comma-separated hosts whose OAuth Client ID Metadata Documents TDB may fetch (0.18.0 and later). Enabling it makes TDB fetch HTTPS URLs that clients choose, from inside your network; every fetch is guarded (public addresses only, no redirects, size and time limits). Leave empty unless a client needs it. Not usable air-gapped. |
+| `TDB_OIDC_ISSUER` | *(unset: off)* | From 0.24.0, Mid-Market. Turns on [single sign-on and SCIM](../auth/sso.md), whose page lists the settings that go with it. |
 | `TDB_LEAN_MODE` | `off` | Default [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) for MCP results (0.21.0 and later): `off`, `on`, or a JSON object such as `{"lean": true, "max_cell_chars": 500}`. Smaller results for AI agents; a key's setting or a call's own arguments override it. MCP only — REST is unchanged. An invalid value refuses every MCP tool call until fixed, naming this variable, rather than being ignored. |
 
 ### 3.4 SIEM export (optional — Splunk)
@@ -387,8 +389,15 @@ From 0.22.0. Mount a policy file read-only and set `TDB_POLICIES_FILE`:
 - **TDB refuses to start** when the file is missing, invalid, or the licence's tier is
   `smb` (`policies_tier_refused`, with the reason on the console). It never serves a
   source without the rules written for it. Plan the restart like any other.
+- **From 0.30.0, a source the file does not name refuses every caller, admins included**
+  (`policy_source_unlisted`). List every source, or set `unlisted_sources: allow` at the top of
+  the file to leave unlisted sources open. See
+  [Sources the file does not name](../security/policies.md#sources-the-file-does-not-name). Before
+  upgrading, compare the file with `GET /v1/sources`. After a restart, look for
+  `policy_names_no_source` and `policy_source_unlisted` in the log.
 - Check a file against the live schema before relying on it:
-  `GET /v1/policies?validate=true` (admin).
+  `GET /v1/policies?validate=true` (admin). From 0.30.0 it compares source names exactly, as
+  enforcement does, and lists sources the file does not name.
 - Row filters read **key attributes** (`PUT /v1/auth/keys/{id}/attributes`) or a JWT's
   `attributes` claim. Set them before handing out the key: a key missing one is refused.
 - A draft for your sources: `docker exec tdb python -m tdb.cli policy suggest <source>`.
@@ -405,6 +414,15 @@ Full reference: [Column and row policies](../security/policies.md).
   therefore first-class audit evidence, not just application-log noise — and because
   denials are signed into the *same* chain, deleting an inconvenient one breaks
   `/v1/audit/verify`.
+- **A query that fails is recorded too (0.28.0+):** `event: "denied"` with `query_failed`,
+  `source_unavailable` or `internal_error`. Agents often send a query that fails, so an alert on
+  `denied` should filter on `reason`.
+- **The log holds what callers typed.** By default each statement is stored as written, including
+  any values in it, so protect the log like the data. `TDB_AUDIT_SQL=redacted` (0.27.0+) stores it
+  with values replaced by `?`, at the cost of not seeing which values were asked for. See
+  [Keeping values out of the log](../security/audit.md#keeping-values-out-of-the-log).
+- **New audit files are created `0600` (0.27.0+),** readable only by the user TDB runs as. An
+  existing file keeps its mode. A log shipper running as another user needs access granted.
 - Verify integrity any time (admin role):
   ```bash
   curl -fsS -H "Authorization: Bearer $ADMIN_KEY" http://localhost:8000/v1/audit/verify

@@ -38,7 +38,8 @@ localhost — see [TLS](deployment/it-admin-guide.md#7-tls-ssl).
 ## The path of a request
 
 Every step that refuses writes a signed `denied` entry to the audit log, so a
-refusal is evidence, not silence.
+refusal is evidence, not silence. A query that fails after these checks is recorded the
+same way.
 
 | # | Step | What it guarantees | Docs |
 |---|---|---|---|
@@ -49,7 +50,7 @@ refusal is evidence, not silence.
 | 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored | [MCP](api/mcp.md) |
 | 6 | **Input filter** (enterprise MCP) | SQL carrying prompt-injection patterns is refused | [Prompt-injection filtering](api/mcp.md#prompt-injection-filtering) |
 | 7 | **Read-only validation** | One `SELECT` (or `WITH … SELECT`). Literals and comments are masked under **every engine dialect**, and all must pass; on CSV, Parquet and DuckDB, DuckDB's own parser must also see exactly one `SELECT` | [Query](api/query.md) |
-| 8 | **Column and row policy** (Mid-Market, opt-in) | For a key with a rule, every table becomes a subquery of its allowed columns, masks and rows, so aggregates and joins see policy data. SQL TDB cannot fully account for is refused | [Policies](security/policies.md) |
+| 8 | **Column and row policy** (Mid-Market, opt-in) | With a policy file, a source it does not name is refused unless the file says otherwise. For a key with a rule, every table becomes a subquery of its allowed columns, masks and rows, so aggregates and joins see policy data. SQL TDB cannot fully account for is refused | [Policies](security/policies.md) |
 | 9 | **Read-only session at the source** | Read-only is also enforced by the database session, not only by the validator. Privileged database roles are refused unless you opt in | [PostgreSQL](connectors/postgresql.md#use-a-least-privileged-role) |
 | 10 | **Bounded execution** | The row ceiling bounds the fetch (memory), not only the reply; `truncated: true` says more rows existed; on database sources `TDB_QUERY_TIMEOUT` cancels the query at the source (enterprise) | [Query](api/query.md) |
 | 11 | **Locked file engine** (CSV, Parquet, DuckDB) | Each source's DuckDB engine can read only its own file: no extensions, no configuration changes | [Security updates](security/updates.md) |

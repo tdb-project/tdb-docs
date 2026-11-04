@@ -45,7 +45,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Audit**
 
-    - Local NDJSON audit log (append-only, one entry per query)
+    - Local NDJSON audit log (append-only): every query, refusal and failure, with an option to keep values out
 
     **Install**
 

@@ -90,6 +90,26 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-04 — Audit and policy hardening
+
+**Enterprise 0.27.0 to 0.30.0, community 0.16.0 to 0.17.1.** Found by two independent reviews and the
+testing that followed. None has an advisory: each closes a gap in evidence or a default, not a way in.
+
+- **Values in SQL can be kept out of the logs (0.27.0 / 0.16.0).** A statement is stored as written, so
+  a value in it sits in the log. `TDB_AUDIT_SQL=redacted` replaces values with `?`. It is opt-in. New
+  audit files are also created `0600`.
+- **A query that fails is now audited (0.28.0 / 0.17.0).** One the engine rejected, or that hit a
+  missing file or an unexpected error, reached only the application log. In enterprise, MCP tools and
+  view runs had also left timeouts and busy sources unrecorded. A failure under a column or row
+  policy names the rule from 0.29.0.
+- **A policy file refuses sources it does not name (0.30.0).** They were open to every key, as
+  documented, so a typo or a new source silently removed every rule.
+
+**Action:** upgrade. **If you use `TDB_POLICIES_FILE`, list every source first,** or set
+`unlisted_sources: allow`. Before 0.30.0, check that every source you meant to restrict is named in
+the file, with exactly its registered name. Before 0.28.0, the audit log has no entry for a failed
+query, so look in the application log for `query_error` and `query_execution_error`.
+
 ### 2026-11-04 — SQL could read other files in the data directory
 
 **Fixed in community 0.15.0 and enterprise 0.26.0.** Found by an independent review. Advisory: [GHSA-c2ww-8m4q-8q58](https://github.com/tdb-project/tdb-community/security/advisories/GHSA-c2ww-8m4q-8q58).
