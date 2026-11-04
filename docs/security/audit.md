@@ -31,7 +31,8 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 | `event` | `"query"` for an executed query, `"denied"` for a refused attempt; `"query_started"` precedes each statement on the [wire gateway](../integrations/postgres-wire.md#audit-trail) (enterprise, from 0.14.0) |
 | `ts` | ISO 8601 timestamp (UTC) of when the query executed |
 | `source_id` | UUID of the registered source that was queried |
-| `sql` | The SQL statement executed (or `<view:name>` for named views) |
+| `sql` | The SQL statement executed (or `<view:name>` for named views). With [`TDB_AUDIT_SQL=redacted`](#keeping-values-out-of-the-log), the statement with its values replaced by `?` |
+| `sql_redacted`, `sql_sha256` | From community 0.16.0 / enterprise 0.27.0, with `TDB_AUDIT_SQL=redacted` only: `true`, and the SHA-256 of the redacted text. Runs of one statement with different values share it |
 | `rows_returned` | Number of rows included in the response (`query` entries only) |
 | `key_hint` | First 6 characters of the key that made the request, then `...`. The raw key is never written to the log |
 | `user`, `user_id`, `user_inactive` | From 0.24.0, entries made with a JWT: `user` is the person (the full value, so two people cannot look alike). [SSO](../auth/sso.md) entries add `user_id`, and `user_inactive` when a removed person is refused. API key entries do not have these |
@@ -42,7 +43,46 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 | `lean` | MCP entries served in [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) only (from community 0.13.0 / enterprise 0.21.0): the settings applied, e.g. `{"format": "table"}` |
 | `policy_sha256` | Enterprise, from 0.22.0, while a [policy file](policies.md) is loaded: on **every** query and denial entry, the SHA-256 of the file in force |
 | `policy_rule`, `policy_masked`, `policy_withheld`, `policy_row_filtered` | A query run under a [policy rule](policies.md#audit): the rule's name, `{table: [masked columns]}`, `{table: [withheld columns]}` and the tables a row filter applied to. Present (possibly empty) on every query under a rule; a denial under a rule carries `policy_rule` |
+| `params_count` | Wire gateway entries with `TDB_AUDIT_SQL=redacted`: how many bound values the statement had, in place of `params` |
 | `transport`, `client_user`, `statement_kind`, `params`, `outcome`, `sqlstate` | Wire gateway entries only — see [the gateway's audit trail](../integrations/postgres-wire.md#audit-trail) |
+
+---
+
+## Keeping values out of the log
+
+!!! info "From community 0.16.0 / enterprise 0.27.0"
+
+By default the log stores each statement exactly as submitted. That makes it good evidence, and it
+also means a value written into the SQL (`WHERE email = 'ann@example.com'`) is stored in the log, so
+the log needs the same protection as the data. Set `TDB_AUDIT_SQL=redacted` to keep those values out:
+
+```json
+{
+  "event": "query",
+  "sql": "SELECT name FROM customers WHERE email = ?",
+  "sql_redacted": true,
+  "sql_sha256": "1a8f6d9d...",
+  "rows_returned": 1
+}
+```
+
+- **What is hidden:** string literals in every form the supported engines accept, numbers and
+  comments. A string that is never closed is hidden to the end of the statement.
+- **What stays:** keywords, table names and column names, which can themselves be sensitive.
+- **Application log:** engine errors in the application log are scrubbed the same way, and tracebacks
+  are withheld.
+- **Wire gateway (enterprise):** bound values are not stored, only `params_count`.
+- **Not rewritten:** entries already in the log, and the query response, which still repeats the SQL
+  to the caller who sent it.
+
+**The cost:** an investigation can see what ran, but not with which values, so choose it deliberately
+if you rely on the log to reconstruct exactly what someone asked. A value other than `full` or
+`redacted` stops TDB at startup, so a typo cannot silently leave values in the log. Entries from
+before and after a change of mode sit in one log, and in enterprise the hash chain verifies across it.
+
+From the same releases, a **new** audit file is created with mode `0640`, so it is not world-readable.
+An existing file keeps its mode, so check it with `ls -l`. A log shipper that runs as another user
+outside the file's group needs access granted.
 
 ---
 
@@ -255,6 +295,7 @@ destination that has never exported.
 |---|---|---|
 | `TDB_LOG_FILE` | `tdb_audit.jsonl` | Path to the NDJSON audit log |
 | `TDB_LOG_LEVEL` | `INFO` | Log verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `TDB_AUDIT_SQL` | `full` | `redacted` [keeps statement values out of the logs](#keeping-values-out-of-the-log) |
 | `TDB_AUDIT_ROTATE_MAX_BYTES` | `0` (off) | Seal the log into a segment once it exceeds this size |
 | `TDB_AUDIT_ROTATE_MAX_DAYS` | `0` (off) | Seal the log once its oldest entry is older than this |
 
