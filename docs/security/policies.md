@@ -221,7 +221,8 @@ While a policy file is loaded, **every** query and denial entry carries
 | `policy_row_filtered` | `[tables a row filter applied to]` |
 
 They are present, possibly empty, on every query under a rule. A denial under a rule
-carries `policy_rule`. The denial reasons are listed under
+carries `policy_rule`, and from 0.29.0 so does a query that failed after the rewrite, such as
+a timeout, along with the other three fields. The denial reasons are listed under
 [Errors & audit reasons](../reference/errors.md#column-and-row-policies).
 
 ---
@@ -294,7 +295,5 @@ for it.
 
 - A row filter is SQL in the source's dialect; TDB binds attributes but does not check
   the filter's logic. Test it with the key it is for.
-- Denials raised after the rewrite (a query timeout, a privileged database role) carry
-  `policy_sha256` but not `policy_rule`.
 - Policies apply to reading data. Who may register sources and manage keys is
   [RBAC](rbac.md).
