@@ -69,6 +69,7 @@ A Parquet source has the same protections as a CSV source:
 
 - **Read-only.** DuckDB's own parser must see exactly one `SELECT`. Anything else returns
   `400` and is audited as `sql_validation_failed`.
+- **SQL reads only this file** (from 0.26.0); any other returns `403`, audited as `sql_file_access`.
 - **Confined to the data directory.** With [`TDB_ALLOWED_DATA_DIR`](../reference/environment-variables.md)
   set (the Docker images set `/data`), registering a file outside it returns `403`. A
   query that names another file, such as `read_parquet('/elsewhere/x.parquet')`, returns

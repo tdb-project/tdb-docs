@@ -90,6 +90,32 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-04 — SQL could read other files in the data directory
+
+**Fixed in community 0.15.0 and enterprise 0.26.0.** Found by an independent review.
+
+SQL on a CSV or Parquet source could read any other file in the source's data directory.
+`read_csv` and `read_text` returned contents, and `glob` listed names, on REST and MCP. Nothing
+outside the directory was reachable.
+
+**Who was affected:** any deployment with other files in the data directory, on community 0.7.0 to
+0.14.0 and enterprise 0.11.0 to 0.25.0. Before those, the wider issue in the 2026-09-28 entry applied.
+
+- **Enterprise:** a key for one source could read another source's file, whatever its role,
+  including a `read` key.
+- **Community:** the one key could already register another file in that directory instead.
+  This also read files that are not CSVs, and got around the one-source limit.
+
+**How to check:** search the audit log for `read_csv`, `read_text`, `read_blob` or `glob` in the
+`sql` field of successful queries on versions before the fix.
+
+**Action:** upgrade. If a key that should not see a file in that directory could have read it,
+review the audit log, and treat secrets in those files as exposed.
+
+**On upgrade:** SQL that read another file now returns 403. Each file has its own engine, limited
+to 4 threads in enterprise, so a single large query can be slower:
+[Performance](../deployment/performance.md).
+
 ### 2026-11-04 — A built-in API key worked when none was set
 
 **Fixed in community 0.14.0 and enterprise 0.25.0.** Found by an independent review.

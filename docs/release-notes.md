@@ -19,6 +19,7 @@ To see what you are running: `GET /v1/version`.
 
 | Date | Enterprise | Community | What changed | Action on upgrade |
 |---|---|---|---|---|
+| 11-04 | **0.26.0** | **0.15.0** | **Security:** SQL reads only the registered file. It could read anything in the data directory, so in enterprise one source's key could read another source's file. [Details](security/updates.md) | SQL reading another file now returns 403. Enterprise: a single large CSV or Parquet query can be slower. Check your audit log. |
 | 11-04 | **0.25.0** | **0.14.0** | **Security:** no built-in API key. It used to work whenever `TDB_API_KEYS` was unset, as admin in enterprise. [Details](security/updates.md) | **If you relied on the default, set a real key or TDB will not start.** Check whether you were exposed. The `tdb_startup` log line loses `dev_mode`. |
 | 11-04 | **0.24.0** | — | **Single sign-on and SCIM** (Mid-Market): people sign in through your IdP, groups decide role, rules and tools, and removal ends access. A `user` field in audit. [Single sign-on and SCIM](auth/sso.md) | Audit entries from JWTs gain `user`. Changing `TDB_JWT_SECRET` now also ends open gateway sessions. |
 | 11-04 | 0.23.1 | — | **Security:** filelock 4.2.7 closes the advisories image scans reported against it. Only the Snowflake connector's local caches use it. | None. |

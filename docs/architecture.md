@@ -52,7 +52,7 @@ refusal is evidence, not silence.
 | 8 | **Column and row policy** (Mid-Market, opt-in) | For a key with a rule, every table becomes a subquery of its allowed columns, masks and rows, so aggregates and joins see policy data. SQL TDB cannot fully account for is refused | [Policies](security/policies.md) |
 | 9 | **Read-only session at the source** | Read-only is also enforced by the database session, not only by the validator. Privileged database roles are refused unless you opt in | [PostgreSQL](connectors/postgresql.md#use-a-least-privileged-role) |
 | 10 | **Bounded execution** | The row ceiling bounds the fetch (memory), not only the reply; `truncated: true` says more rows existed; on database sources `TDB_QUERY_TIMEOUT` cancels the query at the source (enterprise) | [Query](api/query.md) |
-| 11 | **Locked file engine** (CSV, Parquet, DuckDB) | DuckDB can read only the data directory (a DuckDB source: only its own file): no extensions, no configuration changes | [Security updates](security/updates.md) |
+| 11 | **Locked file engine** (CSV, Parquet, DuckDB) | Each source's DuckDB engine can read only its own file: no extensions, no configuration changes | [Security updates](security/updates.md) |
 | 12 | **Plain JSON values** | Same values on REST and MCP: exact decimals, binary as base64, ISO 8601 timestamps | [Query](api/query.md) |
 | 13 | **Output filter** (enterprise MCP) | Cells carrying injection patterns are redacted; if the filter fails, the result is withheld | [Prompt-injection filtering](api/mcp.md#prompt-injection-filtering) |
 | 14 | **Lean Mode** (opt-in) | Shaped **after** the filter, so a compact format or a cut can't restore a redacted value | [Saving tokens](api/mcp.md#saving-tokens-lean-mode) |

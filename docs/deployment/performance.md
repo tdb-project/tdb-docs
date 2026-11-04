@@ -24,7 +24,7 @@ cursor on MySQL, a limited fetch on SQL Server, Snowflake, CSV and Parquet. See
 
 ## CSV and Parquet scale with concurrency
 
-The file engine is one shared engine with a cursor per query, so concurrent queries share
+Each file keeps one engine open with a cursor per query, so concurrent queries share
 threads instead of each claiming every core.
 
 5.4 MB, 100,000-row CSV, `SELECT * FROM data LIMIT 10`:
@@ -37,6 +37,13 @@ threads instead of each claiming every core.
 
 From enterprise 0.5.1 / community 0.4.6. The file is not loaded into memory: each query
 reads it, so an edited file is seen straight away.
+
+
+**From enterprise 0.26.0**, each file has its own engine, limited to 4 threads so several busy
+sources do not oversubscribe the CPU. On 6 cores, 16 concurrent queries across 8 sources ran at
+81 req/s, against 84 on one shared engine. A single query on a 129 MB CSV took 641 ms, up from
+455 ms. Up to 32 idle engines stay open, at about 5 MB each; a query that has to reopen one pays
+about 26 ms. Community has one source, so its engine has no thread limit.
 
 ## The audit log costs the same at any size
 

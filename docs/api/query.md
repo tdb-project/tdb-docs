@@ -232,13 +232,13 @@ is unaffected; what is refused is SQL whose meaning depends on which engine
 reads it. Earlier releases read literals the ANSI way only — see the
 [security advisory](../security/updates.md#where-advisories-are-published).
 
-### Files are not readable from SQL
+### SQL reads only the registered file
 
-A CSV query can read only files in the source's data directory
-(`TDB_ALLOWED_DATA_DIR`, or the CSV's own directory when that is unset), **from
-community 0.7.0 / enterprise 0.11.0**. `SELECT * FROM read_csv('/etc/passwd')`
-returns **403** and is audited as `sql_file_access`. Earlier releases let DuckDB
-open any path written in the SQL — see the
+A query on a CSV or Parquet source can read that source's own file and no other, **from
+community 0.15.0 / enterprise 0.26.0**. `read_csv`, `read_text`, `glob` and the like on any
+other file, including one in the same directory, return **403** and are audited as
+`sql_file_access`. From community 0.7.0 / enterprise 0.11.0 until then, the limit was the
+source's data directory. Earlier releases let DuckDB open any path written in the SQL — see the
 [security advisory](../security/updates.md#where-advisories-are-published).
 
 ---
