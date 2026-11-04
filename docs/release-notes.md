@@ -15,6 +15,12 @@ To see what you are running: `GET /v1/version`.
     a caller could notice — even when the change is a fix. Read the action column for
     every minor.
 
+## November 2026
+
+| Date | Enterprise | Community | What changed | Action on upgrade |
+|---|---|---|---|---|
+| 11-04 | 0.23.1 | — | **Security:** filelock 4.2.7 closes the advisories image scans reported against it. Only the Snowflake connector's local caches use it. | None. |
+
 ## October 2026
 
 | Date | Enterprise | Community | What changed | Action on upgrade |

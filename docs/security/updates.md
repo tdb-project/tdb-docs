@@ -176,6 +176,8 @@ Enterprise 0.19.1 also reports three `filelock` advisories in image scans
 (GHSA-v4x8-3wr5-3wq8, GHSA-9vhv-jxww-xfm5, GHSA-567q-5qvw-pf92). **TDB is not
 exposed**: they cover locks TDB does not use and Windows-only behaviour, and the
 fixed `filelock` 4.x cannot be installed alongside the Snowflake connector yet.
+Enterprise 0.23.1 moves to `filelock` 4.2.7, which closes these and the later
+`filelock` advisories.
 
 **Action:** upgrade. If you export to Splunk or S3, or query Snowflake, over a
 network you do not control, treat the credentials those connections carry as
