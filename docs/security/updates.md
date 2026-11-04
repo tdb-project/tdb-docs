@@ -92,7 +92,7 @@ in the open-source repository.
 
 ### 2026-11-04 — SQL could read other files in the data directory
 
-**Fixed in community 0.15.0 and enterprise 0.26.0.** Found by an independent review.
+**Fixed in community 0.15.0 and enterprise 0.26.0.** Found by an independent review. Advisory: [GHSA-c2ww-8m4q-8q58](https://github.com/tdb-project/tdb-community/security/advisories/GHSA-c2ww-8m4q-8q58).
 
 SQL on a CSV or Parquet source could read any other file in the source's data directory.
 `read_csv` and `read_text` returned contents, and `glob` listed names, on REST and MCP. Nothing
@@ -118,7 +118,7 @@ to 4 threads in enterprise, so a single large query can be slower:
 
 ### 2026-11-04 — A built-in API key worked when none was set
 
-**Fixed in community 0.14.0 and enterprise 0.25.0.** Found by an independent review.
+**Fixed in community 0.14.0 and enterprise 0.25.0.** Found by an independent review. Advisory: [GHSA-8mfc-29h8-v8rm](https://github.com/tdb-project/tdb-community/security/advisories/GHSA-8mfc-29h8-v8rm).
 
 With `TDB_API_KEYS` unset, TDB fell back to `dev-insecure-key-change-me`, which is published in
 its own source and in these docs. Our docs also told Docker Desktop users to use it.
