@@ -3,7 +3,7 @@
  "info": {
   "title": "The Data-Bridge (TDB)",
   "description": "A secure, auditable API layer over your existing data sources. Register a data source once, query it anywhere.",
-  "version": "0.30.0"
+  "version": "0.31.0"
  },
  "paths": {
   "/v1/auth/token": {
@@ -1031,6 +1031,64 @@
     }
    }
   },
+  "/v1/query/stream": {
+   "post": {
+    "tags": [
+     "Query"
+    ],
+    "summary": "Stream a whole query result as NDJSON or CSV",
+    "description": "Read a whole result in one read session, past `TDB_MAX_ROWS`.\n\nNDJSON is one row per line, ending with\n`{\"_end\": true, \"rows\": N, \"complete\": true, \"columns\": [...]}`. **Without that line\nthe result is not complete.** A failure after the first row sends\n`{\"_error\": {\"reason\": ...}, \"rows\": N, \"complete\": false}` and drops the\nconnection. CSV has a header row and no end line: a failure only drops the\nconnection.",
+    "operationId": "stream_query_v1_query_stream_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StreamRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/v1/mcp": {
    "post": {
     "tags": [
@@ -1895,6 +1953,34 @@
       "title": "Limit",
       "description": "Max rows to return (default 100). The ceiling is the deployment's TDB_MAX_ROWS setting (default 1,000); a larger value is rejected with 400 rather than silently clamped.",
       "default": 100
+     },
+     "page_key": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Page Key",
+      "description": "Columns that uniquely order the result, to read past this page. The response then carries next_cursor when more rows exist."
+     },
+     "cursor": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 4096
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cursor",
+      "description": "next_cursor from the last page, with the same sql and page_key."
      }
     },
     "type": "object",
@@ -1937,6 +2023,30 @@
       "type": "boolean",
       "title": "Truncated",
       "default": false
+     },
+     "next_cursor": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next Cursor",
+      "description": "Present when page_key was sent and more rows exist."
+     },
+     "hint": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hint",
+      "description": "Present when rows were cut."
      },
      "executed_at": {
       "type": "string",
@@ -1990,6 +2100,34 @@
       ],
       "title": "Limit",
       "description": "Max rows (default 1,000, or TDB_MAX_ROWS if lower). Above the deployment's TDB_MAX_ROWS is refused with 400."
+     },
+     "page_key": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Page Key",
+      "description": "Columns uniquely ordering the rows, to page."
+     },
+     "cursor": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 4096
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cursor",
+      "description": "next_cursor from the last page."
      }
     },
     "type": "object",
@@ -2027,6 +2165,28 @@
      "truncated": {
       "type": "boolean",
       "title": "Truncated"
+     },
+     "next_cursor": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next Cursor"
+     },
+     "hint": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hint"
      },
      "executed_at": {
       "type": "string",
@@ -2101,10 +2261,14 @@
        }
       ],
       "title": "Tools",
-      "description": "List of allowed MCP tool names for this key. Pass null to allow all tools (default). Example: ['query_source', 'schema_source']"
+      "description": "List of allowed MCP tool names for this key. Pass null to allow all tools. Example: ['query_source', 'schema_source']"
      }
     },
+    "additionalProperties": false,
     "type": "object",
+    "required": [
+     "tools"
+    ],
     "title": "SetAllowedToolsRequest"
    },
    "SetAttributesRequest": {
@@ -2191,7 +2355,11 @@
       "description": "Set to null to fall back to the server default."
      }
     },
+    "additionalProperties": false,
     "type": "object",
+    "required": [
+     "requests_per_minute"
+    ],
     "title": "SetRateLimitRequest"
    },
    "SetRoleRequest": {
@@ -2415,6 +2583,36 @@
      "source_type"
     ],
     "title": "SourceSummary"
+   },
+   "StreamRequest": {
+    "properties": {
+     "source_id": {
+      "type": "string",
+      "title": "Source Id"
+     },
+     "sql": {
+      "type": "string",
+      "maxLength": 10000,
+      "minLength": 1,
+      "title": "Sql"
+     },
+     "format": {
+      "type": "string",
+      "enum": [
+       "ndjson",
+       "csv"
+      ],
+      "title": "Format",
+      "default": "ndjson"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "source_id",
+     "sql"
+    ],
+    "title": "StreamRequest"
    },
    "TableSchema": {
     "properties": {
