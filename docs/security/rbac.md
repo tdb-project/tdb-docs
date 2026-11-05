@@ -35,6 +35,7 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 | `GET /v1/sources/{id}/schema` | `read` |
 | `GET /v1/sources/{ref}/annotations` | `read` |
 | `POST /v1/query` | `read` |
+| `POST /v1/query/stream` | `read` |
 | `POST /v1/mcp` | `read` |
 | `GET /v1/views` | `read` |
 | `GET /v1/views/{name}` | `read` |
@@ -137,7 +138,7 @@ Available MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_
 
 | REST route | Requires tool |
 |---|---|
-| `POST /v1/query` | `query_source` |
+| `POST /v1/query`, `POST /v1/query/stream` (from 0.31.0) | `query_source` |
 | `GET /v1/sources/{ref}/schema` | `schema_source` |
 | `GET /v1/views`, `GET /v1/views/{name}` | `list_views` |
 | `POST /v1/views/{name}/run` | `run_view` |

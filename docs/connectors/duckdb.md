@@ -107,6 +107,8 @@ MCP return the same values.
   (`analytics.main.orders`) is refused. See [Column and row policies](../security/policies.md).
 - **Row cap.** `limit` and `TDB_MAX_ROWS` apply as on every source. A cut result reports
   `"truncated": true`.
+- **A [stream](../api/query.md#streaming-a-whole-result) keeps the file open** until it ends, up
+  to `TDB_STREAM_TIMEOUT`, and the file's owner cannot write until then (from 0.31.0).
 - **No timeout.** Like CSV and Parquet, a DuckDB query runs in TDB's own engine, so
   `TDB_QUERY_TIMEOUT` can't cancel it.
 

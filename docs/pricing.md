@@ -175,6 +175,7 @@ The two commercial editions ship the same product with one exception: **column a
 | REST query endpoint (SELECT and CTEs) | ✅ | ✅ | ✅ |
 | PostgreSQL wire gateway (unchanged Postgres clients) | ❌ | ✅ | ✅ |
 | Row limit per response † | 1,000 | 1,000 by default, configurable | 1,000 by default, configurable |
+| Read past the row limit: page with a cursor, or stream as NDJSON or CSV | ❌ | ✅ | ✅ |
 | MCP tools | `query_source` | All 7 | All 7 |
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |
 | Lean Mode: compact rows, cell trimming (per call / server default) | ✅ | ✅ | ✅ |

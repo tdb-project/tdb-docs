@@ -12,7 +12,7 @@ unchanged. A running server shows the same thing, interactively, at `/docs`.
 [Download enterprise 0.31.0 :material-download:](../assets/openapi/enterprise.json){ .md-button }
 [Download community 0.17.1 :material-download:](../assets/openapi/community.json){ .md-button }
 
-=== "Enterprise 0.30.0"
+=== "Enterprise 0.31.0"
 
     <div id="oa-enterprise" class="tdb-openapi"></div>
 

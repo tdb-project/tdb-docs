@@ -180,6 +180,10 @@ inside the image. Defaults in parentheses.
 | `TDB_POLICIES_FILE` | *(unset)* | YAML [column and row policy](../security/policies.md) file (from 0.22.0, Mid-Market). Unset = no policies. An invalid file, or an SMB licence, **stops startup**. |
 | `TDB_SCHEMA_CACHE_TTL` | `300` | Schema cache TTL (seconds). `0` disables caching. |
 | `TDB_MAX_ROWS` | `1000` | Ceiling on rows in a single query response, on every path: `POST /v1/query`, the MCP tools, and view runs (the MCP tools and view runs from 0.16.0; before that they clamped at a fixed 1,000). A request asking for more is rejected with `400`; a result larger than the request's `limit` is cut and flagged `truncated`. Raising it trades host RAM for bigger responses — size with §1.2. From 0.2.1 it caps both the response **and** the rows TDB reads from the source to produce it, so raising it raises both; on 0.2.0 and earlier it capped the response only (see §8). A bad value falls back to `1000` rather than uncapping. |
+| `TDB_MAX_RESULT_ROWS` | `100000` | From 0.31.0. Rows one result may reach across a chain of pages, or in one stream. |
+| `TDB_CURSOR_TTL` | `3600` | From 0.31.0. Seconds a page cursor stays valid. |
+| `TDB_STREAM_TIMEOUT` | `600` | From 0.31.0. Seconds one stream may run. It cannot be turned off. |
+| `TDB_MAX_STREAMS` | `4` | From 0.31.0. Streams one process serves at once; each holds its own source connection, so count them in your connection budget. |
 
 ### 3.3 Access, auth & API behaviour
 

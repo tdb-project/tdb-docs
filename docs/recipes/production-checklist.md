@@ -48,5 +48,7 @@ Before TDB serves real data to anyone but you. Each item links to where it is ex
 - [ ] `/health` is wired to your orchestrator, and `/metrics` to Prometheus (enterprise) —
       [Prometheus metrics](../observability/metrics.md)
 - [ ] `TDB_QUERY_TIMEOUT` and `TDB_MAX_ROWS` suit your sources (enterprise)
+- [ ] `TDB_MAX_RESULT_ROWS`, `TDB_STREAM_TIMEOUT` and `TDB_MAX_STREAMS` suit your sources: an open
+      [stream](../api/query.md#streaming-a-whole-result) holds a read session, which on PostgreSQL stops vacuum (enterprise)
 - [ ] Someone reads the [release notes](../release-notes.md) and
       [security updates](../security/updates.md) before each upgrade
