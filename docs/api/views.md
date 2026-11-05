@@ -166,6 +166,7 @@ POST /v1/views/{name}/run
 |---|---|---|---|
 | `parameters` | object | No | Key-value pairs for named parameters. |
 | `limit` | integer | No | Max rows to return. Default: 1,000, or `TDB_MAX_ROWS` if lower. At most `TDB_MAX_ROWS`; a larger value is refused with 400 and audited `limit_exceeds_max` (from 0.16.0; before, it was a fixed 1–1000 whatever `TDB_MAX_ROWS` said). |
+| `page_key`, `cursor` | array of strings, string | No | From 0.31.0: [read the view page by page](query.md#reading-more-than-one-page). |
 
 **Response:**
 

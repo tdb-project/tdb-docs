@@ -204,7 +204,7 @@ The two commercial editions ship the same product with one exception: **column a
 | SLA-backed (next business day) | ❌ | ❌ | ✅ |
 | Onboarding call | ❌ | ❌ | ✅ |
 
-† Every edition caps a response at 1,000 rows by default — a deliberate safety default that keeps an AI agent from pulling an entire table. Community's cap is fixed; the commercial editions can raise or lower it with `TDB_MAX_ROWS`, and it applies to every path (REST, MCP tools, views). Push work down with aggregates and named views; pagination beyond 1,000 rows is on the roadmap.
+† Every edition caps a response at 1,000 rows by default — a deliberate safety default that keeps an AI agent from pulling an entire table. Community's cap is fixed; the commercial editions can raise or lower it with `TDB_MAX_ROWS`, and it applies to every path (REST, MCP tools, views). The commercial editions can also read further, from 0.31.0: page with a cursor, or stream a whole result as NDJSON or CSV, up to `TDB_MAX_RESULT_ROWS`.
 
 ---
 

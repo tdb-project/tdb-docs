@@ -17,6 +17,9 @@ for the entry format.
 | 400 | `sql_validation_failed` | The SQL is not a single read-only `SELECT` (or `WITH … SELECT`) | Remove the write or the second statement. See [Query](../api/query.md) |
 | 400 | `query_failed` | `Query failed: …` — the source rejected the SQL: unknown column or table, syntax error, a value that does not convert (from community 0.12.4 / enterprise 0.20.3) | Fix the SQL; the source's own message follows |
 | 400 | `limit_exceeds_max` | `limit` is above the deployment's row ceiling (`TDB_MAX_ROWS`, enterprise) | Lower `limit`, aggregate in SQL, or raise `TDB_MAX_ROWS` |
+| 400 | `page_key_has_nulls`, `page_key_not_unique`, `page_key_type`, `page_key_invalid`, `page_key_too_long`, `page_key_required` | The `page_key` could lose or repeat a row, or is malformed (enterprise, from 0.31.0) | See [Reading more than one page](../api/query.md#reading-more-than-one-page) |
+| 400 | `cursor_invalid` | The cursor is damaged or was not issued by this deployment (enterprise, from 0.31.0) | Start again from the first page |
+| 400 | `stream_column_names` | An NDJSON stream has two columns of one name, or one called `_end` or `_error` (enterprise, from 0.31.0) | Name them with `AS`, or use `csv` |
 | 400 | `invalid_connection` | Registration: the `connection` block is not valid for the `source_type` | Check the connector page for the required fields |
 | 400 | `unsupported_source_type` | Registration: the `source_type` is not available in this edition | Use `csv` (community) or a commercial connector |
 | 401 | `missing_credentials` | No `Authorization` header | Send `Authorization: Bearer <key>` |
@@ -24,6 +27,7 @@ for the entry format.
 | 401 | `invalid_or_expired_token` | A JWT failed its signature or has expired | Issue a fresh token |
 | 403 | `insufficient_role_required_<role>_have_<role>` | The key's role is below what the endpoint needs (enterprise) | Use a key with the role named in the reason. See [RBAC](../security/rbac.md) |
 | 403 | `tool_not_permitted_<tool>` | The key's `allowed_tools` does not include the tool this endpoint uses (enterprise) | Add the tool to the key, or use another key |
+| 403 | `cursor_wrong_caller` | The cursor was issued to another caller, or to this key before it was rotated (enterprise, from 0.31.0) | Start again from the first page |
 | 403 | `sql_file_access` | The SQL named a file other than the source's own | Query the registered table (`data`) only |
 | 403 | `path_outside_allowed_dir` | The registered file resolves outside `TDB_ALLOWED_DATA_DIR` | Move the file under the data directory |
 | 403 | `privileged_db_role` | The source connects as a database role that can reach the server's files or programs (enterprise, from 0.12.0) | Register it with a least-privileged role. See [PostgreSQL](../connectors/postgresql.md#use-a-least-privileged-role) |
@@ -31,9 +35,12 @@ for the entry format.
 | 403 | — | `license_expired` body: the licence is expired or invalid (enterprise) | Contact us for a renewed licence |
 | 404 | `source_not_found` | No source with that name or UUID | `GET /v1/sources` lists them |
 | 409 | `registry_conflict` | A source with that name already exists | Pick another name, or delete the old source |
+| 409 | `cursor_expired`, `cursor_stale` | The cursor is older than `TDB_CURSOR_TTL`, or the SQL, `page_key` or policy file has changed (enterprise, from 0.31.0) | Start again from the first page |
+| 409 | `max_result_rows` | A chain of pages has reached `TDB_MAX_RESULT_ROWS` (enterprise, from 0.31.0) | Aggregate or narrow the query, or raise the cap |
 | 409 | — | An audit export to the same destination is already running (enterprise) | Wait for it, or treat 409 as "still running" |
 | 422 | — | The request body failed validation (wrong type, value out of range; in community a `limit` over 1,000) | Read the `detail` array; it names the field |
 | 429 | `rate_limit_exceeded` | The key's per-minute budget is used up (DB-managed keys) | Retry after the `X-RateLimit-Reset` time |
+| 429 | `too_many_streams` | `TDB_MAX_STREAMS` streams are open in this process (enterprise, from 0.31.0) | Retry when one has finished |
 | 500 | `internal_error` | TDB or the source failed: unreachable source, out of memory. Not the caller's SQL | Check the source and the application log |
 | 503 | `source_unavailable` | The file behind a CSV, Parquet or DuckDB source is missing or unreadable | Restore the file or fix its permissions |
 | 503 | `source_busy` | Another process has the DuckDB file open for writing (enterprise, from 0.23.0) | Retry once the writer has closed the file. See [DuckDB](../connectors/duckdb.md#the-file-stays-yours) |

@@ -62,6 +62,22 @@ Queries rejected *before* reaching a source — a blocked write, an unknown sour
 a `limit` above `TDB_MAX_ROWS` — are not recorded here, because no source was
 queried. Those appear in the audit log as denials.
 
+### Paging and streaming
+
+From 0.31.0.
+
+| Metric | Type | Labels | Description |
+|---|---|---|---|
+| `tdb_query_pages_total` | Counter | `result` | Pages served, by how the page ended: `more`, `last` or `capped` |
+| `tdb_query_paging_refusals_total` | Counter | `reason` | Paging requests refused, by the audit reason |
+| `tdb_streams_active` | Gauge | — | Streams open now, each holding a read session on its source |
+| `tdb_streams_total` | Counter | `format`, `outcome` | Streams ended or refused, by format and outcome (`complete`, `client_disconnected`, `stream_timeout`, `max_result_rows`, or a refusal reason) |
+| `tdb_stream_rows_total` | Counter | `format` | Rows sent by streams |
+| `tdb_stream_duration_seconds` | Histogram | `format` | How long a stream held its source. **Buckets:** 100ms, 500ms, 1s, 5s, 10s, 30s, 60s, 120s, 300s, 600s |
+
+A stream near the top bucket was holding a read session for that long, which on
+PostgreSQL stops vacuum.
+
 ### Audit log
 
 | Metric | Type | Description |

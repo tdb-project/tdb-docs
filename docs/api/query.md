@@ -27,6 +27,8 @@ Requires authentication (`Authorization: Bearer <token>`).
 | `source_id` | string | Yes | — | Registered source **name** (e.g. `orders`) or UUID |
 | `sql` | string (1–10,000 chars) | Yes | — | SQL SELECT statement |
 | `limit` | integer, min 1 | No | `100` | Maximum rows to return. The ceiling is the deployment's `TDB_MAX_ROWS` (default `1,000`); a higher value is rejected with `400`, never silently reduced. |
+| `page_key` | array of strings | No | — | Enterprise, from 0.31.0. Column or columns that uniquely order the result, to [read it page by page](#reading-more-than-one-page). |
+| `cursor` | string | No | — | Enterprise, from 0.31.0. The `next_cursor` from the last page. |
 
 !!! tip "Use the source name"
     `source_id` accepts either the source's registered **name** (e.g. `orders`) or its
@@ -119,9 +121,10 @@ TDB applies the row limit at three levels:
    that actually holds: a `LIMIT 100000` in your own SQL does **not** raise it.
 
 !!! warning "`truncated: true` means you did not receive the whole result"
-    Check the flag before treating a response as complete. Narrow the query — filter,
-    aggregate, or page with `LIMIT`/`OFFSET` in your own SQL against a database
-    source — rather than assuming the rows you got are all of them.
+    Check the flag before treating a response as complete. Narrow the query, or in
+    enterprise from 0.31.0 [read on with `page_key`](#reading-more-than-one-page) or
+    [stream the result](#streaming-a-whole-result). From 0.31.0 a cut enterprise
+    response also carries a `hint` saying so.
 
 !!! danger "On 0.7.0 / community 0.4.6 and earlier, `truncated` under-reported"
     Those versions appended `LIMIT limit` rather than `limit + 1`, so a query with
@@ -136,8 +139,128 @@ TDB applies the row limit at three levels:
 
 **Enterprise deployments can raise the ceiling** by setting `TDB_MAX_ROWS`
 ([reference](../reference/environment-variables.md)). Every row of a response is held
-in memory, so raise it deliberately. Community is fixed at 1,000. Cursor-based
-streaming and pagination remain a post-launch feature.
+in memory, so raise it deliberately. Community is fixed at 1,000, with no paging or
+streaming.
+
+---
+
+## Reading more than one page
+
+!!! info "Enterprise, from 0.31.0"
+
+Name the column or columns that uniquely order the result in `page_key`. TDB wraps your
+query, orders it by them and continues after the last row, so a row deleted between
+pages cannot make another row go missing, as it can with `OFFSET`.
+
+```json
+{
+  "source_id": "orders",
+  "sql": "SELECT id, status, total FROM orders WHERE status = 'shipped'",
+  "page_key": ["id"],
+  "limit": 500
+}
+```
+
+The response is the usual one, plus `next_cursor` when there is more:
+
+```json
+{
+  "columns": ["id", "status", "total"],
+  "rows": ["..."],
+  "rows_returned": 500,
+  "truncated": true,
+  "next_cursor": "gAAAAAB..."
+}
+```
+
+Send the same `sql` and `page_key` with `cursor` set to it for the next page. With no
+`next_cursor`, the result has ended. Page keys work on every source type, though
+[Snowflake has not run against a real Snowflake](../connectors/snowflake.md).
+
+**A key that could lose or repeat a row is refused, never guessed at:**
+
+| Reason | Status | The key |
+|---|---|---|
+| `page_key_has_nulls` | 400 | holds a NULL, and those rows would be lost. Choose another key, or filter them out |
+| `page_key_not_unique` | 400 | ties across a page boundary. Add a column that makes it unique, such as the primary key. Ties inside a page are harmless, so this can appear pages into a result |
+| `page_key_type` | 400 | is a float, JSON or binary value, or a timestamp finer than a microsecond: its value does not survive the trip back to the database exactly |
+| `page_key_invalid` | 400 | names no single column of the result, or is more than 8 columns |
+| `page_key_too_long` | 400 | holds values too long for a cursor at this boundary |
+| `page_key_required` | 400 | is missing: a cursor needs the `page_key` it began with |
+
+**A cursor is bound to who asked and what they asked.** It holds values from the last
+row, so it is encrypted, and TDB stores nothing on the server. It lasts `TDB_CURSOR_TTL`
+(one hour), and rotating the credential key ends every open cursor.
+
+| Reason | Status | What happened |
+|---|---|---|
+| `cursor_invalid` | 400 | The cursor is damaged or was not issued by this deployment |
+| `cursor_wrong_caller` | 403 | Another caller was issued it. Rotating an API key counts: start again |
+| `cursor_expired` | 409 | It is older than `TDB_CURSOR_TTL`. Start again |
+| `cursor_stale` | 409 | The SQL, the `page_key` or the policy file has changed since. Start again |
+| `max_result_rows` | 409 | The chain has already reached the cap below |
+
+**One result is capped at `TDB_MAX_RESULT_ROWS`** (100,000) across all its pages, and
+`TDB_MAX_ROWS` still bounds each page. The page that reaches the cap has
+`truncated: true`, a `hint` and no `next_cursor`. Each page is one audit entry and counts
+once against the rate limit, and a [policy](../security/policies.md) applies to every
+page: a withheld key column is refused, and a masked one pages on its mask.
+
+**Every page runs the query again.** A row present throughout is never lost or repeated.
+A row inserted behind the boundary is not seen; a row whose key changes can move past
+it or appear twice. If your SQL has its own `LIMIT` with no `ORDER BY`, the engine can
+choose different rows on each page, so give it an `ORDER BY` or drop the `LIMIT`.
+
+---
+
+## Streaming a whole result
+
+!!! info "Enterprise, from 0.31.0"
+
+`POST /v1/query/stream` sends a whole result in one read session, past `TDB_MAX_ROWS`,
+at flat memory. It takes `source_id`, `sql` and `format` (`ndjson`, the default, or
+`csv`), and refuses a `limit`. A key needs the `query_source` tool.
+
+```bash
+curl -N -X POST http://localhost:8000/v1/query/stream \
+  -H "Authorization: Bearer <KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"source_id": "orders", "sql": "SELECT id, total FROM orders"}'
+```
+
+```
+{"id":1,"total":"149.99"}
+{"id":2,"total":"59.00"}
+{"_end":true,"rows":2,"complete":true,"columns":["id","total"]}
+```
+
+!!! danger "Without the `_end` line, the result is not complete"
+    A failure after the first row can no longer be a status code. On NDJSON TDB sends
+    `{"_error": {"reason": "..."}, "rows": N, "complete": false}` and drops the
+    connection. **CSV has no end line, so a dropped connection is the only sign**, and
+    your client must treat it as a failure. Over HTTP/1.0, or through a proxy that
+    buffers and closes for you, a cut CSV can look complete. Use NDJSON where it matters.
+
+Everything that can be refused is refused before the first row, with the status codes on
+[Errors](../reference/errors.md). A later failure is one of: `max_result_rows` (the result
+reached `TDB_MAX_RESULT_ROWS`), `stream_timeout` (it ran past `TDB_STREAM_TIMEOUT`), or
+a source failure such as `query_failed`.
+
+- **NDJSON needs unique column names**, and none called `_end` or `_error`: refused with
+  400 `stream_column_names`. Name them with `AS`, or use CSV.
+- **A stream holds its source open.** On PostgreSQL an open read session stops vacuum on
+  that database, which is why the timeout cannot be turned off. On a
+  [DuckDB source](../connectors/duckdb.md) the file's owner cannot write until it ends.
+  A client that stops reading holds the session until the timeout. Streams use their own
+  connection, never the pool.
+- **`TDB_MAX_STREAMS`** (4) bounds streams per process; past it, 429 `too_many_streams`.
+  The slots are shared, so one key can hold them all: keep streaming keys to callers you
+  trust, with [`allowed_tools`](../auth/api-keys.md).
+- **Opening a CSV in a spreadsheet:** a cell starting with `=`, `+`, `-` or `@` can run as a
+  formula. TDB writes values as they are, so treat a stream of untrusted data accordingly.
+- **Audit:** `query_started` before the query runs, refusing if it cannot be written, then
+  `query` with `rows_returned` and `stream_outcome`. A stream counts once against the
+  rate limit. [Audit log](../security/audit.md).
 
 ---
 

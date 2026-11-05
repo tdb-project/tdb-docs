@@ -90,6 +90,35 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-05 — SQL injection through filter_source
+
+**Enterprise 0.30.0 and earlier; fixed in 0.31.0. Community is not affected:** it has no
+`filter_source`.
+
+`filter_source` escaped its `value` by doubling `'` only. On MySQL and Snowflake a backslash
+is also an escape, so a value holding `\'` ended the string and the rest ran as SQL. A
+key limited to `filter_source` could read any table the source's database user could.
+A policy file's rewrite still applied to the injected SQL. On MySQL it ran inside TDB's
+read-only session, so it could not write. **Snowflake has no such session, and this SQL
+did not pass through TDB's read-only check, so there only the role you registered limits
+it:** check that it holds nothing beyond `SELECT`. Reproduced on a real MySQL. Snowflake
+comes from reading its rules, as TDB has not run against a real Snowflake. PostgreSQL,
+SQL Server, CSV, Parquet and DuckDB treat a backslash as an ordinary character by default
+and were not exposed this way.
+
+Found in the same pass, and fixed in 0.31.0:
+
+- **`standard_conforming_strings=off` on a PostgreSQL source** let `filter_source` values and
+  view parameters break out of their strings the same way. TDB now pins it on for its own
+  sessions. On MySQL it now removes `NO_BACKSLASH_ESCAPES` for the same reason.
+- **`PUT /v1/auth/keys/{id}/tools` with a missing or misspelt field** answered 200 and removed
+  the key's tool limits. It is now a 422. So is `.../rate-limit`.
+
+**Action:** upgrade if you have MySQL or Snowflake sources, or a PostgreSQL role or database
+with `standard_conforming_strings` off, and keys you do not fully trust. To look back, search
+the audit log's `filter_source` entries for a `sql` holding a backslash. Then list your keys
+and check that each `allowed_tools` is what you set.
+
 ### 2026-11-04 — Audit and policy hardening
 
 **Enterprise 0.27.0 to 0.30.0, community 0.16.0 to 0.17.1.** Found by two independent reviews and the

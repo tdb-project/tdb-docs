@@ -28,7 +28,7 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 
 | Field | Description |
 |---|---|
-| `event` | `"query"` for an executed query, `"denied"` for a refused attempt; `"query_started"` precedes each statement on the [wire gateway](../integrations/postgres-wire.md#audit-trail) (enterprise, from 0.14.0) |
+| `event` | `"query"` for an executed query, `"denied"` for a refused attempt; `"query_started"` precedes each statement on the [wire gateway](../integrations/postgres-wire.md#audit-trail) (enterprise, from 0.14.0) and each stream (from 0.31.0) |
 | `ts` | ISO 8601 timestamp (UTC) of when the query executed |
 | `source_id` | UUID of the registered source that was queried |
 | `sql` | The SQL statement executed (or `<view:name>` for named views). With [`TDB_AUDIT_SQL=redacted`](#keeping-values-out-of-the-log), the statement with its values replaced by `?` |
@@ -43,6 +43,8 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 | `lean` | MCP entries served in [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) only (from community 0.13.0 / enterprise 0.21.0): the settings applied, e.g. `{"format": "table"}` |
 | `policy_sha256` | Enterprise, from 0.22.0, while a [policy file](policies.md) is loaded: on **every** query and denial entry, the SHA-256 of the file in force |
 | `policy_rule`, `policy_masked`, `policy_withheld`, `policy_row_filtered` | A query run under a [policy rule](policies.md#audit): the rule's name, `{table: [masked columns]}`, `{table: [withheld columns]}` and the tables a row filter applied to. Present (possibly empty) on every query under a rule; a denial under a rule carries `policy_rule` |
+| `page`, `cursor_id`, `rows_so_far`, `result_capped` | Enterprise, from 0.31.0, [a page](../api/query.md#reading-more-than-one-page): its number, an ID linking the chain's pages (not the cursor, which is never logged), the rows sent across the chain, and `true` on the page that reached `TDB_MAX_RESULT_ROWS` |
+| `stream_id`, `stream_format`, `stream_outcome` | Enterprise, from 0.31.0, [a stream](../api/query.md#streaming-a-whole-result): `query_started` is written before it runs, then `query` with `rows_returned` and how it ended. `stream_id` is also the `X-TDB-Stream-Id` response header. **A `query_started` with no `query` means the process died during the stream** |
 | `params_count` | Wire gateway entries with `TDB_AUDIT_SQL=redacted`: how many bound values the statement had, in place of `params` |
 | `transport`, `client_user`, `statement_kind`, `params`, `outcome`, `sqlstate` | Wire gateway entries only — see [the gateway's audit trail](../integrations/postgres-wire.md#audit-trail) |
 

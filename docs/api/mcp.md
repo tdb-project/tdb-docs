@@ -260,6 +260,8 @@ community and at `TDB_MAX_ROWS` in enterprise; `truncated` is `true` when more m
 | `source_name` | string | No | First registered source | Registered source name (exact match) |
 | `lean` | boolean | No | off | Rows as arrays — see [Lean Mode](#saving-tokens-lean-mode) (from 0.13.0 / 0.21.0) |
 | `max_cell_chars` | integer | No | off | Cut longer text cells, marked — see [Lean Mode](#saving-tokens-lean-mode) |
+| `limit` | integer | No | `TDB_MAX_ROWS`; 100 when paging | Enterprise, from 0.31.0. At most `TDB_MAX_ROWS` |
+| `page_key`, `cursor` | array of strings, string | No | — | Enterprise, from 0.31.0. [Read further](#reading-further), with `next_cursor` |
 
 The other row-returning tools take `lean` and `max_cell_chars` too, and
 `schema_source` takes `detail`.
@@ -334,6 +336,25 @@ result of exactly the row cap is not mistaken for a complete one. Every tool tha
 returns rows carries it: community always has; enterprise from 0.15.1, on
 `query_source`, `preview_source`, `filter_source`, `aggregate_source` and
 `run_view`.
+
+#### Reading further
+
+!!! info "Enterprise, from 0.31.0"
+
+A cut result gains a `hint`. With `page_key` naming columns that uniquely order the
+result, the result gains `next_cursor` while there is more; pass it back as `cursor`,
+with the same `sql` and `page_key`. The rules and refusals are those of
+[REST paging](query.md#reading-more-than-one-page), and each refusal is a tool error.
+
+`filter_source` and `run_view` accept the same two arguments. Only `query_source`
+advertises them in `tools/list`, because every tool's schema is sent to the model on
+every request; advertising them there costs 76 tokens per request. `preview_source` and
+`aggregate_source` do not page.
+
+**Reading a lot this way is expensive.** With [Lean Mode](#saving-tokens-lean-mode) 100 rows
+are about 6,900 tokens, so 50,000 rows would be about 3.4 million. An agent should
+aggregate, or read a little. A whole result is a job for a
+[REST stream](query.md#streaming-a-whole-result).
 
 The `text` field contains a JSON-serialised result object. AI tools receive this
 and can present it as a table or process it programmatically.
@@ -518,7 +539,9 @@ available tables.
 
 Returns rows matching a single column condition, without the AI tool writing SQL.
 The column name is validated against the source schema and the operator against a
-fixed allow-list, so the model cannot inject arbitrary SQL through this tool.
+fixed allow-list, and from 0.31.0 `value` is escaped for the source's engine, so the
+model cannot inject SQL through this tool.
+[Before 0.31.0 it could, on MySQL and Snowflake](../security/updates.md#2026-11-05-sql-injection-through-filter_source).
 
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|

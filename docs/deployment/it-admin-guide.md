@@ -655,9 +655,11 @@ What to expect qualitatively:
 - **Every response is capped**, and the cap is enforced *after* fetching — a `LIMIT` in
   your own SQL cannot raise it. The ceiling is `TDB_MAX_ROWS` (default 1,000; community
   is fixed at 1,000). When rows are dropped the response carries `truncated: true`;
-  treat that flag as "this is not the whole answer." There is **no pagination or cursor
-  today**, so a larger result set must be narrowed in SQL — filter, aggregate, or page
-  with `LIMIT`/`OFFSET` yourself against a database source.
+  treat that flag as "this is not the whole answer." From 0.31.0 a caller can read further
+  with [a cursor or a stream](../api/query.md#reading-more-than-one-page), up to
+  `TDB_MAX_RESULT_ROWS` (100,000). **A stream holds a read session on the source for up to
+  `TDB_STREAM_TIMEOUT` (10 minutes), which on PostgreSQL stops vacuum**, and takes its own
+  connection, up to `TDB_MAX_STREAMS` per process. Watch `tdb_streams_active`.
 - **TDB reads at most `TDB_MAX_ROWS + 1` rows from the source** (**0.2.1 and later**),
   whatever your SQL says. TDB appends `LIMIT <n>` only when the statement does not
   already contain the word `LIMIT`, so a query carrying its own `LIMIT 100000` — or one

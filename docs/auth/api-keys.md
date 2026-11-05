@@ -260,6 +260,9 @@ PUT /v1/auth/keys/<key_id>/tools
 Tool names must be exact. From 0.19.0 an unknown name (for example `query-source`)
 is rejected with 400, naming it and the valid tools, and nothing is changed.
 
+From 0.31.0 the body must hold `tools` and nothing else, or the call is a 422. Before
+that, a missing or misspelt field answered 200 and **removed the key's tool limits**.
+
 When a key with a tool allow-list calls a disallowed tool, TDB returns a tool-error response (HTTP 200 with `isError: true`) rather than a protocol-level error, so MCP clients handle it gracefully.
 
 **Response:** the updated key record.
@@ -286,6 +289,9 @@ To reset to the server default:
 ```json
 {"requests_per_minute": null}
 ```
+
+From 0.31.0 the body must hold `requests_per_minute` and nothing else, or the call is a
+422. Before that, a missing or misspelt field reset the key to the server default.
 
 **Response:** the updated key record.
 
