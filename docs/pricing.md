@@ -119,8 +119,6 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     For regulated industries — healthcare-tech, fintech, and any team that needs a supported deployment and enterprise identity.
 
-    **Everything in SMB, plus column and row policies.** Mid-Market adds the support commitment, fine-grained access control, and the enterprise identity work below as it ships.
-
     **Everything in SMB, plus:**
 
     **Support**
@@ -136,6 +134,8 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     **Fine-grained access control**
 
     - [Column and row policies](security/policies.md): per-key rules that withhold or mask columns (PII masking) and filter rows, on REST, MCP, views and the PostgreSQL wire gateway, with the rule recorded in the audit log *(from 0.22.0)*
+    - [Query approvals](security/approvals.md): a query that reads named columns waits for a person, and the audit log records the request, who decided and each run *(from 0.32.0)*
+    - [Tenants](security/tenants.md) *(on request; included in Enterprise)*
 
     [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
 
