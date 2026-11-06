@@ -104,7 +104,8 @@ rule can hold see one more MCP tool, `run_approved`:
 ```
 
 It runs the stored statement, so the agent cannot drift from what was approved. Callers
-no approval rule applies to never see it, so it costs them no tokens. A key whose
+no approval rule applies to never see it, so it costs them nothing; for a caller that does
+see it, it adds 109 tokens to each request (measured with Claude Code). A key whose
 `allowed_tools` names any query tool may use it.
 
 ---
