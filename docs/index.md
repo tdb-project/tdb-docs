@@ -166,10 +166,12 @@ copilot, and with a tamper-evident audit log you own.
 
     Per-key column and row policies that withhold, mask and filter in the database,
     and a person's approval before named columns are read, with every decision in the
-    audit log (Mid-Market).
+    audit log (Mid-Market). Several teams or customers on one deployment, each in its
+    own tenant with its own audit log (Enterprise).
 
     [:octicons-arrow-right-24: Policies](security/policies.md) ·
-    [Query approvals](security/approvals.md)
+    [Query approvals](security/approvals.md) ·
+    [Tenants](security/tenants.md)
 
 </div>
 
@@ -236,6 +238,7 @@ Postgres · MySQL · SQL Server · Snowflake
     [:octicons-arrow-right-24: Role-based access control](security/rbac.md)<br>
     [:octicons-arrow-right-24: Column and row policies](security/policies.md)<br>
     [:octicons-arrow-right-24: Query approvals](security/approvals.md)<br>
+    [:octicons-arrow-right-24: Tenants](security/tenants.md)<br>
     [:octicons-arrow-right-24: Audit log & tamper verification](security/audit.md)<br>
     [:octicons-arrow-right-24: Credentials at rest](security/credentials.md)
 

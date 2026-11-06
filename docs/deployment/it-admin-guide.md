@@ -497,9 +497,11 @@ The connector defaults to `Encrypt=yes`. For self-signed SQL Server certs set
   [Installation → License](../getting-started/installation.md) and the
   `TDB_LICENSE` / `TDB_LICENSE_FILE` entries in the
   [environment variable reference](../reference/environment-variables.md).
-- **Tier** (from 0.22.0): the startup line `license_ok … tier=smb|midmarket` shows it.
-  Column and row policies need `midmarket`; a licence issued before 0.22.0 counts as
-  Mid-Market.
+- **Tier** (from 0.22.0): the startup line `license_ok … tier=smb|midmarket|enterprise`
+  shows it. Column and row policies, single sign-on and approvals need `midmarket` or
+  above; [tenants](../security/tenants.md) need `enterprise` (from 0.33.0). A licence
+  issued before 0.22.0 counts as Mid-Market. An image before 0.33.0 reads an
+  `enterprise` licence as malformed and serves nothing: upgrade the image first.
 - To extend a trial or renew a commercial license, contact
   [hello@tdb.jiracorp.co.in](mailto:hello@tdb.jiracorp.co.in).
 

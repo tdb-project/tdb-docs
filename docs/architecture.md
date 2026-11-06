@@ -93,6 +93,10 @@ Read this part before your security review does.
   person decide before named columns are read, and record who decided; they do not judge
   the query for the approver. An approved statement can be run by its requester, against
   live data, until the approval window (`TDB_APPROVAL_TTL`) ends.
+- **Tenants sharing a database.** [Tenants](security/tenants.md) (Enterprise, from 0.33.0)
+  keep each other's sources, keys, files and audit logs apart, but a tenant's database
+  sources read with the credentials it registers. Give each tenant a database user that
+  reads only its own data.
 - **Prompt injection, completely.** The filters match known patterns. They reduce the
   risk of instructions hidden in data; they don't eliminate it.
 - **Loss of the whole audit log.** The hash chain makes an edited, reordered or removed

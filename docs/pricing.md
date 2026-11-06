@@ -139,6 +139,22 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
 
+=== "Enterprise"
+
+    **Commercial license. Self-hosted.**
+
+    For organisations that serve several teams, business units or customers from one deployment.
+
+    **Everything in Mid-Market, plus:**
+
+    **Tenants**
+
+    - [Tenants](security/tenants.md): one deployment, several teams or customers, each with its own sources, keys, views, policies, approvals and hash-chained audit log, chosen by the credential alone *(from 0.33.0)*
+    - Your identity provider's groups place each person in a tenant
+    - An operator role that manages tenants and reads none of their data, with its own audit log
+
+    [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
+
 ---
 
 ## Discounts
@@ -149,62 +165,63 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 
 ## Edition comparison
 
-The two commercial editions ship the same product except for three Mid-Market features: **column and row policies** (from 0.22.0), **single sign-on and SCIM** (from 0.24.0) and **query approvals** (from 0.32.0, part of the policy file). An SMB licence configured for policies or single sign-on refuses to start rather than serve without the rules. Otherwise SMB and Mid-Market differ on the support commitment.
+The commercial editions ship the same product except for the Mid-Market features — **column and row policies** (from 0.22.0), **single sign-on and SCIM** (from 0.24.0) and **query approvals** (from 0.32.0, part of the policy file) — and **tenants** (from 0.33.0), which are Enterprise. A licence below the tier a feature needs refuses to start with it configured rather than serve without the rules. Otherwise SMB and Mid-Market differ on the support commitment, and Enterprise includes everything in Mid-Market.
 
-| Feature | Community | SMB | Mid-Market |
-|---|---|---|---|
-| **Data sources** | | | |
-| CSV connector | ✅ | ✅ | ✅ |
-| PostgreSQL | ❌ | ✅ | ✅ |
-| MySQL | ❌ | ✅ | ✅ |
-| SQL Server | ❌ | ✅ | ✅ |
-| Snowflake | ❌ | ✅ | ✅ |
-| Parquet files | ❌ | ✅ | ✅ |
-| DuckDB databases | ❌ | ✅ | ✅ |
-| Simultaneous sources | 1 | Unlimited | Unlimited |
-| **Auth** | | | |
-| Static API key | ✅ | ✅ | ✅ |
-| API key rotation & management | ❌ | ✅ | ✅ |
-| JWT authentication | ❌ | ✅ | ✅ |
-| OAuth 2.1 with PKCE | ❌ | ✅ | ✅ |
-| Single sign-on (OIDC) and SCIM | ❌ | ❌ | ✅ |
-| SAML | ❌ | ❌ | On request |
-| Per-key rate limiting | ❌ | ✅ | ✅ |
-| CORS configuration | ❌ | ✅ | ✅ |
-| **Query & MCP** | | | |
-| REST query endpoint (SELECT and CTEs) | ✅ | ✅ | ✅ |
-| PostgreSQL wire gateway (unchanged Postgres clients) | ❌ | ✅ | ✅ |
-| Row limit per response † | 1,000 | 1,000 by default, configurable | 1,000 by default, configurable |
-| Read past the row limit: page with a cursor, or stream as NDJSON or CSV | ❌ | ✅ | ✅ |
-| MCP tools | `query_source` | All 7 | All 7, plus `run_approved` for callers an approval rule applies to |
-| MCP tool allow-lists per key | ❌ | ✅ | ✅ |
-| Lean Mode: compact rows, cell trimming (per call / server default) | ✅ | ✅ | ✅ |
-| Lean Mode: per-key default, schema detail levels | ❌ | ✅ | ✅ |
-| Prompt injection filtering | ❌ | ✅ | ✅ |
-| YAML named views | ❌ | ✅ | ✅ |
-| Schema annotations for AI clients | ❌ | ✅ | ✅ |
-| **Access control** | | | |
-| RBAC (read / readwrite / admin) | ❌ | ✅ | ✅ |
-| Column and row policies, PII masking | ❌ | ❌ | ✅ |
-| Query approvals: a person approves reads of named columns | ❌ | ❌ | ✅ |
-| Suggested policies for personal-data columns | ❌ | ✅ | ✅ |
-| **Audit** | | | |
-| Local NDJSON audit log | ✅ | ✅ | ✅ |
-| Hash-chained tamper-evident log | ❌ | ✅ | ✅ |
-| Log integrity verification | ❌ | ✅ | ✅ |
-| Audit log retention (sealed segments) | ❌ | ✅ | ✅ |
-| Splunk HEC export | ❌ | ✅ | ✅ |
-| S3 audit export | ❌ | ✅ | ✅ |
-| Incremental export cursor per destination | ❌ | ✅ | ✅ |
-| Additional SIEM exporters | ❌ | On request | On request |
-| **Observability** | | | |
-| Prometheus metrics | ❌ | ✅ | ✅ |
-| Schema caching | ❌ | ✅ | ✅ |
-| Health check | ✅ | ✅ | ✅ |
-| **Support** | | | |
-| Community (GitHub Issues) | ✅ | ✅ | ✅ |
-| SLA-backed (next business day) | ❌ | ❌ | ✅ |
-| Onboarding call | ❌ | ❌ | ✅ |
+| Feature | Community | SMB | Mid-Market | Enterprise |
+|---|---|---|---|---|
+| **Data sources** | | | | |
+| CSV connector | ✅ | ✅ | ✅ | ✅ |
+| PostgreSQL | ❌ | ✅ | ✅ | ✅ |
+| MySQL | ❌ | ✅ | ✅ | ✅ |
+| SQL Server | ❌ | ✅ | ✅ | ✅ |
+| Snowflake | ❌ | ✅ | ✅ | ✅ |
+| Parquet files | ❌ | ✅ | ✅ | ✅ |
+| DuckDB databases | ❌ | ✅ | ✅ | ✅ |
+| Simultaneous sources | 1 | Unlimited | Unlimited | Unlimited |
+| **Auth** | | | | |
+| Static API key | ✅ | ✅ | ✅ | ✅ |
+| API key rotation & management | ❌ | ✅ | ✅ | ✅ |
+| JWT authentication | ❌ | ✅ | ✅ | ✅ |
+| OAuth 2.1 with PKCE | ❌ | ✅ | ✅ | ✅ |
+| Single sign-on (OIDC) and SCIM | ❌ | ❌ | ✅ | ✅ |
+| SAML | ❌ | ❌ | On request | On request |
+| Per-key rate limiting | ❌ | ✅ | ✅ | ✅ |
+| CORS configuration | ❌ | ✅ | ✅ | ✅ |
+| **Query & MCP** | | | | |
+| REST query endpoint (SELECT and CTEs) | ✅ | ✅ | ✅ | ✅ |
+| PostgreSQL wire gateway (unchanged Postgres clients) | ❌ | ✅ | ✅ | ✅ |
+| Row limit per response † | 1,000 | 1,000 by default, configurable | 1,000 by default, configurable | 1,000 by default, configurable |
+| Read past the row limit: page with a cursor, or stream as NDJSON or CSV | ❌ | ✅ | ✅ | ✅ |
+| MCP tools | `query_source` | All 7 | All 7, plus `run_approved` for callers an approval rule applies to | All 7, plus `run_approved` for callers an approval rule applies to |
+| MCP tool allow-lists per key | ❌ | ✅ | ✅ | ✅ |
+| Lean Mode: compact rows, cell trimming (per call / server default) | ✅ | ✅ | ✅ | ✅ |
+| Lean Mode: per-key default, schema detail levels | ❌ | ✅ | ✅ | ✅ |
+| Prompt injection filtering | ❌ | ✅ | ✅ | ✅ |
+| YAML named views | ❌ | ✅ | ✅ | ✅ |
+| Schema annotations for AI clients | ❌ | ✅ | ✅ | ✅ |
+| **Access control** | | | | |
+| RBAC (read / readwrite / admin) | ❌ | ✅ | ✅ | ✅ |
+| Column and row policies, PII masking | ❌ | ❌ | ✅ | ✅ |
+| Query approvals: a person approves reads of named columns | ❌ | ❌ | ✅ | ✅ |
+| Suggested policies for personal-data columns | ❌ | ✅ | ✅ | ✅ |
+| Tenants: several teams or customers on one deployment, each with its own audit log | ❌ | ❌ | On request | ✅ |
+| **Audit** | | | | |
+| Local NDJSON audit log | ✅ | ✅ | ✅ | ✅ |
+| Hash-chained tamper-evident log | ❌ | ✅ | ✅ | ✅ |
+| Log integrity verification | ❌ | ✅ | ✅ | ✅ |
+| Audit log retention (sealed segments) | ❌ | ✅ | ✅ | ✅ |
+| Splunk HEC export | ❌ | ✅ | ✅ | ✅ |
+| S3 audit export | ❌ | ✅ | ✅ | ✅ |
+| Incremental export cursor per destination | ❌ | ✅ | ✅ | ✅ |
+| Additional SIEM exporters | ❌ | On request | On request | On request |
+| **Observability** | | | | |
+| Prometheus metrics | ❌ | ✅ | ✅ | ✅ |
+| Schema caching | ❌ | ✅ | ✅ | ✅ |
+| Health check | ✅ | ✅ | ✅ | ✅ |
+| **Support** | | | | |
+| Community (GitHub Issues) | ✅ | ✅ | ✅ | ✅ |
+| SLA-backed (next business day) | ❌ | ❌ | ✅ | ✅ |
+| Onboarding call | ❌ | ❌ | ✅ | ✅ |
 
 † Every edition caps a response at 1,000 rows by default — a deliberate safety default that keeps an AI agent from pulling an entire table. Community's cap is fixed; the commercial editions can raise or lower it with `TDB_MAX_ROWS`, and it applies to every path (REST, MCP tools, views). The commercial editions can also read further, from 0.31.0: page with a cursor, or stream a whole result as NDJSON or CSV, up to `TDB_MAX_RESULT_ROWS`.
 
