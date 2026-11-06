@@ -105,7 +105,8 @@ copilot, and with a tamper-evident audit log you own.
     ---
 
     Seven MCP tools — `query_source`, `schema_source`, `preview_source`,
-    `filter_source`, `aggregate_source`, `list_views`, `run_view` — on one endpoint
+    `filter_source`, `aggregate_source`, `list_views`, `run_view`, plus `run_approved`
+    where query approvals apply — on one endpoint
     that speaks the `2026-07-28` specification and the earlier handshake-era
     revisions. Tools
     are marked read-only and return structured output, with prompt-injection
@@ -158,6 +159,17 @@ copilot, and with a tamper-evident audit log you own.
     refusals are written to the audit log too.
 
     [:octicons-arrow-right-24: RBAC](security/rbac.md)
+
+-   :material-account-check-outline:{ .lg .middle } **Governed access**
+
+    ---
+
+    Per-key column and row policies that withhold, mask and filter in the database,
+    and a person's approval before named columns are read, with every decision in the
+    audit log (Mid-Market).
+
+    [:octicons-arrow-right-24: Policies](security/policies.md) ·
+    [Query approvals](security/approvals.md)
 
 </div>
 
@@ -222,6 +234,8 @@ Postgres · MySQL · SQL Server · Snowflake
 
     [:octicons-arrow-right-24: Authentication overview](auth/overview.md)<br>
     [:octicons-arrow-right-24: Role-based access control](security/rbac.md)<br>
+    [:octicons-arrow-right-24: Column and row policies](security/policies.md)<br>
+    [:octicons-arrow-right-24: Query approvals](security/approvals.md)<br>
     [:octicons-arrow-right-24: Audit log & tamper verification](security/audit.md)<br>
     [:octicons-arrow-right-24: Credentials at rest](security/credentials.md)
 

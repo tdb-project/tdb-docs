@@ -113,6 +113,8 @@ Check a loaded file with [`GET /v1/policies`](#checking-a-policy-file).
 | `hidden` | Instead of `columns`: the withheld columns. A column added later is **visible** |
 | `mask` | `{column: redact \| partial \| hash}` — see below |
 | `rows` | A row filter, written in the source's SQL dialect. `:name` is a caller attribute |
+| `rules[].approval` | From 0.32.0: `{tables: [...], columns: [table.column, ...]}`. A query reading them waits for a person. See [Query approvals](approvals.md) |
+| `sources.<name>.approvers` | From 0.32.0: `{roles, keys, groups}` who may decide this source's approval requests. Required when any of its rules has `approval` |
 
 **Key names, not IDs.** Rotation issues a new key ID and keeps the name (and the key's
 attributes), so a rule follows a key through rotation.
@@ -328,3 +330,5 @@ TDB logs a warning at startup for a file entry matching no registered source
   the filter's logic. Test it with the key it is for.
 - Policies apply to reading data. Who may register sources and manage keys is
   [RBAC](rbac.md).
+- A policy decides what a key may read; it cannot ask anyone first. For that, add an
+  `approval` block to the rule: [Query approvals](approvals.md).

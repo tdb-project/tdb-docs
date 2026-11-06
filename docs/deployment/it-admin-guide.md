@@ -84,6 +84,8 @@ Notes that drive sizing:
   If you enable [Client ID Metadata Documents](../auth/oauth.md#client-id-metadata-documents)
   (`TDB_OAUTH_CIMD_HOSTS`, off by default, 0.18.0 and later), allow HTTPS (443) to the
   hosts you list there. TDB connects to them directly and does not use an egress proxy.
+  If you set an [approval webhook](../security/approvals.md#announcing-requests)
+  (`TDB_APPROVAL_WEBHOOK_URL`, 0.32.0 and later), allow HTTPS to that one host.
 - **No inbound** connections are required other than to port 8000 from your API/MCP
   clients (and the reverse proxy).
 
@@ -195,6 +197,8 @@ inside the image. Defaults in parentheses.
 | `TDB_CORS_ALLOW_CREDENTIALS` | `false` | `Access-Control-Allow-Credentials`. Don't combine with `*`. |
 | `TDB_SERVER_URL` | *(derived)* | Public base URL TDB advertises as the OAuth **issuer**. Set to your external HTTPS URL behind a proxy. From 0.18.0 it is also the base of the absolute `resource_metadata` URL in the MCP `401` challenge. |
 | `TDB_OAUTH_CIMD_HOSTS` | *(empty: off)* | Comma-separated hosts whose OAuth Client ID Metadata Documents TDB may fetch (0.18.0 and later). Enabling it makes TDB fetch HTTPS URLs that clients choose, from inside your network; every fetch is guarded (public addresses only, no redirects, size and time limits). Leave empty unless a client needs it. Not usable air-gapped. |
+| `TDB_APPROVAL_PENDING_TTL`, `TDB_APPROVAL_TTL`, `TDB_APPROVAL_MAX_PENDING` | `86400`, `3600`, `20` | From 0.32.0, Mid-Market. How long a [query approval](../security/approvals.md) request waits, how long an approval can be run, and how many requests one requester may have waiting. |
+| `TDB_APPROVAL_WEBHOOK_URL`, `TDB_APPROVAL_WEBHOOK_SECRET`, `TDB_APPROVAL_WEBHOOK_SQL` | *(unset: off)*, —, `redacted` | From 0.32.0. Announce new approval requests with a signed POST. https only (http to `localhost`); a URL without a secret of at least 32 characters stops startup. |
 | `TDB_OIDC_ISSUER` | *(unset: off)* | From 0.24.0, Mid-Market. Turns on [single sign-on and SCIM](../auth/sso.md), whose page lists the settings that go with it. |
 | `TDB_LEAN_MODE` | `off` | Default [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) for MCP results (0.21.0 and later): `off`, `on`, or a JSON object such as `{"lean": true, "max_cell_chars": 500}`. Smaller results for AI agents; a key's setting or a call's own arguments override it. MCP only — REST is unchanged. An invalid value refuses every MCP tool call until fixed, naming this variable, rather than being ignored. |
 
@@ -408,6 +412,21 @@ From 0.22.0. Mount a policy file read-only and set `TDB_POLICIES_FILE`:
 
 Full reference: [Column and row policies](../security/policies.md).
 
+**Query approvals (from 0.32.0).** A rule's `approval: {tables, columns}` block makes a
+query that reads those columns wait for one of the source's `approvers`. Before turning it on:
+
+- Give each approver their **own** database key or SSO login, and name them (or their group)
+  under the source's `approvers`. A static `TDB_API_KEYS` key names no one: it can neither
+  request nor decide. TDB refuses to start if a rule needs approval and its source has no
+  approvers.
+- Approvers work from the CLI: `docker exec -e TDB_API_KEYS=<their key> tdb python -m tdb.cli
+  approvals list`, then `approve` or `deny` with `--reason`.
+- Editing the policy file and restarting voids every open request (`approvals_voided` in the log).
+- Optional: a [signed webhook](../security/approvals.md#announcing-requests) to tell approvers a
+  request is waiting.
+
+Full reference: [Query approvals](../security/approvals.md).
+
 ### 5.3 Logging & audit
 
 - The audit log is **append-only NDJSON** at `TDB_LOG_FILE`, **hash-chained** (each entry
@@ -495,6 +514,7 @@ The connector defaults to `Encrypt=yes`. For self-signed SQL Server certs set
 | Source registry (incl. **DB connection + password**) | SQLite `TDB_REGISTRY_DB` (`/app/data/tdb_registry.db`) | **Encrypted** (Fernet, `enc:v1:` prefix) — whole connection blob, no plaintext mode. Key from `TDB_ENCRYPTION_KEY` or an auto-generated `0600` file beside the DB — see [§6.2](#62-where-source-credentials-live) |
 | API keys | same SQLite DB (`api_keys` table) | **SHA-256 hashed** (only hash + 6-char prefix); raw key shown once at creation |
 | OAuth clients / authorization codes | same SQLite DB | codes are short-lived |
+| Query approval requests (0.32.0 and later) | same SQLite DB (`approvals` table) | The statement is **encrypted** with the credential key and deleted when the request is denied, expires or is voided; the rest (who, which source, which columns, decision) is kept as a record |
 | Audit log (query text, source id, row count, key hint, timestamp) | `TDB_LOG_FILE` NDJSON | plaintext, hash-chained |
 | License token | `/app/license.jwt` (or `TDB_LICENSE` env) | signed JWT; baked tokens are recoverable via `docker history` |
 

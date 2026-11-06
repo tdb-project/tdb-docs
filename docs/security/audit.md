@@ -8,7 +8,7 @@ TDB writes a tamper-evident, hash-chained audit log for every query, **every ref
 
 The log is NDJSON (newline-delimited JSON), one JSON object per line. Default path: `tdb_audit.jsonl`. Override with `TDB_LOG_FILE`.
 
-There are two entry types, distinguished by `event`: `query` for a query that ran, and `denied` for an attempt that was refused. Both are signed into the same chain.
+There are two entry types, distinguished by `event`: `query` for a query that ran, and `denied` for an attempt that was refused. Both are signed into the same chain. Enterprise also records events that are neither, such as sign-ins and, from 0.32.0, [query approvals](approvals.md#audit): `approval_requested` and `approval_decided`.
 
 **`event: "query"` — a query that executed:**
 
@@ -42,6 +42,7 @@ There are two entry types, distinguished by `event`: `query` for a query that ra
 | `mcp_client`, `mcp_protocol` | MCP entries only (from community 0.12.0 / enterprise 0.18.0): the client's self-reported name, `name/version` from its `clientInfo` or else its `User-Agent`, at most 200 characters; and the protocol version it was served at. See [the MCP audit notes](../api/mcp.md#audit-log) |
 | `lean` | MCP entries served in [Lean Mode](../api/mcp.md#saving-tokens-lean-mode) only (from community 0.13.0 / enterprise 0.21.0): the settings applied, e.g. `{"format": "table"}` |
 | `policy_sha256` | Enterprise, from 0.22.0, while a [policy file](policies.md) is loaded: on **every** query and denial entry, the SHA-256 of the file in force |
+| `approval_id` | Enterprise, from 0.32.0: a query run under a [query approval](approvals.md), and a refusal that waits on or was denied by one |
 | `policy_rule`, `policy_masked`, `policy_withheld`, `policy_row_filtered` | A query run under a [policy rule](policies.md#audit): the rule's name, `{table: [masked columns]}`, `{table: [withheld columns]}` and the tables a row filter applied to. Present (possibly empty) on every query under a rule; a denial under a rule carries `policy_rule` |
 | `page`, `cursor_id`, `rows_so_far`, `result_capped` | Enterprise, from 0.31.0, [a page](../api/query.md#reading-more-than-one-page): its number, an ID linking the chain's pages (not the cursor, which is never logged), the rows sent across the chain, and `true` on the page that reached `TDB_MAX_RESULT_ROWS` |
 | `stream_id`, `stream_format`, `stream_outcome` | Enterprise, from 0.31.0, [a stream](../api/query.md#streaming-a-whole-result): `query_started` is written before it runs, then `query` with `rows_returned` and how it ended. `stream_id` is also the `X-TDB-Stream-Id` response header. **A `query_started` with no `query` means the process died during the stream** |
@@ -155,6 +156,7 @@ Two fields describe the refusal:
 | `view_not_found` | A view run named a view that does not exist (enterprise, from 0.28.0) |
 | `query_timeout` | The query ran past `TDB_QUERY_TIMEOUT` and was cancelled at the source (enterprise) |
 | `source_busy` | Another process had the DuckDB file open for writing (enterprise, from 0.23.0). See [DuckDB](../connectors/duckdb.md#the-file-stays-yours) |
+| `approval_pending`, `approval_denied`, `approval_expired`, `approval_void`, `approval_unresolved`, `approval_requires_identity`, `approval_limit`, `approval_not_found`, `approval_not_approver`, `approval_self` | A [query approval](approvals.md) held, refused or could not be decided (enterprise, Mid-Market, from 0.32.0). See [Errors & audit reasons](../reference/errors.md#query-approvals) |
 | `insufficient_role_required_<role>_have_<role>` | The key's role is below what the endpoint needs (enterprise) |
 | `tool_not_permitted_<tool>` | The key's `allowed_tools` does not include the tool (enterprise) |
 

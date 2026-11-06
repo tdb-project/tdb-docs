@@ -40,6 +40,9 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 | `GET /v1/views` | `read` |
 | `GET /v1/views/{name}` | `read` |
 | `POST /v1/views/{name}/run` | `read` |
+| `GET /v1/approvals`, `GET /v1/approvals/{id}` | any valid key or SSO token that names someone (Mid-Market, from 0.32.0): shows only requests you made or may decide |
+| `POST /v1/approvals/{id}/approve`, `/deny` | one of the source's `approvers` in the [policy file](approvals.md#deciding), never the requester; not a role |
+| `POST /v1/approvals/{id}/run` | the requester only |
 | `POST /v1/sources` | `readwrite` |
 | `DELETE /v1/sources/{id}` | `readwrite` |
 | `PUT /v1/sources/{ref}/annotations` | `readwrite` |
@@ -130,7 +133,7 @@ curl -X PUT http://localhost:8000/v1/auth/keys/<KEY_ID>/tools \
   -d '{"tools": null}'
 ```
 
-Available MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view`.
+Available MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view`, and from 0.32.0 `run_approved`. A scope that names any query tool may also use `run_approved`, which runs only what a person approved for that key; you need not list it.
 
 **The scope also governs the REST routes that do the same thing, from enterprise
 0.12.0.** Earlier releases checked it only on MCP, so a key scoped to
@@ -142,6 +145,7 @@ Available MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_
 | `GET /v1/sources/{ref}/schema` | `schema_source` |
 | `GET /v1/views`, `GET /v1/views/{name}` | `list_views` |
 | `POST /v1/views/{name}/run` | `run_view` |
+| `POST /v1/approvals/{id}/run` (from 0.32.0) | `run_approved`, or any query tool |
 
 A REST request outside the scope returns **403** and is audited as
 `tool_not_permitted_<tool>`. Routes with no MCP equivalent (source and key

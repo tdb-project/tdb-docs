@@ -7,7 +7,7 @@ already have TDB running and at least one source registered — see the
 
 !!! info "Community vs Enterprise"
     Community exposes one MCP tool, `query_source`, against the single registered
-    CSV (table name always `data`). Enterprise exposes seven tools — including
+    CSV (table name always `data`). Enterprise exposes seven tools (an eighth, `run_approved`, where query approvals apply) — including
     schema/preview/filter/aggregate helpers that don't require the model to write
     SQL — against real table names. See [MCP API reference →](../api/mcp.md) for
     the full tool list.

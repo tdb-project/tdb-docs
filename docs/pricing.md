@@ -81,7 +81,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **MCP**
 
-    - All 7 MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view`
+    - All 7 MCP tools: `query_source`, `schema_source`, `preview_source`, `filter_source`, `aggregate_source`, `list_views`, `run_view` (and `run_approved` where Mid-Market query approvals apply)
     - Schema annotations — describe what a cryptic column holds, so an AI assistant reads it correctly instead of guessing
     - Prompt injection filtering (input + output)
     - Per-key MCP tool allow-lists
@@ -149,7 +149,7 @@ Annual subscriptions and larger / multi-seat deployments qualify for discounts. 
 
 ## Edition comparison
 
-The two commercial editions ship the same product with one exception: **column and row policies are Mid-Market** (from 0.22.0). An SMB licence with a policy file set refuses to start rather than serve without the rules. Otherwise SMB and Mid-Market differ on the support commitment and on the identity features still on the roadmap.
+The two commercial editions ship the same product except for three Mid-Market features: **column and row policies** (from 0.22.0), **single sign-on and SCIM** (from 0.24.0) and **query approvals** (from 0.32.0, part of the policy file). An SMB licence configured for policies or single sign-on refuses to start rather than serve without the rules. Otherwise SMB and Mid-Market differ on the support commitment.
 
 | Feature | Community | SMB | Mid-Market |
 |---|---|---|---|
@@ -176,7 +176,7 @@ The two commercial editions ship the same product with one exception: **column a
 | PostgreSQL wire gateway (unchanged Postgres clients) | ❌ | ✅ | ✅ |
 | Row limit per response † | 1,000 | 1,000 by default, configurable | 1,000 by default, configurable |
 | Read past the row limit: page with a cursor, or stream as NDJSON or CSV | ❌ | ✅ | ✅ |
-| MCP tools | `query_source` | All 7 | All 7 |
+| MCP tools | `query_source` | All 7 | All 7, plus `run_approved` for callers an approval rule applies to |
 | MCP tool allow-lists per key | ❌ | ✅ | ✅ |
 | Lean Mode: compact rows, cell trimming (per call / server default) | ✅ | ✅ | ✅ |
 | Lean Mode: per-key default, schema detail levels | ❌ | ✅ | ✅ |
@@ -186,6 +186,7 @@ The two commercial editions ship the same product with one exception: **column a
 | **Access control** | | | |
 | RBAC (read / readwrite / admin) | ❌ | ✅ | ✅ |
 | Column and row policies, PII masking | ❌ | ❌ | ✅ |
+| Query approvals: a person approves reads of named columns | ❌ | ❌ | ✅ |
 | Suggested policies for personal-data columns | ❌ | ✅ | ✅ |
 | **Audit** | | | |
 | Local NDJSON audit log | ✅ | ✅ | ✅ |
