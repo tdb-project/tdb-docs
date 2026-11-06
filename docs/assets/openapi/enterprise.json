@@ -3,7 +3,7 @@
  "info": {
   "title": "The Data-Bridge (TDB)",
   "description": "A secure, auditable API layer over your existing data sources. Register a data source once, query it anywhere.",
-  "version": "0.32.0"
+  "version": "0.33.0"
  },
  "paths": {
   "/v1/auth/token": {
@@ -697,7 +697,7 @@
      "Source Registry"
     ],
     "summary": "Inspect column names and types for a registered source (UUID or name)",
-    "description": "Returns the column names and inferred types for the registered source.\nNo rows are returned — schema introspection only.",
+    "description": "Returns the column names and inferred types for the registered source.\nNo rows are returned \u2014 schema introspection only.",
     "operationId": "get_source_schema_v1_sources__source_id__schema_get",
     "security": [
      {
@@ -761,7 +761,7 @@
      "Sources"
     ],
     "summary": "List a source's schema annotations",
-    "description": "Every annotation stored for the source.\n\nTargets are checked when they are written, but a schema moves underneath\nthem: a column that is renamed or dropped leaves an annotation that matches\nnothing and says nothing, surfacing only as a description that quietly stops\nappearing in `schema_source`. `?validate=true` re-runs the write-time check\nagainst the live schema and marks each annotation `stale` with the reason.\n\nAs on the write path, `validated: false` means the source could not be read\n— never that nothing matched. An unreachable database is not evidence that\nan annotation is wrong, so nothing is flagged stale on that path.",
+    "description": "Every annotation stored for the source.\n\nTargets are checked when they are written, but a schema moves underneath\nthem: a column that is renamed or dropped leaves an annotation that matches\nnothing and says nothing, surfacing only as a description that quietly stops\nappearing in `schema_source`. `?validate=true` re-runs the write-time check\nagainst the live schema and marks each annotation `stale` with the reason.\n\nAs on the write path, `validated: false` means the source could not be read\n\u2014 never that nothing matched. An unreachable database is not evidence that\nan annotation is wrong, so nothing is flagged stale on that path.",
     "operationId": "list_annotations_v1_sources__ref__annotations_get",
     "security": [
      {
@@ -821,7 +821,7 @@
      "Sources"
     ],
     "summary": "Create or replace schema annotations",
-    "description": "Upserts each annotation. Existing entries for the same table/column are\nreplaced; annotations not mentioned are left alone. Use DELETE to remove one.\n\nTargets are validated against the live schema by default: an annotation on a\nmisspelled column never matches anything and would otherwise fail silently,\nsurfacing as \"the description I wrote isn't showing up\" long after the typo.\nIf the source cannot be reached the write still succeeds and the response\nreports `validated: false` — an unreachable database is not evidence that an\nannotation is wrong.",
+    "description": "Upserts each annotation. Existing entries for the same table/column are\nreplaced; annotations not mentioned are left alone. Use DELETE to remove one.\n\nTargets are validated against the live schema by default: an annotation on a\nmisspelled column never matches anything and would otherwise fail silently,\nsurfacing as \"the description I wrote isn't showing up\" long after the typo.\nIf the source cannot be reached the write still succeeds and the response\nreports `validated: false` \u2014 an unreachable database is not evidence that an\nannotation is wrong.",
     "operationId": "put_annotations_v1_sources__ref__annotations_put",
     "security": [
      {
@@ -972,7 +972,7 @@
      "Query"
     ],
     "summary": "Run a SQL query against a registered data source",
-    "description": "Execute a **read-only** SQL SELECT against a registered source.\n\n### Example\n```json\n{\n  \"source_id\": \"abc-123\",\n  \"sql\": \"SELECT * FROM orders LIMIT 50\",\n  \"limit\": 50\n}\n```\n\nUse the table name that matches the connector: CSV sources are exposed as\n`data`, while database connectors (Postgres, MySQL, SQL Server, Snowflake)\ntake the **actual table name** from the source's `connection.table` — the\nSQL is passed through to the database unchanged apart from an appended\n`LIMIT`, so there is no `data` alias for database sources.",
+    "description": "Execute a **read-only** SQL SELECT against a registered source.\n\n### Example\n```json\n{\n  \"source_id\": \"abc-123\",\n  \"sql\": \"SELECT * FROM orders LIMIT 50\",\n  \"limit\": 50\n}\n```\n\nUse the table name that matches the connector: CSV sources are exposed as\n`data`, while database connectors (Postgres, MySQL, SQL Server, Snowflake)\ntake the **actual table name** from the source's `connection.table` \u2014 the\nSQL is passed through to the database unchanged apart from an appended\n`LIMIT`, so there is no `data` alias for database sources.",
     "operationId": "run_query_v1_query_post",
     "security": [
      {
@@ -1746,25 +1746,55 @@
     "summary": "Verify audit log hash chain integrity",
     "description": "Reads the audit log and verifies every signed entry's hash and chain link.\n\nReturns ``{\"valid\": true, \"entries\": N}`` when the chain is intact,\nor ``{\"valid\": false, \"error\": \"...\", \"at_seq\": N}`` if tampering is detected.\n\nLegacy entries written before hash-chaining was enabled are skipped.",
     "operationId": "audit_verify_v1_audit_verify_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "tenant",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "With tenants on: the chain to act on. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin acts on theirs.",
+       "title": "Tenant"
+      },
+      "description": "With tenants on: the chain to act on. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin acts on theirs."
+     }
+    ],
     "responses": {
      "200": {
       "description": "Successful Response",
       "content": {
        "application/json": {
         "schema": {
-         "additionalProperties": true,
          "type": "object",
+         "additionalProperties": true,
          "title": "Response Audit Verify V1 Audit Verify Get"
         }
        }
       }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
      }
-    },
-    "security": [
-     {
-      "HTTPBearer": []
-     }
-    ]
+    }
    }
   },
   "/v1/audit/history": {
@@ -1775,25 +1805,55 @@
     "summary": "Verify the live log and every sealed segment",
     "description": "Verifies each sealed segment, the live log, and the anchors linking them.\n\n``/verify`` proves the *live* log has not been altered, but each segment\nrestarts its chain from genesis, so it cannot prove a whole segment was not\nremoved. This walks the ``chain_anchor`` entries to check the sequence is\ncomplete.\n\nPruning the oldest segments is a supported retention action and stays valid;\na gap in the middle does not.",
     "operationId": "audit_history_v1_audit_history_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "tenant",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "With tenants on: the chain to act on. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin acts on theirs.",
+       "title": "Tenant"
+      },
+      "description": "With tenants on: the chain to act on. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin acts on theirs."
+     }
+    ],
     "responses": {
      "200": {
       "description": "Successful Response",
       "content": {
        "application/json": {
         "schema": {
-         "additionalProperties": true,
          "type": "object",
+         "additionalProperties": true,
          "title": "Response Audit History V1 Audit History Get"
         }
        }
       }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
      }
-    },
-    "security": [
-     {
-      "HTTPBearer": []
-     }
-    ]
+    }
    }
   },
   "/v1/audit/rotate": {
@@ -1802,27 +1862,57 @@
      "Audit"
     ],
     "summary": "Seal the audit log into a segment now",
-    "description": "Seals the live audit log into a timestamped segment and starts a fresh chain.\n\nThe segment keeps its chain intact and stays independently verifiable. TDB\nnever deletes a segment — removing old ones is the operator's decision.\n\nReturns ``{\"rotated\": true, \"segment\": \"...\", \"entries_sealed\": N}``, or\n``{\"rotated\": false, \"reason\": \"log is empty\"}`` when there is nothing to seal.",
+    "description": "Seals the live audit log into a timestamped segment and starts a fresh chain.\n\nThe segment keeps its chain intact and stays independently verifiable. TDB\nnever deletes a segment \u2014 removing old ones is the operator's decision.\n\nReturns ``{\"rotated\": true, \"segment\": \"...\", \"entries_sealed\": N}``, or\n``{\"rotated\": false, \"reason\": \"log is empty\"}`` when there is nothing to seal.",
     "operationId": "audit_rotate_v1_audit_rotate_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "tenant",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "With tenants on: the chain to act on. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin acts on theirs.",
+       "title": "Tenant"
+      },
+      "description": "With tenants on: the chain to act on. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin acts on theirs."
+     }
+    ],
     "responses": {
      "200": {
       "description": "Successful Response",
       "content": {
        "application/json": {
         "schema": {
-         "additionalProperties": true,
          "type": "object",
+         "additionalProperties": true,
          "title": "Response Audit Rotate V1 Audit Rotate Post"
         }
        }
       }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
      }
-    },
-    "security": [
-     {
-      "HTTPBearer": []
-     }
-    ]
+    }
    }
   },
   "/v1/audit/export": {
@@ -1831,7 +1921,7 @@
      "Audit"
     ],
     "summary": "Export audit log to a SIEM destination",
-    "description": "Ships audit entries the destination has not yet received, to Splunk HEC or S3. Each destination keeps its own cursor, so a scheduled export is incremental rather than re-sending the whole log every run. Configure Splunk via TDB_SPLUNK_HEC_URL / TDB_SPLUNK_HEC_TOKEN, or S3 via TDB_S3_BUCKET. An unconfigured destination is a no-op and reports `disabled`. Pass `since_seq=0` to re-send history.\n\nRuns synchronously by default and returns what it shipped. Pass `wait=false` to get 202 immediately and let it run in the background — read the outcome afterwards from GET /v1/audit/export/status, which reports `last_run` per destination. Either way a destination exports one run at a time: an overlapping call gets 409, because two runs share a cursor and would ship the same entries twice.",
+    "description": "Ships audit entries the destination has not yet received, to Splunk HEC or S3. Each destination keeps its own cursor, so a scheduled export is incremental rather than re-sending the whole log every run. Configure Splunk via TDB_SPLUNK_HEC_URL / TDB_SPLUNK_HEC_TOKEN, or S3 via TDB_S3_BUCKET. An unconfigured destination is a no-op and reports `disabled`. Pass `since_seq=0` to re-send history.\n\nRuns synchronously by default and returns what it shipped. Pass `wait=false` to get 202 immediately and let it run in the background \u2014 read the outcome afterwards from GET /v1/audit/export/status, which reports `last_run` per destination. Either way a destination exports one run at a time: an overlapping call gets 409, because two runs share a cursor and would ship the same entries twice.",
     "operationId": "trigger_export_v1_audit_export_post",
     "security": [
      {
@@ -1881,6 +1971,24 @@
        "title": "Wait"
       },
       "description": "Wait for the export to finish and return its result. Pass false to return 202 immediately and run it in the background."
+     },
+     {
+      "name": "tenant",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "With tenants on: whose chain to export. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin exports theirs.",
+       "title": "Tenant"
+      },
+      "description": "With tenants on: whose chain to export. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin exports theirs."
      }
     ],
     "responses": {
@@ -1918,15 +2026,76 @@
     ],
     "summary": "Show how far each SIEM destination has consumed the audit log",
     "operationId": "export_status_v1_audit_export_status_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "tenant",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "With tenants on: whose chain to export. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin exports theirs.",
+       "title": "Tenant"
+      },
+      "description": "With tenants on: whose chain to export. Only the operator names one (`_deployment` for the deployment's own); a tenant's admin exports theirs."
+     }
+    ],
     "responses": {
      "200": {
       "description": "Successful Response",
       "content": {
        "application/json": {
         "schema": {
-         "additionalProperties": true,
          "type": "object",
+         "additionalProperties": true,
          "title": "Response Export Status V1 Audit Export Status Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/tenants": {
+   "get": {
+    "tags": [
+     "Tenants"
+    ],
+    "summary": "The tenants this deployment serves (operator)",
+    "operationId": "list_tenants_v1_tenants_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response List Tenants V1 Tenants Get"
         }
        }
       }
@@ -1939,13 +2108,72 @@
     ]
    }
   },
+  "/v1/tenants/{name}/keys": {
+   "post": {
+    "tags": [
+     "Tenants"
+    ],
+    "summary": "Mint a key inside a tenant (operator); shown once",
+    "operationId": "mint_key_v1_tenants__name__keys_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MintKeyRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Mint Key V1 Tenants  Name  Keys Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/health": {
    "get": {
     "tags": [
      "Meta"
     ],
     "summary": "Health",
-    "description": "Liveness probe — used by Docker / k8s health checks.",
+    "description": "Liveness probe \u2014 used by Docker / k8s health checks.",
     "operationId": "health_health_get",
     "responses": {
      "200": {
@@ -1965,7 +2193,7 @@
      "Meta"
     ],
     "summary": "Version",
-    "description": "Report the running version and build SHA (authenticated).\n\nUsed to confirm a deployment's exact patch level after a security update —\ne.g. an operator comparing against the latest released image, with no\nphone-home. The unauthenticated `/` banner also carries `version`.",
+    "description": "Report the running version and build SHA (authenticated).\n\nUsed to confirm a deployment's exact patch level after a security update \u2014\ne.g. an operator comparing against the latest released image, with no\nphone-home. The unauthenticated `/` banner also carries `version`.",
     "operationId": "version_v1_version_get",
     "responses": {
      "200": {
@@ -2222,7 +2450,7 @@
      "role": {
       "type": "string",
       "title": "Role",
-      "description": "RBAC role for this key: 'read', 'readwrite', or 'admin'. Defaults to 'read' — a key handed to an AI agent should not be able to manage keys or sources unless that is asked for.",
+      "description": "RBAC role for this key: 'read', 'readwrite', or 'admin'. Defaults to 'read' \u2014 a key handed to an AI agent should not be able to manage keys or sources unless that is asked for.",
       "default": "read"
      }
     },
@@ -2273,6 +2501,39 @@
     },
     "type": "object",
     "title": "HTTPValidationError"
+   },
+   "MintKeyRequest": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "role": {
+      "type": "string",
+      "pattern": "^(read|readwrite|admin)$",
+      "title": "Role",
+      "default": "read"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "title": "MintKeyRequest"
    },
    "ParameterInfo": {
     "properties": {
@@ -3045,7 +3306,7 @@
      "columns"
     ],
     "title": "TableSchema",
-    "description": "Column listing for one table — used in database-wide schema responses."
+    "description": "Column listing for one table \u2014 used in database-wide schema responses."
    },
    "TokenRequest": {
     "properties": {
