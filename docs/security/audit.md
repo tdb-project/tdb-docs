@@ -182,6 +182,16 @@ cat tdb_audit.jsonl | jq -r 'select(.action == "auth") | .key_hint' | sort | uni
 
 ---
 
+## Tenants
+
+With [tenants](tenants.md) on (Enterprise, from 0.33.0), each tenant has its own log in its
+directory, verified on its own, and every entry carries `"tenant"`. What belongs to no tenant
+(refusals before a tenant is known, the operator's actions, each start's tenant list) is in
+the deployment's own chain, `TDB_TENANTS_DIR/.deployment/audit.jsonl`. The operator verifies
+or exports any of them with `?tenant=<name>` or `?tenant=_deployment`.
+
+---
+
 ## Hash chain
 
 Each entry's `hash` is a SHA-256 digest of the entry's canonical JSON (all fields sorted, no whitespace, `hash` field excluded). The next entry includes the previous `hash` as `prev_hash`.

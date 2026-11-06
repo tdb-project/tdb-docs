@@ -47,6 +47,10 @@ Across several groups, the highest role and the widest tool list win. Attributes
 and for the same name the earlier group in the file wins. The file is read at startup, and a
 mistake in it stops TDB from starting.
 
+With [tenants](../security/tenants.md) on (from 0.33.0, Enterprise), every group also names
+the tenant it grants access in, `tenant: acme`, and a person whose groups name two tenants is
+refused.
+
 **3. Set the environment.**
 
 ```bash

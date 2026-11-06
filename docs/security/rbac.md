@@ -16,7 +16,7 @@ TDB Enterprise enforces a three-tier role system on every DB-managed API key. Ro
 
 | Key type | Role |
 |---|---|
-| Static env keys (`TDB_API_KEYS`) | Always `admin` |
+| Static env keys (`TDB_API_KEYS`) | Always `admin`. With [tenants](tenants.md) on (from 0.33.0), the **operator**: manages tenants and reads none |
 | JWT tokens | `role` claim in the JWT payload (default: `read` from 0.11.0; `admin` before) |
 | DB-managed keys | `role` column in the registry database (a key created without a `role` is `read` from 0.11.0; `admin` before) |
 

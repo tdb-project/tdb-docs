@@ -173,6 +173,25 @@ detail; the entry has the rest.
 | `scim_invalid_token` | A request to `/scim/v2` had the wrong token | Check `TDB_SCIM_TOKEN` at the IdP |
 | `tool_not_permitted_<tool>` | The person's groups do not allow this tool | Change `allowed_tools` in `TDB_SSO_FILE` |
 
+## Tenants
+
+Reasons from [tenants](../security/tenants.md). Refusals made before a request has a tenant are in
+the deployment's chain, `TDB_TENANTS_DIR/.deployment/audit.jsonl`, with `action: tenant` (or
+`pg_auth` on the wire gateway).
+
+| Audit `reason` | What it means | What to do |
+|---|---|---|
+| `invalid_api_key` (`action: tenant`) | A `tdbt_` key names a tenant that does not exist or does not hold it | Use the key the tenant issued; check it was not edited |
+| `tenant_suspended` | The tenant the credential names is suspended | `tdb tenants resume`, and restart |
+| `operator_names_no_tenant` | A static key or the admin login called a tenant route | Use a key minted in that tenant; the operator only manages tenants |
+| `sso_tenant_ambiguous` | The person's groups name more than one tenant | Leave them in one tenant's groups |
+| `sso_no_tenant` | None of the person's groups names a tenant | Add them to a group with a `tenant` |
+| `tenant_changed` | A gateway session's credential now acts in another tenant | Reconnect |
+| `tenant_missing` | TDB reached a tenant's state with no tenant: a defect, answered 500 | Report it, with the entry |
+
+A request with two `Authorization` headers is refused with **400** before any of this (from 0.33.0,
+with tenants off too).
+
 ## Not refusals
 
 - **`truncated: true`** — not an error. More rows existed than the row ceiling or your

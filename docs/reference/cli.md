@@ -217,6 +217,23 @@ A refusal prints the status and reason and exits `1`.
 
 ---
 
+## `tdb tenants`
+
+**Enterprise, from 0.33.0.** Create, list and suspend [tenants](../security/tenants.md). `init`,
+`suspend` and `resume` work on `TDB_TENANTS_DIR` directly, so run them where TDB runs; each takes
+effect on the next start. `list` asks the running server, as the operator (a static key in
+`TDB_API_KEYS`).
+
+```bash
+docker exec tdb python -m tdb.cli tenants init acme      # prints acme's admin key, once
+docker exec tdb python -m tdb.cli tenants list [--output json]
+docker exec tdb python -m tdb.cli tenants suspend acme
+docker exec tdb python -m tdb.cli tenants resume acme
+docker restart tdb
+```
+
+---
+
 ## Exit codes
 
 `0` on success. `1` on any failure — a missing API key, an unreachable server, a

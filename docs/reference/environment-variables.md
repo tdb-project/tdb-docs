@@ -148,6 +148,14 @@ When the license is missing, invalid, or expired, the server keeps running and
 
 ---
 
+## Tenants
+
+| Variable | Since | Default | Description |
+|---|---|---|---|
+| `TDB_TENANTS_DIR` | 0.33.0 | *(empty — one deployment)* | **Enterprise.** A directory with one subdirectory per [tenant](../security/tenants.md). Read at startup; **a licence below Enterprise, an ambiguous directory, a copied tenant, or `TDB_ALLOWED_DATA_DIR` inside it stops startup.** With it set, static `TDB_API_KEYS` keys are the operator's and read no tenant, and every group in `TDB_SSO_FILE` must name a `tenant`. |
+
+---
+
 ## Schema Cache
 
 | Variable | Since | Default | Description |
