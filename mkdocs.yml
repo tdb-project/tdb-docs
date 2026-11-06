@@ -117,6 +117,7 @@ nav:
     - Access & audit:
       - RBAC: security/rbac.md
       - Column & Row Policies: security/policies.md
+      - Query Approvals: security/approvals.md
       - Audit Log: security/audit.md
       - Credentials at Rest: security/credentials.md
       - Security & Updates: security/updates.md

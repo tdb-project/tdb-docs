@@ -34,7 +34,8 @@ answered them with "Method not found", which clients ignored.
 
 ## Available tools
 
-TDB Enterprise exposes **seven tools**:
+TDB Enterprise exposes **seven tools**, and an eighth, `run_approved`, to callers a
+[query approval](../security/approvals.md#agents) rule can hold (from 0.32.0):
 
 | Tool | What it does | Works with |
 |---|---|---|
@@ -45,6 +46,7 @@ TDB Enterprise exposes **seven tools**:
 | [`aggregate_source`](#toolscall-aggregate_source) | COUNT / SUM / AVG / MIN / MAX with optional GROUP BY | All sources — `table` argument required for database-wide |
 | [`list_views`](#toolscall-list_views-and-run_view) | List the available [YAML views](views.md) | Requires `TDB_VIEWS_DIR` |
 | [`run_view`](#toolscall-list_views-and-run_view) | Execute a named view with typed parameters | Requires `TDB_VIEWS_DIR` |
+| [`run_approved`](../security/approvals.md#agents) | Run an approved request by its id | Listed only when an approval rule applies to the caller |
 
 !!! note "Database-wide sources and the no-SQL tools"
     For a **database-wide** source (registered without `table`), the four no-SQL

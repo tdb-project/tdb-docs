@@ -122,12 +122,30 @@ wire gateway, audited with the reason below. Under a rule the entry also carries
 | `policy_catalog_refused` | Gateway: a catalog that holds data (`pg_stats` and similar) | Not available to policied keys |
 | `policy_registry_change` | A non-admin key a policy restricts tried to register or delete a source | Use an admin key |
 
+### Query approvals
+
+From 0.32.0, a rule with an `approval` block. Same channels as the refusals above; the
+entry carries `approval_id` when there is a request. See [Query approvals](../security/approvals.md).
+
+| Audit `reason` | What it means | What to do |
+|---|---|---|
+| `approval_pending` | The query reads what the rule's approval names; a request waits | Ask an approver; send the query again, or `run_approved`, once approved |
+| `approval_denied` | An approver denied this request | Read the reason; change the query or ask again later |
+| `approval_expired`, `approval_void` | The request ran out, or the policy file changed | Send the query again for a new request |
+| `approval_unresolved` | TDB could not tell which columns the query reads, so it is refused | Name columns plainly; fix an unknown or ambiguous column |
+| `approval_requires_identity` | A static `TDB_API_KEYS` key names no one to approve for | Use a database key or SSO |
+| `approval_limit` | The requester has `TDB_APPROVAL_MAX_PENDING` requests waiting | Wait for decisions |
+| `approval_not_found` | No such request, or not yours to see (404) | Check the id |
+| `approval_not_approver`, `approval_self` | Deciding a request you may not, or your own (403) | Ask one of the source's approvers |
+
 A **SQL error** under a rule (`400 Query failed: …`) shows only the reason, such as
 `column "diagnosis" does not exist`. A withheld column reads exactly like one that is
 not there.
 
 **At startup**, TDB refuses to start, naming the problem, when the policy file is
-missing, not valid YAML or has an invalid field, or when the licence's tier is `smb`
+missing, not valid YAML or has an invalid field (an approval naming a column the rule
+withholds, or a rule needing approval on a source with no `approvers`), when an approval
+webhook is set without a usable secret, or when the licence's tier is `smb`
 (`policies_tier_refused` in the application log).
 
 ---

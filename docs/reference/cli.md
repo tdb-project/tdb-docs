@@ -200,6 +200,23 @@ docker exec tdb python -m tdb.cli policy suggest clinic > policies.yml
 
 ---
 
+## `tdb approvals`
+
+**Enterprise, Mid-Market, from 0.32.0.** List and decide [query approval](../security/approvals.md)
+requests. Run it with **your own** database key or SSO token in `TDB_API_KEYS`: a static key
+names no one, so it can see and decide nothing.
+
+```bash
+tdb approvals list [--all] [--output json]
+tdb approvals show apr_4f1c09d2b7e3a581
+tdb approvals approve apr_4f1c09d2b7e3a581 --reason "ticket 1842"
+tdb approvals deny apr_4f1c09d2b7e3a581 --reason "use the masked view"
+```
+
+A refusal prints the status and reason and exits `1`.
+
+---
+
 ## Exit codes
 
 `0` on success. `1` on any failure — a missing API key, an unreachable server, a

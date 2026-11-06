@@ -139,6 +139,12 @@ When the license is missing, invalid, or expired, the server keeps running and
 | Variable | Since | Default | Description |
 |---|---|---|---|
 | `TDB_POLICIES_FILE` | 0.22.0 | *(empty — no policies)* | **Enterprise, Mid-Market.** Path to the YAML policy file. Read once at startup; **an invalid file stops startup**, and so does an SMB licence with this set. Restart to load a change; `GET /v1/policies` shows the loaded file's SHA-256. See [Column and row policies](../security/policies.md). |
+| `TDB_APPROVAL_PENDING_TTL` | 0.32.0 | `86400` | **Enterprise, Mid-Market.** Seconds a [query approval](../security/approvals.md) request waits for a decision before it expires. A typo or non-positive value falls back to the default. |
+| `TDB_APPROVAL_TTL` | 0.32.0 | `3600` | Seconds an approved request can be run by its requester after the decision. |
+| `TDB_APPROVAL_MAX_PENDING` | 0.32.0 | `20` | Requests one requester may have waiting at once; past it, `approval_limit`. |
+| `TDB_APPROVAL_WEBHOOK_URL` | 0.32.0 | *(empty — off)* | Where to [announce new requests](../security/approvals.md#announcing-requests). https only (http to `localhost`). |
+| `TDB_APPROVAL_WEBHOOK_SECRET` | 0.32.0 | *(empty)* | HMAC key for `X-TDB-Signature`; required with the URL, at least 32 characters, or startup stops. |
+| `TDB_APPROVAL_WEBHOOK_SQL` | 0.32.0 | `redacted` | `full` sends the statement with its literals; anything else replaces them with `?`. |
 
 ---
 
