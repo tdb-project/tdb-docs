@@ -14,7 +14,7 @@ Authorization: Bearer <value-of-TDB_API_KEYS>
 `dev-insecure-key-change-me`, and those values are never accepted as credentials. With
 `TDB_API_KEYS` unset, TDB starts only if another login exists: an active DB-managed key, the
 admin login (`TDB_JWT_SECRET`, `TDB_ADMIN_USER`, `TDB_ADMIN_PASSWORD`), or
-[single sign-on](sso.md). Static keys are always admin, so generate them:
+[single sign-on](sso.md). Static keys are always admin (with [tenants](../security/tenants.md) on, the operator, which reads no tenant), so generate them:
 
 ```bash
 python3 -c "import secrets; print(secrets.token_hex(32))"

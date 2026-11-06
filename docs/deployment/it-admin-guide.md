@@ -427,6 +427,31 @@ query that reads those columns wait for one of the source's `approvers`. Before 
 
 Full reference: [Query approvals](../security/approvals.md).
 
+### 5.2.2 Tenants (optional, Enterprise)
+
+From 0.33.0, with an Enterprise licence. One deployment serves several teams or customers,
+each in a directory of its own under `TDB_TENANTS_DIR`:
+
+```bash
+-v /srv/tdb/tenants:/tenants -e TDB_TENANTS_DIR=/tenants
+docker exec tdb python -m tdb.cli tenants init acme   # prints acme's admin key, once
+docker restart tdb
+```
+
+Before turning it on:
+
+- **Mint a database key for `default`** (the deployment as it was). With tenants on, static
+  `TDB_API_KEYS` keys become the **operator**: they manage tenants and read no tenant's data.
+- Keep `default`'s data directory (`TDB_ALLOWED_DATA_DIR`) **outside** `TDB_TENANTS_DIR`, or
+  TDB will not start.
+- With single sign-on, add `tenant:` to every group in `TDB_SSO_FILE`.
+
+Back up `TDB_TENANTS_DIR` whole: each tenant's registry and audit chain is in it, and the
+deployment's own chain is in `.deployment/`. Give each tenant a database user that reads only
+its data; TDB keeps tenants from naming each other's sources, not from sharing a password.
+
+Full reference: [Tenants](../security/tenants.md).
+
 ### 5.3 Logging & audit
 
 - The audit log is **append-only NDJSON** at `TDB_LOG_FILE`, **hash-chained** (each entry
@@ -519,6 +544,7 @@ The connector defaults to `Encrypt=yes`. For self-signed SQL Server certs set
 | Query approval requests (0.32.0 and later) | same SQLite DB (`approvals` table) | The statement is **encrypted** with the credential key and deleted when the request is denied, expires or is voided; the rest (who, which source, which columns, decision) is kept as a record |
 | Audit log (query text, source id, row count, key hint, timestamp) | `TDB_LOG_FILE` NDJSON | plaintext, hash-chained |
 | License token | `/app/license.jwt` (or `TDB_LICENSE` env) | signed JWT; baked tokens are recoverable via `docker history` |
+| Tenants (0.33.0 and later, Enterprise) | `TDB_TENANTS_DIR/<tenant>/`: its own `registry.db` (sources, keys, approvals), `audit.jsonl`, `data/`, optional `policies.yml` and `views/`; the deployment's chain in `.deployment/audit.jsonl`. `default` stays at the paths above, and people who sign in stay in `TDB_REGISTRY_DB` | As the rows above, per tenant; one encryption key for the deployment |
 
 ### 6.2 Where source credentials live
 
@@ -594,7 +620,9 @@ TDB authenticates **callers** via static API keys, JWT (HMAC, `TDB_JWT_SECRET`),
 **OAuth 2.1 + PKCE** (for Claude/ChatGPT/Cursor MCP), plus a single
 `TDB_ADMIN_USER`/`TDB_ADMIN_PASSWORD` for the consent/login flow. Authorization is
 **RBAC** (`read` / `readwrite` / `admin`) per API key, with optional MCP tool-level
-scoping. From 0.18.0, every audit entry written for an MCP request also records which AI
+scoping. With [tenants](../security/tenants.md) on (0.33.0, Enterprise), the static keys and
+the admin login are the operator, which manages tenants and reads none, and a request carrying
+two `Authorization` headers is refused (400, with tenants off too). From 0.18.0, every audit entry written for an MCP request also records which AI
 client made it and at what protocol version (`mcp_client`, `mcp_protocol`). Clients
 report these themselves, so treat them as a label, not proof of identity.
 

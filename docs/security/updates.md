@@ -90,6 +90,20 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-06 — One reading of the Authorization header
+
+**Enterprise 0.33.0. A hardening change, not a vulnerability report: no data was exposed.**
+
+Two parts of TDB read the `Authorization` header in different ways. Authentication took the
+first header and the bearer scheme in any case. The audit log's identity took the last header,
+and MCP and the policy caller lookup read only `Bearer `. So a request with two headers could be
+authenticated as one credential and recorded as another, and a lowercase `bearer` was refused
+on MCP. From 0.33.0 every reader uses authentication's reading, and **a request with two
+`Authorization` headers is refused with 400**. The same review closed two holes in the
+unreleased tenant code before 0.33.0 shipped.
+
+**Action:** none, unless a client sends the header twice; it now gets 400.
+
 ### 2026-11-05 — SQL injection through filter_source
 
 **Enterprise 0.30.0 and earlier; fixed in 0.31.0. Community is not affected:** it has no

@@ -45,6 +45,7 @@ same way.
 |---|---|---|---|
 | 1 | **Origin check** | A request carrying a foreign browser `Origin` is refused (403, `invalid_origin`) | [MCP](api/mcp.md#browser-origins) |
 | 2 | **Licence** (enterprise) | An expired or invalid licence answers 403 `license_expired` | [IT guide](deployment/it-admin-guide.md) |
+| 2a | **Tenant** (Enterprise, opt-in) | The credential alone picks the tenant; every later step reads only that tenant's sources, keys, rules and audit log. Two `Authorization` headers are refused (400), with tenants off too | [Tenants](security/tenants.md) |
 | 3 | **Authentication** | API key, JWT or OAuth 2.1 bearer token; only `initialize`, `server/discover` and `ping` run without one | [Authentication](auth/overview.md) |
 | 4 | **Rate limit, role, tool scope** (enterprise) | Per-key rate limit; `read` / `readwrite` / `admin`; a key's `allowed_tools` limit what it may call and what `tools/list` shows | [RBAC](security/rbac.md) |
 | 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored | [MCP](api/mcp.md) |

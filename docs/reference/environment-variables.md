@@ -9,7 +9,7 @@ file in the project directory, or pass them directly to the process.
 
 | Variable | Since | Default | Description |
 |---|---|---|---|
-| `TDB_API_KEYS` | All releases | *(required)* | Comma-separated list of static API keys, each with admin rights. Evaluated by constant-time comparison on every request. **From 0.25.0 there is no default:** TDB will not start with an example value, or when unset unless an active DB-managed key, the admin login or single sign-on exists. |
+| `TDB_API_KEYS` | All releases | *(required)* | Comma-separated list of static API keys, each with admin rights (with `TDB_TENANTS_DIR` set, the operator's: they manage tenants and read none). Evaluated by constant-time comparison on every request. **From 0.25.0 there is no default:** TDB will not start with an example value, or when unset unless an active DB-managed key, the admin login or single sign-on exists. |
 | `TDB_LOG_LEVEL` | All releases | `INFO` | Log verbosity. One of: `DEBUG`, `INFO`, `WARNING`, `ERROR`. |
 | `TDB_LOG_FILE` | All releases | `tdb_audit.jsonl` | Path to the NDJSON audit log. Relative paths are resolved from the working directory. |
 | `TDB_REGISTRY_DB` | All releases | `data/tdb_registry.db` | Path to the SQLite registry database. Created automatically on first startup. |
