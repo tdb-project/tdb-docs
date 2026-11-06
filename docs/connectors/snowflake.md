@@ -287,8 +287,8 @@ TDB does not need `INSERT`, `UPDATE`, `DELETE`, `CREATE`, or any other privilege
 
 TDB opens a **fresh connection per query** and closes it immediately after. There is
 no connection pool in the current release. Snowflake connections carry a small
-overhead due to the authentication round-trip. For high-frequency query workloads,
-this will be addressed in a future release with connection reuse.
+overhead due to the authentication round-trip. Connection reuse for Snowflake is not
+planned; if it matters for your workload, [tell us](mailto:hello@tdb.jiracorp.co.in).
 
 ---
 

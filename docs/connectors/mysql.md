@@ -296,6 +296,6 @@ exact TDB server IP in the host portion of the grant.
 
 ### SSL connections
 
-SSL support is not yet configurable in the `connection` object. Connections use
-the PyMySQL default (SSL not required). SSL configuration will be added to the
-connection schema in a future release.
+SSL is not configurable in the `connection` object. Connections use
+the PyMySQL default (SSL not required). If you need SSL options,
+[tell us](mailto:hello@tdb.jiracorp.co.in).

@@ -20,10 +20,12 @@ Generate a secure secret:
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-!!! warning "Single admin user"
-    The current release supports one admin identity (`TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD`).
-    Multi-user support with individual logins is planned for a future release. For
-    role-scoped access today, use [DB-managed API keys with RBAC](../security/rbac.md).
+!!! warning "One admin identity for this login"
+    The password login on this page has one admin identity (`TDB_ADMIN_USER` /
+    `TDB_ADMIN_PASSWORD`). For individual logins, use [single sign-on](sso.md) (Mid-Market,
+    from 0.24.0), where each person signs in through your identity provider and their group
+    decides their role. For role-scoped machine access, use
+    [DB-managed API keys with RBAC](../security/rbac.md).
 
 ---
 
@@ -114,9 +116,9 @@ The JWT payload contains:
 }
 ```
 
-JWT tokens currently carry the `"admin"` role. For fine-grained, role-scoped access,
-use [DB-managed API keys with RBAC](../security/rbac.md) (read / readwrite / admin);
-per-user JWT roles are planned for a future release.
+Tokens from this password login carry the `"admin"` role. For per-person roles, use
+[single sign-on](sso.md), whose tokens take the role of the person's group; for role-scoped
+keys, use [DB-managed API keys with RBAC](../security/rbac.md) (read / readwrite / admin).
 
 ### Attributes for column and row policies
 
@@ -134,8 +136,9 @@ Non-string values are ignored. A policy rule is matched by the token's `role`.
 
 ## Token expiry and refresh
 
-TDB does not yet implement token refresh. When a token expires, re-authenticate via
-`POST /v1/auth/token`. The `TDB_JWT_EXPIRE_MINUTES` default is 60 minutes — increase
+The password login has no refresh token. When a token expires, re-authenticate via
+`POST /v1/auth/token`. [Single sign-on](sso.md) sign-ins get refresh tokens when your identity
+provider issues them, and each refresh checks with it. The `TDB_JWT_EXPIRE_MINUTES` default is 60 minutes — increase
 it for longer-lived sessions or automate re-login in your integration.
 
 ---
