@@ -177,6 +177,7 @@ The commercial editions ship the same product except for the Mid-Market features
 | Snowflake | ❌ | ✅ | ✅ | ✅ |
 | Parquet files | ❌ | ✅ | ✅ | ✅ |
 | DuckDB databases | ❌ | ✅ | ✅ | ✅ |
+| BigQuery, JSON and NDJSON files, MongoDB | ❌ | On request | On request | On request |
 | Simultaneous sources | 1 | Unlimited | Unlimited | Unlimited |
 | **Auth** | | | | |
 | Static API key | ✅ | ✅ | ✅ | ✅ |
@@ -213,7 +214,7 @@ The commercial editions ship the same product except for the Mid-Market features
 | Splunk HEC export | ❌ | ✅ | ✅ | ✅ |
 | S3 audit export | ❌ | ✅ | ✅ | ✅ |
 | Incremental export cursor per destination | ❌ | ✅ | ✅ | ✅ |
-| Additional SIEM exporters | ❌ | On request | On request | On request |
+| Datadog and OpenTelemetry export | ❌ | On request | On request | On request |
 | **Observability** | | | | |
 | Prometheus metrics | ❌ | ✅ | ✅ | ✅ |
 | Schema caching | ❌ | ✅ | ✅ | ✅ |
@@ -224,6 +225,18 @@ The commercial editions ship the same product except for the Mid-Market features
 | Onboarding call | ❌ | ❌ | ✅ | ✅ |
 
 † Every edition caps a response at 1,000 rows by default — a deliberate safety default that keeps an AI agent from pulling an entire table. Community's cap is fixed; the commercial editions can raise or lower it with `TDB_MAX_ROWS`, and it applies to every path (REST, MCP tools, views). The commercial editions can also read further, from 0.31.0: page with a cursor, or stream a whole result as NDJSON or CSV, up to `TDB_MAX_RESULT_ROWS`.
+
+## Built on request
+
+These are designed for but not built. Each one is built when a customer needs it, and we
+publish no dates for them:
+
+- **Data sources:** BigQuery; JSON and NDJSON files; MongoDB.
+- **Audit export:** Datadog and OpenTelemetry, beside the Splunk and S3 export that ship today.
+- **Sign-in:** SAML, beside the OIDC single sign-on that ships today.
+
+If one of these decides your evaluation, [tell us](mailto:hello@tdb.jiracorp.co.in). A customer
+who needs one is what starts it.
 
 ---
 
@@ -251,4 +264,4 @@ Paid editions are a flat self-hosted license (no per-query or per-row metering).
 No. The enterprise tier is a closed-source commercial product. The community edition is fully open under AGPLv3.
 
 **I need BigQuery / Datadog / SAML now. When do those ship?**
-They are on the roadmap and not yet built. We deliberately don't publish dates we haven't committed engineering to — a date we miss is worse than no date, particularly in a product you're evaluating for compliance. If one of these is blocking your evaluation, [email us](mailto:hello@tdb.jiracorp.co.in): that's the signal that moves it up, and design partners get built first.
+They are [built on request](#built-on-request) and not yet built. We deliberately don't publish dates we haven't committed engineering to — a date we miss is worse than no date, particularly in a product you're evaluating for compliance. If one of these is blocking your evaluation, [email us](mailto:hello@tdb.jiracorp.co.in): that's the signal that moves it up, and design partners get built first.
