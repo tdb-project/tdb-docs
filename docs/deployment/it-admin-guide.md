@@ -446,8 +446,8 @@ Before turning it on:
   TDB will not start.
 - With single sign-on, add `tenant:` to every group in `TDB_SSO_FILE`.
 
-Back up `TDB_TENANTS_DIR` whole: each tenant's registry and audit chain is in it, and the
-deployment's own chain is in `.deployment/`. Give each tenant a database user that reads only
+Back up `TDB_TENANTS_DIR` whole: each tenant's registry (with its `-wal` and `-shm` files, from
+0.35.1) and audit chain is in it, and the deployment's own chain is in `.deployment/`. Give each tenant a database user that reads only
 its data; TDB keeps tenants from naming each other's sources, not from sharing a password.
 
 Full reference: [Tenants](../security/tenants.md).
@@ -777,7 +777,11 @@ Run these after deploying.
 ## 10. Day-2 operations
 
 - **Backups:** snapshot the `/app/data` volume (registry DB + API keys) and archive the
-  audit log. These two volumes are the entire stateful surface.
+  audit log. These two volumes are the entire stateful surface. **From 0.35.1 the registry
+  runs in SQLite's WAL mode:** a registry file `X.db` has `X.db-wal` and `X.db-shm` beside it,
+  and recent changes may be only in `X.db-wal`. Snapshot the whole directory at once, or stop
+  TDB first; copying `X.db` alone can lose them. Keep the volume on a local disk or block
+  device: WAL does not work on a network filesystem such as NFS.
 - **Upgrades:** pull the new image tag, stop the old container, start the new one against
   the **same** `/app/data` volume. Migrations are idempotent and run on startup.
 - **Key rotation:** add/rotate API keys via the `/v1/apikeys` admin API (raw key shown
