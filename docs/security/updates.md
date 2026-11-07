@@ -90,6 +90,29 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-07 — A SQL Server driver could name a library to load
+
+**Enterprise 0.34.0 and earlier; fixed in 0.35.0. Community is not affected:** it has no
+SQL Server connector.
+
+A SQL Server source's `driver` went into the ODBC connection string as written, and the ODBC
+driver manager loads a library from a path given there. So a key allowed to register sources
+(`readwrite` or `admin`) could make TDB load any shared library on its filesystem, which is
+code execution where that caller can also put a file on the host, such as a tenant whose data
+directory it can write. Reproduced on the 0.34.0 image. The other connection values were not
+escaped either, so a `;` in a password broke the login and could add connection attributes.
+
+From 0.35.0 `driver` must be an installed driver's name, such as `ODBC Driver 18 for SQL
+Server`: anything else is refused at registration (400, audited `invalid_connection`) and a
+stored source holding one fails before anything is loaded. Every other value is escaped.
+
+Found in the same review, and fixed in 0.35.0: a PostgreSQL query opening with a comment read
+its whole result into TDB's memory before the row cap applied.
+
+**Action:** upgrade. Then list your sources and check each SQL Server `driver` is a driver
+name; re-register any that is not. To look back, search the audit log for `register` entries
+by keys you do not fully trust.
+
 ### 2026-11-06 — One reading of the Authorization header
 
 **Enterprise 0.33.0. A hardening change, not a vulnerability report: no data was exposed.**
