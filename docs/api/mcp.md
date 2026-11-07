@@ -206,7 +206,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.33.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.34.0"}
   }
 }
 ```
@@ -259,7 +259,7 @@ community and at `TDB_MAX_ROWS` in enterprise; `truncated` is `true` when more m
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `sql` | string | Yes | — | SQL SELECT statement |
-| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `source_name` | string | No | First registered source | The source's name in any case, or its UUID (exact name before 0.18.0 / 0.34.0) |
 | `lean` | boolean | No | off | Rows as arrays — see [Lean Mode](#saving-tokens-lean-mode) (from 0.13.0 / 0.21.0) |
 | `max_cell_chars` | integer | No | off | Cut longer text cells, marked — see [Lean Mode](#saving-tokens-lean-mode) |
 | `limit` | integer | No | `TDB_MAX_ROWS`; 100 when paging | Enterprise, from 0.31.0. At most `TDB_MAX_ROWS` |
@@ -383,7 +383,7 @@ before writing a query. No SQL required.
 
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `source_name` | string | No | First registered source | The source's name in any case, or its UUID (exact name before 0.18.0 / 0.34.0) |
 | `table` | string | No | — | Table to inspect. Ignored for single-table/CSV sources. For **database-wide** sources: omit to list every table, or name one to see just its columns. |
 
 **Single-table or CSV source:**
@@ -501,7 +501,7 @@ Returns the first N rows of a source's table. No SQL required.
 
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `source_name` | string | No | First registered source | The source's name in any case, or its UUID (exact name before 0.18.0 / 0.34.0) |
 | `table` | string | No | — | Table to preview. **Required for database-wide sources** (registered without a fixed table) — ignored for single-table/CSV sources. |
 | `limit` | integer | No | 10 | Rows to return (1–100; at most `TDB_MAX_ROWS`, and a larger value is a tool error (from 0.16.0)) |
 
@@ -550,7 +550,7 @@ model cannot inject SQL through this tool.
 | `column` | string | Yes | — | Column to filter on (must exist in the schema) |
 | `value` | string | Yes | — | Comparison value (interpreted by column type) |
 | `operator` | string | No | `=` | One of `=`, `!=`, `>`, `<`, `>=`, `<=`, `LIKE` |
-| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `source_name` | string | No | First registered source | The source's name in any case, or its UUID (exact name before 0.18.0 / 0.34.0) |
 | `table` | string | No | — | Table to filter. **Required for database-wide sources** — ignored for single-table/CSV sources. `column` is validated against this table's schema. |
 | `limit` | integer | No | 100 | Max rows to return. At most `TDB_MAX_ROWS`, and a larger value is a tool error (from 0.16.0) |
 
@@ -585,7 +585,7 @@ listed below.
 | `function` | string | Yes | — | One of `COUNT`, `SUM`, `AVG`, `MIN`, `MAX` |
 | `column` | string | Yes | — | Column to aggregate; `*` is allowed for `COUNT(*)` |
 | `group_by` | string | No | — | Column to group results by |
-| `source_name` | string | No | First registered source | Registered source name (exact match) |
+| `source_name` | string | No | First registered source | The source's name in any case, or its UUID (exact name before 0.18.0 / 0.34.0) |
 | `table` | string | No | — | Table to aggregate. **Required for database-wide sources** — ignored for single-table/CSV sources. `column`/`group_by` are validated against this table's schema. |
 | `limit` | integer | No | 100 | Max groups to return. At most `TDB_MAX_ROWS`, and a larger value is a tool error (from 0.16.0) |
 

@@ -122,7 +122,7 @@ Two fields describe the refusal:
 
 | Field | Description |
 |---|---|
-| `action` | What was attempted: `auth`, `authorize`, `query`, `register`, `ratelimit`, `mcp_auth`, `mcp_query`, `mcp_call`, and — enterprise, from 0.12.0 — `schema`, `view_list` or `view_run` |
+| `action` | What was attempted: `auth`, `authorize`, `query`, `register`, `ratelimit`, `mcp_auth`, `mcp_query`, `mcp_call`, `schema` (enterprise from 0.12.0, community from 0.18.0), and — enterprise — `view_list` or `view_run` |
 | `reason` | Machine-readable cause — see the table below |
 
 | `reason` | Raised when |
