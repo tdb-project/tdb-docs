@@ -62,7 +62,7 @@ When registering a SQL Server source, the `connection` object requires:
 | `password` | string | Yes | — | Login password |
 | `table` | string | No | — | Omit to register the whole database; set to scope to one table |
 | `schema` | string | No | `"dbo"` | Schema name (scopes both modes) |
-| `driver` | string | No | `"ODBC Driver 18 for SQL Server"` | ODBC driver name as listed in `odbcinst.ini` |
+| `driver` | string | No | `"ODBC Driver 18 for SQL Server"` | ODBC driver **name** as listed in `odbcinst.ini`. From 0.35.0 a path, or text with `;`, `=`, `{` or `}`, is refused (400 `invalid_connection`): ODBC loads a library from a path given here |
 | `trust_server_certificate` | boolean | No | `false` | Set `true` to accept self-signed certificates (dev / Docker only) |
 
 ### Connection string format
@@ -70,8 +70,11 @@ When registering a SQL Server source, the `connection` object requires:
 TDB constructs the pyodbc connection string internally as:
 
 ```
-DRIVER={ODBC Driver 18 for SQL Server};SERVER=host,port;DATABASE=...;UID=...;PWD=...;Encrypt=yes;TrustServerCertificate=yes/no;
+DRIVER={ODBC Driver 18 for SQL Server};SERVER={host,port};DATABASE={...};UID={...};PWD={...};Encrypt=yes;TrustServerCertificate=yes/no;
 ```
+
+From 0.35.0 every value is braced, with `}` doubled, so a `;` or `=` in a password is part of the
+password and cannot add a connection attribute.
 
 Encryption is always enabled (`Encrypt=yes`). The `trust_server_certificate` field
 controls whether the certificate chain is validated.
@@ -395,7 +398,7 @@ odbcinst -q -d
 /usr/local/etc/odbcinst.ini
 ```
 
-Set the `driver` field in the connection config to exactly match the name shown there.
+Set the `driver` field in the connection config to exactly match the name shown there. A path to the driver's library is refused; use the name.
 
 ### `permission denied` on query
 

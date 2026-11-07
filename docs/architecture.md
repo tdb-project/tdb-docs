@@ -20,6 +20,8 @@ One container running one process. It serves:
 
 State is two files on a mounted volume: the **registry** (SQLite: sources, and in
 enterprise API keys, annotations and export cursors) and the **audit log** (NDJSON).
+From enterprise 0.35.1 the registry runs in SQLite's WAL mode, so back it up with its
+`-wal` and `-shm` files (see [day-2 operations](deployment/it-admin-guide.md#10-day-2-operations)).
 There is no database server to run beside it. Your data is never copied: TDB sends
 each query to the source and streams back at most the row ceiling.
 
@@ -44,15 +46,15 @@ same way.
 | # | Step | What it guarantees | Docs |
 |---|---|---|---|
 | 1 | **Origin check** | A request carrying a foreign browser `Origin` is refused (403, `invalid_origin`) | [MCP](api/mcp.md#browser-origins) |
-| 2 | **Licence** (enterprise) | An expired or invalid licence answers 403 `license_expired` | [IT guide](deployment/it-admin-guide.md) |
+| 2 | **Licence** (enterprise) | An expired or invalid licence answers 403 `license_expired`, before any registry is read (from 0.35.0) | [IT guide](deployment/it-admin-guide.md) |
 | 2a | **Tenant** (Enterprise, opt-in) | The credential alone picks the tenant; every later step reads only that tenant's sources, keys, rules and audit log. Two `Authorization` headers are refused (400), with tenants off too | [Tenants](security/tenants.md) |
 | 3 | **Authentication** | API key, JWT or OAuth 2.1 bearer token; only `initialize`, `server/discover` and `ping` run without one | [Authentication](auth/overview.md) |
 | 4 | **Rate limit, role, tool scope** (enterprise) | Per-key rate limit; `read` / `readwrite` / `admin`; a key's `allowed_tools` limit what it may call and what `tools/list` shows | [RBAC](security/rbac.md) |
-| 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored | [MCP](api/mcp.md) |
+| 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored. SQL the tools build quotes column names, and takes a number only as a plain numeric literal (from 0.35.0) | [MCP](api/mcp.md) |
 | 6 | **Input filter** (enterprise MCP) | SQL carrying prompt-injection patterns is refused | [Prompt-injection filtering](api/mcp.md#prompt-injection-filtering) |
 | 7 | **Read-only validation** | One `SELECT` (or `WITH … SELECT`). Literals and comments are masked under **every engine dialect**, and all must pass; on CSV, Parquet and DuckDB, DuckDB's own parser must also see exactly one `SELECT` | [Query](api/query.md) |
 | 8 | **Column and row policy** (Mid-Market, opt-in) | With a policy file, a source it does not name is refused unless the file says otherwise. For a key with a rule, every table becomes a subquery of its allowed columns, masks and rows, so aggregates and joins see policy data. SQL TDB cannot fully account for is refused. A rule's `approval` block holds a query that reads named columns until one of the source's approvers decides (from 0.32.0); the requester then runs it | [Policies](security/policies.md), [Approvals](security/approvals.md) |
-| 9 | **Read-only session at the source** | Read-only is also enforced by the database session, not only by the validator. Privileged database roles are refused unless you opt in | [PostgreSQL](connectors/postgresql.md#use-a-least-privileged-role) |
+| 9 | **Read-only session at the source** | Read-only is also enforced by the database session, not only by the validator. Privileged database roles are refused unless you opt in. Connection values cannot add connection attributes, and a SQL Server `driver` must be a driver's name, never a library path (from 0.35.0) | [PostgreSQL](connectors/postgresql.md#use-a-least-privileged-role) |
 | 10 | **Bounded execution** | The row ceiling bounds the fetch (memory), not only the reply; `truncated: true` says more rows existed; on database sources `TDB_QUERY_TIMEOUT` cancels the query at the source (enterprise) | [Query](api/query.md) |
 | 11 | **Locked file engine** (CSV, Parquet, DuckDB) | Each source's DuckDB engine can read only its own file: no extensions, no configuration changes | [Security updates](security/updates.md) |
 | 12 | **Plain JSON values** | Same values on REST and MCP: exact decimals, binary as base64, ISO 8601 timestamps | [Query](api/query.md) |

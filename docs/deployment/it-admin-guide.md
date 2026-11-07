@@ -496,7 +496,9 @@ Full reference: [Tenants](../security/tenants.md).
 ### 5.4 SQL Server driver
 
 The image ships `unixodbc` but **not** the Microsoft ODBC Driver 18. If you register a
-SQL Server source you must provide the driver. The cleanest path is to install it in a
+SQL Server source you must provide the driver. A source names it by its `odbcinst.ini` name
+(the default is `ODBC Driver 18 for SQL Server`); from 0.35.0 a path to the library is
+refused, because ODBC would load whatever library a path names. The cleanest path is to install it in a
 thin layer on top of our image:
 
 ```dockerfile

@@ -35,7 +35,8 @@ Requires authentication (`Authorization: Bearer <token>`).
     UUID. Names are easier to read, write, and remember for daily operations.
     UUIDs remain useful in automation scripts and audit-trail lookups.
 
-**Response (200):**
+**Response (200).** `source_id` is the source's UUID whichever reference you sent (from
+community 0.18.0 / enterprise 0.34.0; earlier releases echoed your input).
 
 ```json
 {
