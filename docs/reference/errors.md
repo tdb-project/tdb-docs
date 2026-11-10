@@ -42,7 +42,7 @@ for the entry format.
 | 429 | `rate_limit_exceeded` | The key's per-minute budget is used up (DB-managed keys) | Retry after the `X-RateLimit-Reset` time |
 | 429 | `too_many_streams` | `TDB_MAX_STREAMS` streams are open in this process (enterprise, from 0.31.0) | Retry when one has finished |
 | 500 | `internal_error` | TDB or the source failed: unreachable source, out of memory. Not the caller's SQL | Check the source and the application log |
-| 503 | `source_unavailable` | The file behind a CSV, Parquet or DuckDB source is missing or unreadable | Restore the file or fix its permissions |
+| 503 | `source_unavailable` | The file behind a CSV, Parquet or DuckDB source is missing or unreadable; or (enterprise) the schema call could not connect to a database source | Restore the file or fix its permissions; for a database, the `source_unreachable` log line (from 0.36.0) says why |
 | 503 | `source_busy` | Another process has the DuckDB file open for writing (enterprise, from 0.23.0) | Retry once the writer has closed the file. See [DuckDB](../connectors/duckdb.md#the-file-stays-yours) |
 | 503 | — | `TDB_JWT_SECRET` is not set and a JWT was presented (enterprise) | Set it, or use API keys |
 | 504 | `query_timeout` | The query ran longer than `TDB_QUERY_TIMEOUT` and was cancelled at the source (enterprise database sources) | Narrow the query, add an index, or raise the timeout |
