@@ -90,6 +90,27 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-10 — MCP tools named tables and columns outside a key's policy
+
+**Enterprise 0.22.0 to 0.36.0, with a [policy file](policies.md); fixed in 0.36.1.
+Community is not affected:** it has neither policies nor these tools.
+
+When `preview_source`, `filter_source` or `aggregate_source` was given a table or column
+it could not find, its error listed the whole database: every table, including those
+outside the caller's rule, and every column of the table, including those the rule
+withholds. A key under a policy could learn those **names** (never values) by asking for
+a name that does not exist; `schema_source` and the REST schema already hid them. Found by
+running policies against a real Snowflake account, where the tools also refused a table
+or column name not written in Snowflake's upper case.
+
+From 0.36.1 those tools check names against what the caller's rule shows, in any case,
+and an error lists nothing else. A table outside the rule is refused
+(`policy_table_not_permitted`) whether or not it exists, as SQL is.
+
+**Action:** upgrade if a policy file hides tables or columns whose names should not be
+known to the keys it restricts. To look back, search the audit log for `invalid_arguments`
+entries from those keys on `mcp_query`.
+
 ### 2026-11-07 — A SQL Server driver could name a library to load
 
 **Enterprise 0.34.0 and earlier; fixed in 0.35.0. Community is not affected:** it has no
