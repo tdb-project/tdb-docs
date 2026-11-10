@@ -13,7 +13,8 @@ configured schema) or **single-table** (scoped to one specific table).
     That run found three faults, fixed in **0.35.2**: on earlier releases a query timeout (sometimes),
     every `page_key` request, and the schema of a source whose role cannot use its
     database or warehouse return 500. Column and row policies, views and query approvals
-    have not yet been run against Snowflake.
+    have not yet been run against Snowflake. **0.36.0** returns `VARIANT`, `OBJECT` and
+    `ARRAY` values as JSON and logs why a connection check failed.
 
 ---
 
@@ -229,9 +230,10 @@ are the raw Snowflake `data_type` strings from `information_schema`. Examples:
 | `OBJECT` | `OBJECT` |
 
 Row values are serialised to JSON by the API layer. Timestamps are returned as
-strings. `VARIANT`, `ARRAY`, and `OBJECT` values are returned as a **string holding
-their JSON text**, formatted by Snowflake with line breaks (`"{\n  \"k\": [1, 2]\n}"`):
-parse the string to use the value. `NUMBER` with a scale is a string with its exact
+strings. From 0.36.0, `VARIANT`, `ARRAY`, and `OBJECT` values are returned as **JSON
+values** (`{"k": [1, 2]}`), as PostgreSQL `jsonb` is; a plain string stored in a `VARIANT`
+is that string. Before 0.36.0 they came back as a string holding Snowflake's
+pretty-printed JSON text (`"{\n  \"k\": [1, 2]\n}"`). `NUMBER` with a scale is a string with its exact
 digits (`"1234.50"`), `BINARY` is base64, and a `FLOAT` NaN is `"NaN"`.
 
 ---
@@ -326,10 +328,16 @@ planned; if it matters for your workload, [tell us](mailto:hello@tdb.jiracorp.co
 
 TDB connects when you call `GET /v1/sources/<id>/schema`. If the account identifier
 or the credentials are wrong, or (from 0.35.2) the session has no database, schema or
-warehouse, you'll see HTTP 503:
+warehouse, you'll see HTTP 503 (from 0.36.0 the application log says why, in a
+`source_unreachable` line; before that it said nothing):
 
 ```json
 {"detail": "Source 'orders' (snowflake) is not accessible."}
+```
+
+```text
+WARNING:     source_unreachable source_type=snowflake reason=390100 (28000): None: Failed to connect to DB: xy12345.snowflakecomputing.com:443. Incorrect username or password was specified.
+WARNING:     source_unreachable source_type=snowflake reason=signed in, but the role cannot use the database, schema asked for (database='SALES_DB', schema='PUBLIC', warehouse='COMPUTE_WH')
 ```
 
 Check that:

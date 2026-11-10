@@ -277,6 +277,10 @@ you'll see HTTP 503:
 {"detail": "Source 'orders' (mysql) is not accessible."}
 ```
 
+From 0.36.0 the application log says why, in a `source_unreachable` line (WARNING) with
+the driver's error and the password masked, for example
+`source_unreachable source_type=mysql reason=…`.
+
 Check that:
 
 - The `host` and `port` are reachable from the TDB server
