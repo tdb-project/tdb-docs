@@ -532,6 +532,26 @@ The connector defaults to `Encrypt=yes`. For self-signed SQL Server certs set
 - To extend a trial or renew a commercial license, contact
   [hello@tdb.jiracorp.co.in](mailto:hello@tdb.jiracorp.co.in).
 
+### 5.6 Snowflake sources
+
+Tested against a real Snowflake account from 0.35.2 (queries, paging, streaming, the
+timeout, the MCP tools, policies, views and approvals); run **0.36.1 or later**. Three
+things differ from the other databases:
+
+- **The role is the only write boundary.** Snowflake has no read-only session, so beyond
+  TDB's own read-only check only the registered role stops a write. Give it `USAGE` on the
+  warehouse, database and schema and `SELECT` on the tables, nothing more
+  ([minimum permissions](../connectors/snowflake.md#minimum-required-database-permissions)).
+- **The service user must be `TYPE = LEGACY_SERVICE`.** A `PERSON` user with only a password
+  signs in and is then refused its role (error 390186).
+- **A role that cannot use the database or warehouse still signs in.** From 0.35.2
+  registration checks the session's current database, schema and warehouse, and refuses
+  the source as not accessible (503) instead of failing on every query later.
+
+For any database source, from 0.36.0 a 503 "not accessible" leaves a `source_unreachable`
+WARNING line in the application log with the driver's reason, password masked
+([Snowflake troubleshooting](../connectors/snowflake.md#troubleshooting)).
+
 ---
 
 ## 6. Security model — what an admin must know
@@ -786,9 +806,12 @@ Run these after deploying.
   device: WAL does not work on a network filesystem such as NFS.
 - **Upgrades:** pull the new image tag, stop the old container, start the new one against
   the **same** `/app/data` volume. Migrations are idempotent and run on startup.
-- **Key rotation:** add/rotate API keys via the `/v1/apikeys` admin API (raw key shown
-  once); rotate `TDB_JWT_SECRET` (invalidates outstanding JWTs) on a schedule.
+- **Key rotation:** add and rotate API keys with the `/v1/auth/keys` admin API
+  ([API keys](../auth/api-keys.md); the raw key is shown once); rotate `TDB_JWT_SECRET` (invalidates outstanding JWTs) on a schedule.
 - **License renewal:** see [§5.5](#55-license).
+- **A source answers 503 "not accessible":** from 0.36.0 the application log has a
+  `source_unreachable` line naming the source type and the driver's reason (wrong password,
+  host unreachable, a role that cannot use the database). Before 0.36.0 it said nothing.
 - **Monitoring:** scrape `/metrics`; alert on `/health` and on `audit/verify` returning
   `valid:false`. On **0.6.0 and later** three more signals are worth alerting on:
   `tdb_source_query_duration_seconds` p95 per `source_type` (a single slow source is

@@ -50,7 +50,7 @@ same way.
 | 2a | **Tenant** (Enterprise, opt-in) | The credential alone picks the tenant; every later step reads only that tenant's sources, keys, rules and audit log. Two `Authorization` headers are refused (400), with tenants off too | [Tenants](security/tenants.md) |
 | 3 | **Authentication** | API key, JWT or OAuth 2.1 bearer token; only `initialize`, `server/discover` and `ping` run without one | [Authentication](auth/overview.md) |
 | 4 | **Rate limit, role, tool scope** (enterprise) | Per-key rate limit; `read` / `readwrite` / `admin`; a key's `allowed_tools` limit what it may call and what `tools/list` shows | [RBAC](security/rbac.md) |
-| 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored. SQL the tools build quotes column names, and takes a number only as a plain numeric literal (from 0.35.0) | [MCP](api/mcp.md) |
+| 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored. SQL the tools build quotes column names, and takes a number only as a plain numeric literal (from 0.35.0). Table and column names are checked against what the caller's policy shows, in any case, and an error names nothing else (from 0.36.1) | [MCP](api/mcp.md) |
 | 6 | **Input filter** (enterprise MCP) | SQL carrying prompt-injection patterns is refused | [Prompt-injection filtering](api/mcp.md#prompt-injection-filtering) |
 | 7 | **Read-only validation** | One `SELECT` (or `WITH … SELECT`). Literals and comments are masked under **every engine dialect**, and all must pass; on CSV, Parquet and DuckDB, DuckDB's own parser must also see exactly one `SELECT` | [Query](api/query.md) |
 | 8 | **Column and row policy** (Mid-Market, opt-in) | With a policy file, a source it does not name is refused unless the file says otherwise. For a key with a rule, every table becomes a subquery of its allowed columns, masks and rows, so aggregates and joins see policy data. SQL TDB cannot fully account for is refused. A rule's `approval` block holds a query that reads named columns until one of the source's approvers decides (from 0.32.0); the requester then runs it | [Policies](security/policies.md), [Approvals](security/approvals.md) |
@@ -87,6 +87,8 @@ Read this part before your security review does.
 - **Over-broad database credentials.** TDB reads with the credentials you register. A
   read-only session still sees every table that role can see. Use a least-privileged
   role per source; TDB refuses the roles that can reach the server's files or programs.
+  Snowflake has no read-only session, so there the role is also the only thing that stops
+  a write that got past TDB's checks: grant it `SELECT` and nothing more.
 - **Everything a key may query, it may read in full, unless a policy says otherwise.**
   [Column and row policies](security/policies.md) (Mid-Market, from 0.22.0) withhold,
   mask and filter per key. Without them, restrict what a source exposes with the
@@ -114,7 +116,9 @@ Read this part before your security review does.
 
 - `GET /v1/audit/verify` walks the hash chain (enterprise, admin role).
 - Every behaviour above is covered by tests that run in CI against real PostgreSQL,
-  MySQL and SQL Server; the community edition is open source:
+  MySQL and SQL Server. Snowflake is not in CI: it has been run by hand against a real
+  account (from 0.35.2: queries, the MCP tools, policies, views and approvals). The
+  community edition is open source:
   [tdb-project/tdb-community](https://github.com/tdb-project/tdb-community).
 - Vulnerabilities are published as advisories, with what was exposed and what to do:
   [Security & updates](security/updates.md).

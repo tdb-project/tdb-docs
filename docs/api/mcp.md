@@ -556,7 +556,7 @@ model cannot inject SQL through this tool.
 
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `column` | string | Yes | — | Column to filter on (must exist in the schema) |
+| `column` | string | Yes | — | Column to filter on (must exist in the schema; any case from 0.36.1) |
 | `value` | string | Yes | — | Comparison value (interpreted by column type) |
 | `operator` | string | No | `=` | One of `=`, `!=`, `>`, `<`, `>=`, `<=`, `LIKE` |
 | `source_name` | string | No | First registered source | The source's name in any case, or its UUID (exact name before 0.18.0 / 0.34.0) |
@@ -592,7 +592,7 @@ listed below.
 | Argument | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `function` | string | Yes | — | One of `COUNT`, `SUM`, `AVG`, `MIN`, `MAX` |
-| `column` | string | Yes | — | Column to aggregate; `*` is allowed for `COUNT(*)` |
+| `column` | string | Yes | — | Column to aggregate; `*` is allowed for `COUNT(*)`. Any case from 0.36.1 |
 | `group_by` | string | No | — | Column to group results by |
 | `source_name` | string | No | First registered source | The source's name in any case, or its UUID (exact name before 0.18.0 / 0.34.0) |
 | `table` | string | No | — | Table to aggregate. **Required for database-wide sources** — ignored for single-table/CSV sources. `column`/`group_by` are validated against this table's schema. |

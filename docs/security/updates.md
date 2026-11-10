@@ -139,7 +139,8 @@ A policy file's rewrite still applied to the injected SQL. On MySQL it ran insid
 read-only session, so it could not write. **Snowflake has no such session, and this SQL
 did not pass through TDB's read-only check, so there only the role you registered limits
 it:** check that it holds nothing beyond `SELECT`. Reproduced on a real MySQL. Snowflake
-comes from reading its rules, as TDB has not run against a real Snowflake. PostgreSQL,
+came from reading its rules; on 2026-11-10 the fixed `filter_source` was run against a
+real Snowflake account with both quoting attacks, and each returned no rows. PostgreSQL,
 SQL Server, CSV, Parquet and DuckDB treat a backslash as an ordinary character by default
 and were not exposed this way.
 
