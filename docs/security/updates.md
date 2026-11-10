@@ -235,8 +235,8 @@ GHSA-69hj-f68j-2879, GHSA-j8f7-rjxc-mr56, GHSA-fq56-3cx3-fjxp and earlier ones).
 caches in a private directory, in a container that runs as one user.
 
 **Action:** upgrade, so your image scans stop reporting them. If you use Snowflake, try it
-on the new version first: the connector's own limit on `filelock` is overridden, and this
-pairing has not yet run against a real Snowflake account.
+on the new version first: the connector's own limit on `filelock` is overridden. (That
+pairing has since run against a real Snowflake account, on 0.35.0, on 2026-11-10.)
 
 ### 2026-10-29 — A rotated API key could call every MCP tool
 

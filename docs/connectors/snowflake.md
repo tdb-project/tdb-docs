@@ -4,6 +4,17 @@ The Snowflake connector provides read-only SQL access to a Snowflake database.
 A source can be registered in two modes: **database-wide** (all tables in the
 configured schema) or **single-table** (scoped to one specific table).
 
+!!! info "Tested against a real Snowflake account (2026-11-10)"
+
+    A Snowflake trial account (AWS, ap-southeast-1) was used to test registration,
+    the schema, queries and their value types, refusing writes, tables the role cannot
+    see, the row cap, paging, streaming, the query timeout, the MCP tools (`filter_source`
+    with quoting attacks included) and the audit log.
+    That run found three faults, fixed in **0.35.2**: on earlier releases a query timeout (sometimes),
+    every `page_key` request, and the schema of a source whose role cannot use its
+    database or warehouse return 500. Column and row policies, views and query approvals
+    have not yet been run against Snowflake.
+
 ---
 
 ## Connection configuration
@@ -218,8 +229,10 @@ are the raw Snowflake `data_type` strings from `information_schema`. Examples:
 | `OBJECT` | `OBJECT` |
 
 Row values are serialised to JSON by the API layer. Timestamps are returned as
-strings. `VARIANT`, `ARRAY`, and `OBJECT` columns are returned as their JSON
-representation.
+strings. `VARIANT`, `ARRAY`, and `OBJECT` values are returned as a **string holding
+their JSON text**, formatted by Snowflake with line breaks (`"{\n  \"k\": [1, 2]\n}"`):
+parse the string to use the value. `NUMBER` with a scale is a string with its exact
+digits (`"1234.50"`), `BINARY` is base64, and a `FLOAT` NaN is `"NaN"`.
 
 ---
 
@@ -265,8 +278,23 @@ GRANT USAGE ON SCHEMA sales_db.public TO ROLE tdb_reader;
 GRANT SELECT ON TABLE sales_db.public.orders TO ROLE tdb_reader;
 
 -- Assign the role to the TDB service user
+-- Create the service user TDB signs in as, and give it the role
+CREATE USER tdb_service_user
+  TYPE = LEGACY_SERVICE
+  PASSWORD = '<strong password>'
+  MUST_CHANGE_PASSWORD = FALSE
+  DEFAULT_ROLE = tdb_reader
+  DEFAULT_WAREHOUSE = compute_wh;
 GRANT ROLE tdb_reader TO USER tdb_service_user;
 ```
+
+**The user's `TYPE` matters.** TDB signs in with a user name and password. A user of
+the default type, `PERSON`, signs in but is refused its role (error 390186, below).
+Create it as `LEGACY_SERVICE`, or change an existing one with
+`ALTER USER tdb_service_user SET TYPE = LEGACY_SERVICE;`. If your account no longer
+allows passwords for service users, create it as `TYPE = SERVICE` with a
+[programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens)
+restricted to `tdb_reader`, and give the token as `password`.
 
 To grant access to multiple tables, add a `GRANT SELECT` line for each table, or
 grant at the schema level to cover all current and future tables:
@@ -296,9 +324,9 @@ planned; if it matters for your workload, [tell us](mailto:hello@tdb.jiracorp.co
 
 ### `connection refused` or authentication failure on registration
 
-TDB validates the connection by running `SELECT 1` when you call
-`GET /v1/sources/<id>/schema`. If the account identifier is wrong or credentials
-are incorrect, you'll see HTTP 503:
+TDB connects when you call `GET /v1/sources/<id>/schema`. If the account identifier
+or the credentials are wrong, or (from 0.35.2) the session has no database, schema or
+warehouse, you'll see HTTP 503:
 
 ```json
 {"detail": "Source 'orders' (snowflake) is not accessible."}
@@ -309,6 +337,18 @@ Check that:
 - The `account` identifier is correct and matches your Snowflake URL
 - The `user` and `password` are correct
 - The `database` and `schema` exist and the role has `USAGE` on both
+- The `warehouse` exists and the role has `USAGE` on it
+
+Snowflake signs in even when the role cannot use the database, schema or warehouse you
+named: it leaves them unset, and the first real query fails. Before 0.35.2 the schema
+call then returned 500.
+
+### Role 'TDB_READER' … does not exist or not authorized (390189) / is not granted to this user (390186)
+
+The password was accepted and the role refused. **390189**: the role does not exist, or
+was never granted to the user: run `GRANT ROLE tdb_reader TO USER tdb_service_user;`.
+**390186** after that grant: the user is `TYPE = PERSON`; see
+[the user's `TYPE`](#minimum-required-database-permissions).
 
 ### No warehouse configured
 

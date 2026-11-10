@@ -175,8 +175,8 @@ The response is the usual one, plus `next_cursor` when there is more:
 ```
 
 Send the same `sql` and `page_key` with `cursor` set to it for the next page. With no
-`next_cursor`, the result has ended. Page keys work on every source type, though
-[Snowflake has not run against a real Snowflake](../connectors/snowflake.md).
+`next_cursor`, the result has ended. Page keys work on every source type; on
+[Snowflake](../connectors/snowflake.md) from 0.35.2 (earlier releases return 500).
 
 **A key that could lose or repeat a row is refused, never guessed at:**
 
