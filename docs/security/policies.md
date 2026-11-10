@@ -183,7 +183,7 @@ reason, never passed through:
 Callers **without** a rule on the source are unaffected: no parsing, no allow-list.
 
 Verified against real PostgreSQL, MySQL and SQL Server, and DuckDB (CSV, Parquet and,
-from 0.23.0, DuckDB database sources). **Policies have not yet been run against a real Snowflake account.**
+from 0.23.0, DuckDB database sources), and against a real Snowflake account (2026-11-10): the three masks, withheld columns, a row filter by attribute, the MCP tools, views and approvals, and these ways around a rule, each refused or masked: any case or quoting, `schema.table` and `database.schema.table`, `IDENTIFIER()`, `TABLE('…')`, time travel (`AT`, `BEFORE`), `RESULT_SCAN`, a CTE named like the table, `UNION`, a subquery, `information_schema`, `GET_DDL` and `SYSTEM$GET_TAG`.
 
 ### What a policied caller sees
 

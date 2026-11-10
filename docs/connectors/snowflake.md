@@ -12,9 +12,13 @@ configured schema) or **single-table** (scoped to one specific table).
     with quoting attacks included) and the audit log.
     That run found three faults, fixed in **0.35.2**: on earlier releases a query timeout (sometimes),
     every `page_key` request, and the schema of a source whose role cannot use its
-    database or warehouse return 500. Column and row policies, views and query approvals
-    have not yet been run against Snowflake. **0.36.0** returns `VARIANT`, `OBJECT` and
-    `ARRAY` values as JSON and logs why a connection check failed.
+    database or warehouse return 500. **0.36.0** returns `VARIANT`, `OBJECT` and
+    `ARRAY` values as JSON and logs why a connection check failed. A second run the same
+    day covered [column and row policies](../security/policies.md), views and
+    [query approvals](../security/approvals.md), all of which held; it found that the
+    MCP tools wanted the table and column names in Snowflake's upper case, and that
+    their "not found" answer listed names outside the caller's policy, both fixed in
+    **0.36.1**. Snowflake is not part of TDB's automated test runs.
 
 ---
 

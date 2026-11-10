@@ -64,6 +64,15 @@ TDB Enterprise exposes **seven tools**, and an eighth, `run_approved`, to caller
     table you name. `query_source` remains the only tool that can JOIN across
     tables in a single call.
 
+    From 0.36.1 a `table`, `column` or `group_by` name matches **in any case**
+    when only one name matches (Snowflake lists `CUSTOMERS` for the table SQL calls
+    `customers`), and the generated SQL uses the database's own spelling. Names that
+    differ only in case need the exact one. A "not found" answer lists only the
+    tables and columns the caller's [policy](../security/policies.md) shows; a
+    caller under a rule naming a table outside it is refused
+    (`policy_table_not_permitted`), as SQL is. Before 0.36.1 that list was the whole
+    database.
+
 Tools that return rows pass their output through the
 [prompt-injection filter](#prompt-injection-filtering) before the result reaches
 the MCP client. API keys can be restricted to a subset of tools — see
