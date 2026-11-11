@@ -74,4 +74,4 @@ All variables: [Environment variables](../reference/environment-variables.md).
 The enterprise image is licensed and private, and adds settings the community chart does
 not have yet: the licence, a pull secret, the PostgreSQL wire-gateway port, and an
 encryption key from a Secret. Until it does, ask us for a manifest:
-[hello@tdb.jiracorp.co.in](mailto:hello@tdb.jiracorp.co.in).
+[hello@tdb.asvanlabs.com](mailto:hello@tdb.asvanlabs.com).

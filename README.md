@@ -1,6 +1,6 @@
 # The Data-Bridge — Documentation Site
 
-Public documentation for both editions, at https://docs.tdb.jiracorp.co.in. MkDocs Material.
+Public documentation for both editions, at https://docs.tdb.asvanlabs.com. MkDocs Material.
 
 ## Local development
 

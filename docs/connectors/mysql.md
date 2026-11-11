@@ -302,4 +302,4 @@ exact TDB server IP in the host portion of the grant.
 
 SSL is not configurable in the `connection` object. Connections use
 the PyMySQL default (SSL not required). If you need SSL options,
-[tell us](mailto:hello@tdb.jiracorp.co.in).
+[tell us](mailto:hello@tdb.asvanlabs.com).

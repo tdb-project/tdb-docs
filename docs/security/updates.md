@@ -9,7 +9,7 @@ report a vulnerability.
 
 Please report security issues **privately** — do not open a public issue.
 
-- Email **security@tdb.jiracorp.co.in**, or
+- Email **security@tdb.asvanlabs.com**, or
 - Open a private security advisory on the relevant repository.
 
 Include the version you're running (see [Checking your version](#checking-your-version))

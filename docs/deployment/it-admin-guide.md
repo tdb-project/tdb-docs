@@ -98,8 +98,8 @@ step-by-step version:
 your own repo path:
 
 ```bash
-docker login registry.tdb.jiracorp.co.in        # use the token we provide
-docker pull registry.tdb.jiracorp.co.in/tdb-customers/<your-slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
+docker login registry.tdb.asvanlabs.com        # use the token we provide
+docker pull registry.tdb.asvanlabs.com/tdb-customers/<your-slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
 ```
 
 **B. Air-gapped tarball.** For locked-down environments we deliver a `.tar.gz`:
@@ -259,7 +259,7 @@ while pooling is off, so an empty series is expected rather than a fault.
 # docker-compose.yml
 services:
   tdb:
-    image: registry.tdb.jiracorp.co.in/tdb-customers/<slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
+    image: registry.tdb.asvanlabs.com/tdb-customers/<slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -530,7 +530,7 @@ The connector defaults to `Encrypt=yes`. For self-signed SQL Server certs set
   issued before 0.22.0 counts as Mid-Market. An image before 0.33.0 reads an
   `enterprise` licence as malformed and serves nothing: upgrade the image first.
 - To extend a trial or renew a commercial license, contact
-  [hello@tdb.jiracorp.co.in](mailto:hello@tdb.jiracorp.co.in).
+  [hello@tdb.asvanlabs.com](mailto:hello@tdb.asvanlabs.com).
 
 ### 5.6 Snowflake sources
 
@@ -836,4 +836,4 @@ Run these after deploying.
 - [Editions](../pricing.md) — what the community and paid editions each include
 
 Questions about a deployment we have not covered here?
-[hello@tdb.jiracorp.co.in](mailto:hello@tdb.jiracorp.co.in)
+[hello@tdb.asvanlabs.com](mailto:hello@tdb.asvanlabs.com)

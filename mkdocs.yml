@@ -1,8 +1,8 @@
 site_name: The Data-Bridge
 site_description: Docs for The Data-Bridge — a self-hosted gateway giving AI agents, scripts and BI tools read-only, audited, token-lean access to your databases.
 site_author: TDB Project
-site_url: https://docs.tdb.jiracorp.co.in
-copyright: '© 2026 The Data-Bridge · Page counts by <a href="https://www.goatcounter.com/">GoatCounter</a>: no cookies, no personal data.'
+site_url: https://docs.tdb.asvanlabs.com
+copyright: '© 2026 The Data-Bridge, by <a href="https://asvanlabs.com/">Asvan Labs</a> · Page counts by <a href="https://www.goatcounter.com/">GoatCounter</a>: no cookies, no personal data.'
 docs_dir: docs
 
 theme:
@@ -12,7 +12,7 @@ theme:
   logo: assets/logo.svg
   favicon: assets/logo.svg
   palette:
-    # Light FIRST: the landing page at tdb.jiracorp.co.in is light and editorial,
+    # Light FIRST: the landing page at tdb.asvanlabs.com is light and editorial,
     # and a reader crossing from it should land on the same surface. Dark stays
     # one click away for anyone who prefers it.
     - scheme: default

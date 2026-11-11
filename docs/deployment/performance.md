@@ -96,4 +96,4 @@ cancelled query returns 504 and is audited as `query_timeout`.
 
 ---
 
-Want a number we haven't published? Ask: [hello@tdb.jiracorp.co.in](mailto:hello@tdb.jiracorp.co.in).
+Want a number we haven't published? Ask: [hello@tdb.asvanlabs.com](mailto:hello@tdb.asvanlabs.com).

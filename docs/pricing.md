@@ -10,7 +10,7 @@ hide:
 
 TDB is an open-core product. The community edition is **free, forever** under AGPLv3. The paid editions add the connectors, auth, and compliance features you need to run TDB in production for a real team.
 
-This page shows exactly what each edition includes. **For pricing and a free 30-day evaluation, [email us](mailto:hello@tdb.jiracorp.co.in)** — we'll tailor a quote to your deployment and get you set up.
+This page shows exactly what each edition includes. **For pricing and a free 30-day evaluation, [email us](mailto:hello@tdb.asvanlabs.com)** — we'll tailor a quote to your deployment and get you set up.
 
 ---
 
@@ -111,7 +111,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     - Schema caching with configurable TTL
     - Health check endpoint
 
-    [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
+    [Contact us →](mailto:hello@tdb.asvanlabs.com){ .md-button .md-button--primary }
 
 === "Mid-Market"
 
@@ -137,7 +137,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     - [Query approvals](security/approvals.md): a query that reads named columns waits for a person, and the audit log records the request, who decided and each run *(from 0.32.0)*
     - [Tenants](security/tenants.md) *(on request; included in Enterprise)*
 
-    [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
+    [Contact us →](mailto:hello@tdb.asvanlabs.com){ .md-button .md-button--primary }
 
 === "Enterprise"
 
@@ -153,13 +153,13 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
     - Your identity provider's groups place each person in a tenant
     - An operator role that manages tenants and reads none of their data, with its own audit log
 
-    [Contact us →](mailto:hello@tdb.jiracorp.co.in){ .md-button .md-button--primary }
+    [Contact us →](mailto:hello@tdb.asvanlabs.com){ .md-button .md-button--primary }
 
 ---
 
 ## Discounts
 
-Annual subscriptions and larger / multi-seat deployments qualify for discounts. [Email us](mailto:hello@tdb.jiracorp.co.in) to discuss terms for your team.
+Annual subscriptions and larger / multi-seat deployments qualify for discounts. [Email us](mailto:hello@tdb.asvanlabs.com) to discuss terms for your team.
 
 ---
 
@@ -235,7 +235,7 @@ publish no dates for them:
 - **Audit export:** Datadog and OpenTelemetry, beside the Splunk and S3 export that ship today.
 - **Sign-in:** SAML, beside the OIDC single sign-on that ships today.
 
-If one of these decides your evaluation, [tell us](mailto:hello@tdb.jiracorp.co.in). A customer
+If one of these decides your evaluation, [tell us](mailto:hello@tdb.asvanlabs.com). A customer
 who needs one is what starts it.
 
 ---
@@ -252,16 +252,16 @@ Features in the community edition are free forever under AGPLv3. We will never m
 Yes. TDB is self-hosted by design. The commercial license covers your on-premises deployment. There is no SaaS-only restriction.
 
 **How do evaluations work, and what happens when mine ends?**
-[Email us](mailto:hello@tdb.jiracorp.co.in) and we'll issue a **30-day evaluation licence** at no charge — a dedicated, self-hosted image with the licence baked in, running entirely on your own infrastructure (no data reaches us). When it expires, TDB keeps running and `/health` stays healthy, but data and API requests return a clear `license_expired` response until you renew or convert. Need longer to evaluate? Just ask.
+[Email us](mailto:hello@tdb.asvanlabs.com) and we'll issue a **30-day evaluation licence** at no charge — a dedicated, self-hosted image with the licence baked in, running entirely on your own infrastructure (no data reaches us). When it expires, TDB keeps running and `/health` stays healthy, but data and API requests return a clear `license_expired` response until you renew or convert. Need longer to evaluate? Just ask.
 
 **Do you offer annual or volume discounts?**
-Yes — annual subscriptions and larger / multi-seat deployments qualify for discounts. [Email us](mailto:hello@tdb.jiracorp.co.in) to discuss terms.
+Yes — annual subscriptions and larger / multi-seat deployments qualify for discounts. [Email us](mailto:hello@tdb.asvanlabs.com) to discuss terms.
 
 **How much does it cost?**
-Paid editions are a flat self-hosted license (no per-query or per-row metering). We share pricing by email so we can match the right edition to your deployment and include a free 30-day evaluation — [get in touch](mailto:hello@tdb.jiracorp.co.in).
+Paid editions are a flat self-hosted license (no per-query or per-row metering). We share pricing by email so we can match the right edition to your deployment and include a free 30-day evaluation — [get in touch](mailto:hello@tdb.asvanlabs.com).
 
 **Is the source code for the enterprise tier available?**
 No. The enterprise tier is a closed-source commercial product. The community edition is fully open under AGPLv3.
 
 **I need BigQuery / Datadog / SAML now. When do those ship?**
-They are [built on request](#built-on-request) and not yet built. We deliberately don't publish dates we haven't committed engineering to — a date we miss is worse than no date, particularly in a product you're evaluating for compliance. If one of these is blocking your evaluation, [email us](mailto:hello@tdb.jiracorp.co.in): that's the signal that moves it up, and design partners get built first.
+They are [built on request](#built-on-request) and not yet built. We deliberately don't publish dates we haven't committed engineering to — a date we miss is worse than no date, particularly in a product you're evaluating for compliance. If one of these is blocking your evaluation, [email us](mailto:hello@tdb.asvanlabs.com): that's the signal that moves it up, and design partners get built first.
