@@ -2,7 +2,8 @@
 
 TDB Enterprise ships a built-in OAuth 2.1 authorization server. This lets
 Cursor, Claude and ChatGPT custom connectors, and any other MCP client that supports
-OAuth 2.1 authenticate with TDB without manual token management.
+OAuth 2.1 authenticate with TDB without manual token management. Claude's custom
+connectors have been [tested end to end](#connecting-claude-desktop); ChatGPT's have not.
 
 **Implemented specifications:**
 

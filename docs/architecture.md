@@ -15,6 +15,7 @@ One container running one process. It serves:
 | REST: sources, query, views | `/v1/...` | Both (views: enterprise) |
 | MCP for AI tools | `POST /v1/mcp` | Both (community: `query_source` only) |
 | PostgreSQL wire gateway | `TDB_PG_PORT` (opt-in) | Enterprise |
+| OAuth 2.1 server: discovery, registration, sign-in, tokens | `/.well-known/...`, `/oauth/...` | Enterprise |
 | Health, version, metrics | `/health`, `/`, `/metrics` | Both (`/metrics`: enterprise) |
 | OpenAPI | `/docs` | Both |
 
@@ -109,6 +110,12 @@ Read this part before your security review does.
   file. Export to [Splunk](integrations/splunk.md) or [S3](integrations/s3.md) for a
   copy outside the host. The community audit log is not hash-chained.
 - **Traffic on the wire.** TDB doesn't terminate TLS; your proxy does.
+- **Who reaches a public sign-in page.** Claude's custom connectors need TDB at a public
+  HTTPS address, and client registration is open, so anyone who finds the URL sees the
+  sign-in page. The admin login's token is admin; for anyone else use
+  [single sign-on](auth/sso.md) ([IT admin guide](deployment/it-admin-guide.md#65-authentication-directory-integration)).
+  Don't limit the address to Anthropic's range: the sign-in page is opened by the user's
+  own browser.
 
 ---
 

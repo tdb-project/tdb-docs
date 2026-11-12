@@ -69,7 +69,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     - JWT authentication
     - API key rotation and management
-    - OAuth 2.1 with PKCE and dynamic client registration — MCP clients that support OAuth sign in through the browser instead of holding an API key
+    - OAuth 2.1 with PKCE and dynamic client registration — MCP clients that support OAuth sign in through the browser instead of holding an API key; tested as a Claude custom connector from claude.ai and Claude Desktop
     - Per-key rate limiting
     - CORS configuration
 

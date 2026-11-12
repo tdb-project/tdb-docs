@@ -67,7 +67,8 @@ reports the extension's name, not its own. Tested on Windows against community 0
 !!! note "Not `claude_desktop_config.json`"
     That file is for local servers that Claude Desktop starts itself; a `url` entry there
     does not connect to TDB. Remote servers are added as custom connectors, which Anthropic's
-    cloud reaches, so they need TDB at a public HTTPS URL — see
+    cloud reaches, so they need TDB Enterprise at a public HTTPS URL, with sign-in through
+    TDB instead of a key (tested from claude.ai and Claude Desktop) — see
     [Connecting Claude Desktop →](../auth/oauth.md#connecting-claude-desktop).
 
 ---

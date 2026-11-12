@@ -84,7 +84,8 @@ See [JWT →](jwt.md)
 ## OAuth 2.1 with PKCE (for MCP clients)
 
 Cursor, Claude and ChatGPT custom connectors, and other MCP clients that support OAuth 2.1 can authenticate
-against TDB's built-in authorization server. TDB implements:
+against TDB's built-in authorization server. Claude's connectors (claude.ai and Claude Desktop) have been
+[tested end to end](oauth.md#connecting-claude-desktop); ChatGPT's have not. TDB implements:
 
 - RFC 9728 — OAuth 2.0 Protected Resource Metadata
 - RFC 8414 — Authorization Server Metadata

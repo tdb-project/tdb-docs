@@ -88,6 +88,13 @@ Notes that drive sizing:
   (`TDB_APPROVAL_WEBHOOK_URL`, 0.32.0 and later), allow HTTPS to that one host.
 - **No inbound** connections are required other than to port 8000 from your API/MCP
   clients (and the reverse proxy).
+- **Claude custom connectors** (claude.ai and Claude Desktop) are the exception: Anthropic's
+  cloud calls TDB, not the user's computer, so the MCP URL must be public HTTPS and reachable
+  from Anthropic's addresses (`160.79.104.0/21`, per Anthropic's connector documentation)
+  for MCP, discovery, registration and tokens, and from your users' browsers for the
+  sign-in page (`/oauth/authorize`).
+  See [§6.5](#65-authentication-directory-integration). Without that, use the Claude Desktop
+  extension, which connects from the user's machine with an API key.
 
 ### 1.4 Getting the image
 
@@ -648,6 +655,23 @@ two `Authorization` headers is refused (400, with tenants off too). From 0.18.0,
 client made it and at what protocol version (`mcp_client`, `mcp_protocol`). Clients
 report these themselves, so treat them as a label, not proof of identity.
 
+**Claude custom connectors (tested 2026-11-12, enterprise 0.36.1).** Users add
+`https://<your TDB>/v1/mcp` in claude.ai or Claude Desktop; Claude registers itself
+(dynamic client registration), the user signs in on TDB's page, and Claude calls the tools
+with the token. Audit entries name it `Anthropic/ClaudeAI/1.0.0`. What to plan for:
+
+- A public HTTPS address (see [§1.3](#13-network-ports) and [§7](#7-tls-ssl)) and
+  `TDB_SERVER_URL` set to it.
+- **Who can sign in.** Registration is open, so anyone who reaches the URL sees the sign-in
+  page. Without [single sign-on](../auth/sso.md) the only login is `TDB_ADMIN_USER`, and its
+  token is **admin**. For people other than administrators, turn on single sign-on so each
+  person signs in as themselves, with their own role, policies and tools.
+- **Token lifetime.** The admin login issues no refresh token, so Claude asks the user to
+  sign in again after `TDB_JWT_EXPIRE_MINUTES` (default 60). Single sign-on issues refresh
+  tokens.
+- From 0.36.3 the MCP endpoint's metadata names the MCP URL as its `resource`, as Claude's
+  documentation requires; 0.36.1 and 0.36.2 name the base URL, which Claude accepts today.
+
 > **Directory / AD integration is not supported today:**
 > - **Single sign-on is OIDC only**, from 0.24.0 on Mid-Market ([setup](../auth/sso.md)).
 >   SAML and direct LDAP login are not supported; Active Directory works through an IdP
@@ -688,7 +712,9 @@ server {
 Then set **`TDB_SERVER_URL=https://tdb.yourcompany.com`** so TDB advertises the correct
 external HTTPS URL as its OAuth issuer. Note the **OAuth flow requires `https://`**
 redirect URIs (only `http://localhost` is exempted) — OAuth will not work over plain
-HTTP to a non-local host, which is by design. Restrict the container's port 8000 to the
+HTTP to a non-local host, which is by design. A temporary tunnel is fine for a trial;
+in our own test a Cloudflare quick tunnel (`trycloudflare.com`) did **not** work with
+Claude's connectors while another tunnel did, so prefer your own proxy and domain. Restrict the container's port 8000 to the
 proxy (bind to `127.0.0.1` or a private network), not the public interface.
 
 ---
