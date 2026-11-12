@@ -85,18 +85,25 @@ starts itself.
 
 1. Set `TDB_SERVER_URL` to the public URL, for example `https://tdb.example.com`, so the
    discovery documents and the `401` challenge name it.
-2. In Claude Desktop, open Settings → Connectors → **Add custom connector** and enter
-   `https://tdb.example.com/v1/mcp`.
-3. Claude registers itself by dynamic registration, or by its
-   [client metadata document](#client-id-metadata-documents) if you set
-   `TDB_OAUTH_CIMD_HOSTS=claude.ai`. Log in with `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD`
-   when the browser opens.
+2. In claude.ai, open Customize → Connectors → **Add custom connector**, enter
+   `https://tdb.example.com/v1/mcp`, choose **Sign in now**, and leave the OAuth client on
+   **Register automatically**. The connector belongs to your Claude account, so it is
+   available in Claude Desktop too.
+3. Claude registers itself by dynamic registration. Log in with `TDB_ADMIN_USER` /
+   `TDB_ADMIN_PASSWORD` when the browser opens.
 
-Tokens expire after `TDB_JWT_EXPIRE_MINUTES` (default 60 minutes).
+Claude reaches TDB from Anthropic's addresses, so the URL must be reachable from the
+internet, not only from your network. Tokens expire after `TDB_JWT_EXPIRE_MINUTES`
+(default 60 minutes). Without [single sign-on](sso.md) TDB issues no refresh token, so
+Claude asks you to sign in again after that.
 
-!!! warning "Not yet tested"
-    The custom-connector route has not been run against TDB yet. The extension route has
-    (Windows, community 0.12.0).
+!!! success "Tested with Claude"
+    Run on 2026-11-12 against enterprise 0.36.1 at a public HTTPS address, from claude.ai
+    and from Claude Desktop: sign-in, tool list, and questions answered with
+    `schema_source`, `list_views` and `aggregate_source`. The audit log names the client as
+    `mcp_client: Anthropic/ClaudeAI/1.0.0`, `mcp_protocol: 2026-07-28`. Registration by
+    client metadata document (`TDB_OAUTH_CIMD_HOSTS`) has not been tried with Claude. The
+    extension route has also been run (Windows, community 0.12.0).
 
 ---
 
