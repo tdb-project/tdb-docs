@@ -95,8 +95,12 @@ If the token is missing or invalid, TDB returns HTTP 401 with a `WWW-Authenticat
 header that MCP-aware clients use to discover the OAuth authorization server:
 
 ```
-WWW-Authenticate: Bearer realm="TDB", resource_metadata="/.well-known/oauth-protected-resource"
+WWW-Authenticate: Bearer realm="TDB", resource_metadata="https://tdb.example.com/.well-known/oauth-protected-resource/v1/mcp"
 ```
+
+The URL is absolute and starts with `TDB_SERVER_URL`. From 0.36.3 it names the MCP
+endpoint's own metadata, whose `resource` is `https://tdb.example.com/v1/mcp`; before that
+it named the base document.
 
 OAuth clients such as Cursor and Claude custom connectors use this header to start the
 OAuth 2.1 PKCE flow. See [OAuth 2.1 →](../auth/oauth.md).

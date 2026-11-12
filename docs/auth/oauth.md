@@ -39,7 +39,8 @@ is needed beyond pointing the client at the TDB base URL.
 
 | Endpoint | Spec | Description |
 |---|---|---|
-| `GET /.well-known/oauth-protected-resource` | RFC 9728 | Resource server metadata |
+| `GET /.well-known/oauth-protected-resource` | RFC 9728 | Resource server metadata for the server (`resource` is the base URL) |
+| `GET /.well-known/oauth-protected-resource/v1/mcp` | RFC 9728 | The same for the MCP endpoint (`resource` is the MCP URL, which Claude requires); from 0.36.3 |
 | `GET /.well-known/oauth-authorization-server` | RFC 8414 | Authorization server metadata |
 
 ```bash

@@ -122,6 +122,7 @@ The following endpoints do **not** require authentication:
 | `GET /redoc` | ReDoc UI |
 | `POST /v1/mcp` (`initialize` method only) | MCP handshake |
 | `GET /.well-known/oauth-protected-resource` | OAuth resource metadata |
+| `GET /.well-known/oauth-protected-resource/v1/mcp` | OAuth resource metadata for the MCP endpoint (from 0.36.3) |
 | `GET /.well-known/oauth-authorization-server` | OAuth AS metadata |
 | `GET /oauth/authorize` | OAuth login form |
 | `POST /oauth/register` | OAuth dynamic client registration |
