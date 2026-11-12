@@ -219,7 +219,7 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.36.2"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.36.3"}
   }
 }
 ```
