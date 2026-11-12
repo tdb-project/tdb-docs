@@ -669,8 +669,9 @@ with the token. Audit entries name it `Anthropic/ClaudeAI/1.0.0`. What to plan f
 - **Token lifetime.** The admin login issues no refresh token, so Claude asks the user to
   sign in again after `TDB_JWT_EXPIRE_MINUTES` (default 60). Single sign-on issues refresh
   tokens.
-- From 0.36.3 the MCP endpoint's metadata names the MCP URL as its `resource`, as Claude's
-  documentation requires; 0.36.1 and 0.36.2 name the base URL, which Claude accepts today.
+- From 0.36.3 the MCP endpoint's metadata names the MCP URL as its `resource`, and from
+  0.37.0 an `initialize` without a token is a `401`, both as Claude's documentation requires.
+  Earlier releases name the base URL and answer `initialize` with `200`; Claude accepts both.
 
 > **Directory / AD integration is not supported today:**
 > - **Single sign-on is OIDC only**, from 0.24.0 on Mid-Market ([setup](../auth/sso.md)).

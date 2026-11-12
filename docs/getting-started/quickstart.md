@@ -330,13 +330,15 @@ path works before you connect a real AI client.
 ### 6a — Test the MCP handshake
 
 **Why:** The `initialize` call confirms TDB's MCP server is up and returns the
-protocol version the server speaks. No authentication is required for this step.
+protocol version the server speaks. From 0.37.0 it needs your key, like every other MCP
+call; without it TDB answers `401`, which is how an OAuth client learns to sign in.
 
 === "Bash"
 
     ```bash
     curl -X POST http://localhost:8000/v1/mcp \
       -H "Content-Type: application/json" \
+      -H "Authorization: Bearer <YOUR_KEY>" \
       -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
     ```
 
@@ -346,6 +348,7 @@ protocol version the server speaks. No authentication is required for this step.
     Invoke-RestMethod -Uri "http://localhost:8000/v1/mcp" `
       -Method POST `
       -ContentType "application/json" `
+      -Headers @{ Authorization = "Bearer <YOUR_KEY>" } `
       -Body '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
     ```
 

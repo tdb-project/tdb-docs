@@ -121,7 +121,7 @@ The following endpoints do **not** require authentication:
 | `GET /health` | Liveness probe |
 | `GET /docs` | Swagger UI |
 | `GET /redoc` | ReDoc UI |
-| `POST /v1/mcp` (`initialize` method only) | MCP handshake |
+| `POST /v1/mcp` (`ping` and `server/discover` only; `initialize` too before 0.37.0) | MCP liveness and discovery |
 | `GET /.well-known/oauth-protected-resource` | OAuth resource metadata |
 | `GET /.well-known/oauth-protected-resource/v1/mcp` | OAuth resource metadata for the MCP endpoint (from 0.36.3) |
 | `GET /.well-known/oauth-authorization-server` | OAuth AS metadata |

@@ -49,7 +49,7 @@ same way.
 | 1 | **Origin check** | A request carrying a foreign browser `Origin` is refused (403, `invalid_origin`) | [MCP](api/mcp.md#browser-origins) |
 | 2 | **Licence** (enterprise) | An expired or invalid licence answers 403 `license_expired`, before any registry is read (from 0.35.0) | [IT guide](deployment/it-admin-guide.md) |
 | 2a | **Tenant** (Enterprise, opt-in) | The credential alone picks the tenant; every later step reads only that tenant's sources, keys, rules and audit log. Two `Authorization` headers are refused (400), with tenants off too | [Tenants](security/tenants.md) |
-| 3 | **Authentication** | API key, JWT or OAuth 2.1 bearer token; only `initialize`, `server/discover` and `ping` run without one | [Authentication](auth/overview.md) |
+| 3 | **Authentication** | API key, JWT or OAuth 2.1 bearer token; only `server/discover` and `ping` run without one (`initialize` too before 0.37.0) | [Authentication](auth/overview.md) |
 | 4 | **Rate limit, role, tool scope** (enterprise) | Per-key rate limit; `read` / `readwrite` / `admin`; a key's `allowed_tools` limit what it may call and what `tools/list` shows | [RBAC](security/rbac.md) |
 | 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored. SQL the tools build quotes column names, and takes a number only as a plain numeric literal (from 0.35.0). Table and column names are checked against what the caller's policy shows, in any case, and an error names nothing else (from 0.36.1) | [MCP](api/mcp.md) |
 | 6 | **Input filter** (enterprise MCP) | SQL carrying prompt-injection patterns is refused | [Prompt-injection filtering](api/mcp.md#prompt-injection-filtering) |

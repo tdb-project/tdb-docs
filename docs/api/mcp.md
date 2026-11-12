@@ -17,14 +17,17 @@ sources directly — without building a custom integration.
 
 | JSON-RPC method | Auth required | Description |
 |---|---|---|
-| `initialize` | No | MCP handshake — returns protocol version and capabilities |
+| `initialize` | Enterprise: yes, from 0.37.0. Community: no | MCP handshake — returns protocol version and capabilities |
 | `ping` | No | Liveness — returns an empty result (from community 0.10.0 / enterprise 0.15.0) |
 | `tools/list` | Yes | Lists available tools |
 | `tools/call` | Yes | Executes a tool |
 | `server/discover` | No | `2026-07-28` only: supported versions and capabilities (from community 0.12.0 / enterprise 0.18.0) |
 
-Only `initialize` and `ping` are unauthenticated. This is intentional — MCP clients must
-complete the handshake before presenting credentials, per the MCP spec.
+`ping` and `server/discover` never need a credential. `initialize` does in enterprise from
+0.37.0: without one it gets the same `401` challenge as `tools/list`, which is how an OAuth
+client such as a Claude custom connector learns to sign in (Claude's connector documentation
+asks for it). Clients that send their key on every request see no change. Community has no
+OAuth and answers `initialize` without a credential.
 
 Notifications such as `notifications/initialized` (no `id`) are accepted with HTTP
 202 and an empty body. From community 0.10.0 / enterprise 0.15.0; earlier releases
@@ -83,7 +86,7 @@ for an agent, see [Saving tokens (Lean Mode)](#saving-tokens-lean-mode).
 
 ## Authentication
 
-All MCP methods except `initialize` and `ping` require a Bearer token:
+All MCP methods except `ping` and `server/discover` (and, in community and enterprise before 0.37.0, `initialize`) require a Bearer token:
 
 ```
 Authorization: Bearer <token>
@@ -202,11 +205,13 @@ connects this way in its default mode, and so does Claude Code (tested with 2.1.
 
 ### `initialize`
 
-Completes the MCP handshake. No auth required.
+Completes the MCP handshake. Enterprise needs a credential from 0.37.0 (without one: `401`
+and the `WWW-Authenticate` challenge above); community needs none.
 
 ```bash
 curl -X POST http://localhost:8000/v1/mcp \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_KEY>" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
 ```
 
