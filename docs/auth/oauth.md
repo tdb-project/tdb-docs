@@ -105,7 +105,10 @@ Claude asks you to sign in again after that.
     `schema_source`, `list_views` and `aggregate_source`. The audit log names the client as
     `mcp_client: Anthropic/ClaudeAI/1.0.0`, `mcp_protocol: 2026-07-28`. Registration by
     client metadata document (`TDB_OAUTH_CIMD_HOSTS`) has not been tried with Claude. The
-    extension route has also been run (Windows, community 0.12.0).
+    extension route has also been run (Windows, community 0.12.0). The two alignments
+    with Claude's documentation in 0.36.3 and 0.37.0 were tried the same day through a
+    test proxy in front of 0.36.1 and passed; those releases themselves have not yet been
+    re-run with Claude.
 
 ---
 

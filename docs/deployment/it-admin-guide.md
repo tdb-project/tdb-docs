@@ -671,7 +671,9 @@ with the token. Audit entries name it `Anthropic/ClaudeAI/1.0.0`. What to plan f
   tokens.
 - From 0.36.3 the MCP endpoint's metadata names the MCP URL as its `resource`, and from
   0.37.0 an `initialize` without a token is a `401`, both as Claude's documentation requires.
-  Earlier releases name the base URL and answer `initialize` with `200`; Claude accepts both.
+  Earlier releases name the base URL and answer `initialize` with `200`, which is what the
+  test above ran on. The new behaviour passed the same day through a test proxy; 0.36.3 and
+  0.37.0 themselves have not yet been re-run with Claude.
 
 > **Directory / AD integration is not supported today:**
 > - **Single sign-on is OIDC only**, from 0.24.0 on Mid-Market ([setup](../auth/sso.md)).
