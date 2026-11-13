@@ -100,15 +100,19 @@ internet, not only from your network. Tokens expire after `TDB_JWT_EXPIRE_MINUTE
 Claude asks you to sign in again after that.
 
 !!! success "Tested with Claude"
-    Run on 2026-11-12 against enterprise 0.36.1 at a public HTTPS address, from claude.ai
-    and from Claude Desktop: sign-in, tool list, and questions answered with
-    `schema_source`, `list_views` and `aggregate_source`. The audit log names the client as
-    `mcp_client: Anthropic/ClaudeAI/1.0.0`, `mcp_protocol: 2026-07-28`. Registration by
-    client metadata document (`TDB_OAUTH_CIMD_HOSTS`) has not been tried with Claude. The
-    extension route has also been run (Windows, community 0.12.0). The two alignments
-    with Claude's documentation in 0.36.3 and 0.37.0 were tried the same day through a
-    test proxy in front of 0.36.1 and passed; those releases themselves have not yet been
-    re-run with Claude.
+    Run against enterprise **0.37.0** on 2026-11-13, and 0.36.1 on 2026-11-12, at a public
+    HTTPS address, from claude.ai and from Claude Desktop: sign-in, tool list, and questions
+    answered with `schema_source`, `list_views` and `aggregate_source`. The audit log records
+    `mcp_protocol: 2026-07-28`; the client named itself `Anthropic/ClaudeAI/1.0.0` on
+    2026-11-12 and `claude-code/<version>` on 2026-11-13, so read `mcp_client` as Claude's
+    own label, not as which Claude app called. Registration by client metadata document
+    (`TDB_OAUTH_CIMD_HOSTS`) has not been tried with Claude. The extension route has also
+    been run (Windows, community 0.12.0).
+
+!!! note "\"Couldn't check the server\""
+    On 2026-11-13 claude.ai showed *Couldn't determine how this server signs in* when the
+    connector was added, after reading TDB's metadata. Select **Continue anyway**, choose
+    sign-in with automatic registration, and sign in on TDB's page: the connector then works.
 
 ---
 

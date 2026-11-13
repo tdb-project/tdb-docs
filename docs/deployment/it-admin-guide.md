@@ -655,10 +655,13 @@ two `Authorization` headers is refused (400, with tenants off too). From 0.18.0,
 client made it and at what protocol version (`mcp_client`, `mcp_protocol`). Clients
 report these themselves, so treat them as a label, not proof of identity.
 
-**Claude custom connectors (tested 2026-11-12, enterprise 0.36.1).** Users add
+**Claude custom connectors (tested 2026-11-13 on enterprise 0.37.0, and 2026-11-12 on 0.36.1).** Users add
 `https://<your TDB>/v1/mcp` in claude.ai or Claude Desktop; Claude registers itself
 (dynamic client registration), the user signs in on TDB's page, and Claude calls the tools
-with the token. Audit entries name it `Anthropic/ClaudeAI/1.0.0`. What to plan for:
+with the token. Audit entries carry the name Claude gives itself, which has been
+`Anthropic/ClaudeAI/1.0.0` and, from 2026-11-13, `claude-code/<version>` for claude.ai and
+Claude Desktop too. If claude.ai says *Couldn't check the server* when the connector is added,
+**Continue anyway** and sign in. What to plan for:
 
 - A public HTTPS address (see [§1.3](#13-network-ports) and [§7](#7-tls-ssl)) and
   `TDB_SERVER_URL` set to it.
@@ -671,9 +674,8 @@ with the token. Audit entries name it `Anthropic/ClaudeAI/1.0.0`. What to plan f
   tokens.
 - From 0.36.3 the MCP endpoint's metadata names the MCP URL as its `resource`, and from
   0.37.0 an `initialize` without a token is a `401`, both as Claude's documentation requires.
-  Earlier releases name the base URL and answer `initialize` with `200`, which is what the
-  test above ran on. The new behaviour passed the same day through a test proxy; 0.36.3 and
-  0.37.0 themselves have not yet been re-run with Claude.
+  Earlier releases name the base URL and answer `initialize` with `200`; Claude worked with
+  both (0.36.1 and 0.37.0 tested).
 
 > **Directory / AD integration is not supported today:**
 > - **Single sign-on is OIDC only**, from 0.24.0 on Mid-Market ([setup](../auth/sso.md)).
