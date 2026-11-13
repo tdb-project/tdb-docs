@@ -7,7 +7,7 @@ means that edition had no release for the change.
 For security fixes in full — what was exposed, who was affected, how to check — see
 [Security & updates](security/updates.md). The community edition's full changelog is
 [CHANGELOG.md](https://github.com/tdb-project/tdb-community/blob/main/CHANGELOG.md).
-To see what you are running: `GET /v1/version`.
+To see what you are running: `GET /v1/version`. How to upgrade: [Upgrading](deployment/upgrading.md).
 
 !!! tip "Reading the version numbers"
     A **patch** (0.20.**3**) fixes behaviour without changing what a correct caller

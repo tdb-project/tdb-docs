@@ -87,6 +87,7 @@ nav:
   - Deployment:
     - IT Administrator Guide: deployment/it-admin-guide.md
     - Kubernetes (Helm): deployment/kubernetes.md
+    - Upgrading: deployment/upgrading.md
     - Prometheus Metrics: observability/metrics.md
     - Performance: deployment/performance.md
   - Recipes:

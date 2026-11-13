@@ -8,7 +8,7 @@ registry and audit log.*
 
 - **One pod, by design.** The source registry (SQLite) and the audit log are files on one
   ReadWriteOnce volume; two writers would corrupt both. Updates use the `Recreate`
-  strategy, so expect a few seconds of downtime per upgrade.
+  strategy, so expect a few seconds of downtime per upgrade ([Upgrading](upgrading.md)).
 - **Locked down by default.** uid 1000, read-only root filesystem, no privilege
   escalation, all capabilities dropped, no service-account token.
 - **No public default key.** The chart refuses to render without an API key.

@@ -98,23 +98,18 @@ Notes that drive sizing:
 
 ### 1.4 Getting the image
 
-Two channels — see [Installation](../getting-started/installation.md) for the
-step-by-step version:
-
-**A. Customer-scoped private registry (default).** You receive a pull token scoped to
-your own repo path:
+We send a **download link** (it expires after 7 days) and the file's **SHA-256 checksum**;
+see [Installation](../getting-started/installation.md). The same file serves air-gapped
+sites (download on a connected machine, check the checksum, copy it in):
 
 ```bash
-docker login registry.tdb.asvanlabs.com        # use the token we provide
-docker pull registry.tdb.asvanlabs.com/tdb-customers/<your-slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
+sha256sum -c tdb-enterprise-vX.Y.Z.tar.gz.sha256     # must print: OK
+docker load < tdb-enterprise-vX.Y.Z.tar.gz
+docker images tdb-enterprise                          # confirm the tag is present
 ```
 
-**B. Air-gapped tarball.** For locked-down environments we deliver a `.tar.gz`:
-
-```bash
-docker load < tdb-enterprise-<edition>-<expiry>-<build_sha>.tar.gz
-docker images tdb-enterprise        # confirm the tag is now present
-```
+A customer-scoped private registry to pull from is available on request. New versions
+arrive the same way: [Upgrading](upgrading.md).
 
 > **License:** trial images have a signed, expiring license **baked in** — nothing to
 > configure. Commercial deployments may instead receive a token-less image and supply
@@ -266,7 +261,7 @@ while pooling is off, so an empty series is expected rather than a fault.
 # docker-compose.yml
 services:
   tdb:
-    image: registry.tdb.asvanlabs.com/tdb-customers/<slug>/tdb-enterprise:<edition>-<expiry>-<build_sha>
+    image: tdb-enterprise:vX.Y.Z        # as loaded with docker load
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -835,8 +830,11 @@ Run these after deploying.
   and recent changes may be only in `X.db-wal`. Snapshot the whole directory at once, or stop
   TDB first; copying `X.db` alone can lose them. Keep the volume on a local disk or block
   device: WAL does not work on a network filesystem such as NFS.
-- **Upgrades:** pull the new image tag, stop the old container, start the new one against
-  the **same** `/app/data` volume. Migrations are idempotent and run on startup.
+- **Upgrades:** follow [Upgrading](upgrading.md): read the release notes' action column
+  for every version you skip, back up `/app/data` whole with TDB stopped, check the
+  checksum, load the image, start it on the **same** volume and settings (the registry
+  is updated in place on first start), check `/v1/version` and `audit/verify`, and keep
+  the old image until you are satisfied.
 - **Key rotation:** add and rotate API keys with the `/v1/auth/keys` admin API
   ([API keys](../auth/api-keys.md); the raw key is shown once); rotate `TDB_JWT_SECRET` (invalidates outstanding JWTs) on a schedule.
 - **License renewal:** see [§5.5](#55-license).

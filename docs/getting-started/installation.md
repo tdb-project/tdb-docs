@@ -24,32 +24,23 @@ everything is inside the image.
 
 ## Get the image
 
-Your image — trial or commercial — is a dedicated build with your license already
-baked in. The license travels inside the image; there is nothing else to configure
-for it.
+We send you a **download link** (it expires after 7 days) and the file's **SHA-256
+checksum**. Check the file, then load it:
 
-=== "Private registry (recommended)"
+```bash
+sha256sum -c tdb-enterprise-vX.Y.Z.tar.gz.sha256     # must print: OK
+docker load < tdb-enterprise-vX.Y.Z.tar.gz
+# Loaded image: tdb-enterprise:vX.Y.Z
+```
 
-    We deliver via a **customer-scoped private registry**: you receive a pull token
-    that is scoped to your own repository path and can see only your images. Log in
-    with that token and pull:
+The same file works air-gapped: download it on a connected machine and copy it in.
 
-    ```bash
-    docker login registry.tdb.asvanlabs.com        # use your issued pull token
-    docker pull registry.tdb.asvanlabs.com/tdb-customers/acme/tdb-enterprise:trial-20260701-9a54018
-    ```
+Your licence is a value you pass at startup (`-e TDB_LICENSE=...`), so one image serves
+every customer and a renewal never needs a new image. A trial image may come with the
+licence built in, in which case there is nothing to pass. A private registry you pull from
+is available on request.
 
-    Your welcome e-mail contains your exact repository path and tag.
-
-=== "Tarball (air-gapped)"
-
-    If your environment cannot reach our registry, we provide the same image as a
-    compressed tarball instead. Load it:
-
-    ```bash
-    docker load < trial-acme-20260701-9a54018.tar.gz
-    # Loaded image: tdb-enterprise:trial-acme-20260701-9a54018
-    ```
+New versions arrive the same way: see [Upgrading](../deployment/upgrading.md).
 
 ---
 

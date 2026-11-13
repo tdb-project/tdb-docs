@@ -29,7 +29,7 @@ published after a fix is available and customers have had time to update.
 
 Security fixes ship in the **latest release**. There are no backports to older
 versions — to stay supported, run the current version and update when a new one is
-published. Updating is a `docker pull` + restart (see below).
+published. Updating is loading the new image and restarting on the same data ([Upgrading](../deployment/upgrading.md)).
 
 ## How you receive a fix
 
@@ -37,31 +37,18 @@ TDB is **self-hosted** — it never calls home and nothing auto-updates, so you 
 in control (including in air-gapped environments). When we publish a fix, you update
 to the patched image. The steps depend on how you receive TDB:
 
-=== "Image tarball (current)"
+We send the patched version as an image file, with a download link that expires after
+7 days and its SHA-256 checksum. The image is generic and your licence is supplied at
+runtime, so updating never touches your licence. Air-gapped sites use the same file.
 
-    We deliver the patched version as a versioned image tarball. The image is generic
-    and your license is supplied at runtime, so updating never touches your license:
+```bash
+sha256sum -c tdb-enterprise-vX.Y.Z.tar.gz.sha256
+docker load < tdb-enterprise-vX.Y.Z.tar.gz
+# start it on the same data and settings — see Upgrading
+```
 
-    ```bash
-    docker load < tdb-enterprise-vX.Y.Z.tar.gz
-    # restart your container — your existing -e TDB_LICENSE is unchanged
-    ```
-
-    This works the same way for air-gapped deployments.
-
-=== "Registry pull (future)"
-
-    As we grow we'll offer registry-based updates, so you can pull a new version
-    directly:
-
-    ```bash
-    docker pull <registry>/tdb-enterprise:vX.Y.Z
-    # restart your container — your token is unchanged
-    ```
-
-=== "Trial image"
-
-    We re-issue your trial image on the patched version; load it and restart.
+Trial images with the licence built in are re-issued on the patched version.
+The full procedure, with backup, checks and rollback: [Upgrading](../deployment/upgrading.md).
 
 We notify the contact on your account when an update affecting you is available,
 with the exact version and steps.
