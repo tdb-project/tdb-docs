@@ -192,6 +192,7 @@ from 0.23.0, DuckDB database sources), and against a real Snowflake account (202
 | `POST /v1/query`, MCP tools, views | Rewritten as above. Views run under the caller's rule |
 | `GET /v1/sources/{ref}/schema`, `schema_source` | Withheld columns and unlisted tables are left out; a masked column carries `"masked": "<mask>"` |
 | SQL errors | Only the reason (`column "x" does not exist`). The engine's context lines would quote TDB's rewritten SQL |
+| `GET`/`PUT`/`DELETE /v1/sources/{ref}/annotations` | From 0.37.1: a key under a rule reads only annotations on tables and columns its rule shows, and cannot write or delete them (`policy_annotation_change`). A source the policy refuses is refused. Admin keys are exempt |
 | Registering or deleting sources | Refused for a non-admin key a policy restricts (`policy_registry_change`): a copy under a new name would carry no rule. Admin keys are exempt |
 
 ### Through the PostgreSQL wire gateway

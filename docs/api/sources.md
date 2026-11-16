@@ -530,6 +530,11 @@ GET /v1/sources/{ref}/annotations
 
 An empty `table` or `column` means "not scoped to one".
 
+With a [policy file](../security/policies.md), from 0.37.1 a key under a rule sees only
+the annotations on tables and columns its rule shows, `?validate=true` checks against
+those alone, and it cannot set or remove annotations (`403`). Admin keys see and change
+all of them.
+
 #### Finding annotations that have gone stale
 
 Targets are checked when they are written, but a schema moves underneath them.

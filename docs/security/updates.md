@@ -77,6 +77,36 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-16 — A source record carried the key that registered it
+
+**Enterprise, every release up to 0.37.0; fixed in 0.37.1. Community is not affected:** it
+has always stored a six-character hint.
+
+When a source was registered, TDB stored the registrant's whole credential (a database
+key, a `TDB_API_KEYS` key or a sign-in token) in the source's `registered_by` field, in
+plain text in the registry. `GET /v1/sources/{id}` and the registration response returned
+that field to any authenticated caller, so **a `read` key could read the key that
+registered a source and use it**: an admin key if an admin registered it. Found by a
+security review of the code; we know of no use of it.
+
+From 0.37.1 the field holds only the hint the audit log records (`tdbk_a...`), and at the
+first start on 0.37.1 the stored values of existing sources are cut to that hint.
+
+**Action:** upgrade, then **rotate every key that has registered a source**
+([key rotation](../auth/api-keys.md)), and replace any `TDB_API_KEYS` value that has. The
+old values are also in any backup of the registry taken before the upgrade: treat those
+backups as holding live keys until the keys are rotated. To look back, search the audit
+log for requests you do not recognise made with those keys: each entry carries the key's
+six-character hint.
+
+The same release closes a second, smaller gap, for deployments with a
+[policy file](policies.md) (0.22.0 to 0.37.0): `GET /v1/sources/{ref}/annotations` did
+not apply the caller's rule. A key under a rule could read the **names and descriptions**
+(never values) of columns the rule withholds, and of a source the policy refuses. From
+0.37.1 a key under a rule reads only the annotations on what its rule shows, is refused a
+source the policy refuses, and cannot write or delete annotations
+(`policy_annotation_change`); admin keys are unchanged.
+
 ### 2026-11-10 — MCP tools named tables and columns outside a key's policy
 
 **Enterprise 0.22.0 to 0.36.0, with a [policy file](policies.md); fixed in 0.36.1.

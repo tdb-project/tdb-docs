@@ -110,7 +110,7 @@ Expected response (HTTP 201):
   "connection": { "host": "host.docker.internal", "port": 5432, "dbname": "your_database", "user": "your_user", "password": "***" },
   "description": "Production Postgres — all tables",
   "tags": [],
-  "registered_by": "<YOUR_KEY>",
+  "registered_by": "tdbk_a...",
   "registered_at": "2026-05-22T09:00:00Z",
   "status": "active"
 }
@@ -361,7 +361,7 @@ Expected response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {"tools": {}},
-    "serverInfo": {"name": "tdb-enterprise", "version": "0.37.0"}
+    "serverInfo": {"name": "tdb-enterprise", "version": "0.37.1"}
   }
 }
 ```

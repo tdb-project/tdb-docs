@@ -120,6 +120,7 @@ wire gateway, audited with the reason below. Under a rule the entry also carries
 | `policy_unknown_caller` | TDB could not tell who is asking | Authenticate with an API key or JWT |
 | `policy_unsupported_source` | The source type has no policy support | Remove the source from the policy file |
 | `policy_catalog_refused` | Gateway: a catalog that holds data (`pg_stats` and similar) | Not available to policied keys |
+| `policy_annotation_change` | A non-admin key a policy restricts on this source tried to write or delete its annotations | Use an admin key |
 | `policy_registry_change` | A non-admin key a policy restricts tried to register or delete a source | Use an admin key |
 
 ### Query approvals
