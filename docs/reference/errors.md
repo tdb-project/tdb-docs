@@ -115,14 +115,14 @@ wire gateway, audited with the reason below. Under a rule the entry also carries
 | `policy_missing_attribute` | The key's rule has a row filter needing an attribute the caller lacks | Set it: `PUT /v1/auth/keys/{id}/attributes`, or the JWT `attributes` claim |
 | `policy_table_not_permitted` | The SQL reads a table, view or copy the caller's rule does not name | Query only the rule's tables, or add the table to the rule |
 | `policy_function_not_allowed` | A function outside the allow-list for policied callers (functions that run SQL text or read files, among others) | Rewrite without it; ask us if an everyday function is missing |
-| `policy_unclassified_table` | A table expression TDB cannot place (a table function, a name passed as a string) | Name the table directly |
+| `policy_unclassified_table` | A table expression TDB cannot place (a table function, a name passed as a string; from 0.38.1 a parenthesised join, or `PIVOT`/`UNPIVOT` on a table) | Name the table directly |
 | `policy_unparseable` | TDB could not parse the SQL, or it holds more than one statement | Simplify the SQL; send one statement |
 | `policy_not_a_query` | Not a `SELECT`, or a `SELECT INTO` / locking clause | Send a plain `SELECT` |
 | `policy_no_visible_columns` | The rule leaves no column of a table visible | Fix the rule |
 | `policy_schema_unavailable` | TDB could not read the table's columns, so it cannot build the rewrite (fails closed) | Check the source is reachable |
 | `policy_unknown_caller` | TDB could not tell who is asking | Authenticate with an API key or JWT |
 | `policy_unsupported_source` | The source type has no policy support | Remove the source from the policy file |
-| `policy_catalog_refused` | Gateway: a catalog that holds data (`pg_stats` and similar) | Not available to policied keys |
+| `policy_catalog_refused` | Gateway: a catalog that holds data or activity (`pg_stats`, `pg_stat_activity` and similar); from 0.38.1, any `pg_catalog` relation outside the allow-list | Not available to policied keys |
 | `policy_annotation_change` | A non-admin key a policy restricts on this source tried to write or delete its annotations | Use an admin key |
 | `policy_registry_change` | A non-admin key a policy restricts tried to register or delete a source | Use an admin key |
 

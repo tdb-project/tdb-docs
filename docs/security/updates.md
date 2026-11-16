@@ -77,6 +77,32 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-16 — A parenthesised join read past a column or row policy
+
+**Enterprise, 0.22.0 to 0.38.0; fixed in 0.38.1. Community is not affected:** it has no
+policies. Found by a security review of the policy rewrite; we know of no use of it.
+
+- **A key under a rule could read a table its rule names in full.** Written with an alias,
+  `SELECT * FROM (customers CROSS JOIN (SELECT 1) z) AS j` was not rewritten: it returned
+  every row, outside the row filter, and every column, withheld and masked ones
+  included, on REST, MCP, views and the PostgreSQL wire gateway. Shown on CSV, Parquet,
+  DuckDB and PostgreSQL sources; TDB passed it for MySQL, SQL Server and Snowflake too
+  (MySQL's own parser rejects the syntax). Tables the rule does not name stayed refused.
+- **PIVOT and UNPIVOT on a table ran before the policy** (DuckDB, CSV, Parquet, Snowflake,
+  SQL Server sources): a withheld column's values came back under a visible column's name.
+  The row filter still held.
+- **Through the wire gateway, a key under a rule could read `pg_stat_activity`**, which
+  shows the SQL other sessions are running. Every TDB session on a source uses the
+  source's database user, so that was other callers' queries and the values in them.
+
+From 0.38.1 these shapes are refused (`policy_unclassified_table`), and the gateway's
+catalog queries read only an allow-list of `pg_catalog` relations; the others are
+`policy_catalog_refused`.
+
+**Action:** upgrade. To look back, search the audit log for queries by keys under a rule
+(`policy_rule`) whose `sql` holds a `(` straight after `FROM` or `JOIN` and a `) AS` or
+`) <alias>` closing it, `PIVOT`, `UNPIVOT`, or `pg_stat`.
+
 ### 2026-11-16 — Password login unlimited; listings past a policy; one MCP call held the server
 
 **Enterprise, fixed in 0.38.0; the MCP part also community, fixed in 0.18.1.** From the

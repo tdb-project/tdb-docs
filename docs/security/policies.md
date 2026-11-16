@@ -178,6 +178,8 @@ reason, never passed through:
   SQL text or read files, for example);
 - a table expression it cannot place, another schema or database, more than one
   statement, `SELECT INTO`, locking clauses;
+- from 0.38.1, a parenthesised join (`FROM (a JOIN b) AS j`; write the join without the
+  parentheses), and `PIVOT` or `UNPIVOT` on a table (apply them to a subquery instead);
 - SQL it cannot parse.
 
 Callers **without** a rule on the source are unaffected: no parsing, no allow-list.
@@ -201,8 +203,10 @@ from 0.23.0, DuckDB database sources), and against a real Snowflake account (202
 Statements are rewritten in both protocols, including the query inside `DECLARE`.
 Drivers and BI tools first read the catalog (`pg_catalog`, `information_schema`) to list
 tables and columns, so a query that reads **only** catalog tables passes as written.
-Catalogs that hold data rather than metadata (`pg_stats` and similar) and functions that
-run SQL text are refused. Verified with psql 16, Metabase (pgjdbc) and
+From 0.38.1 that means `information_schema` and an allow-list of `pg_catalog` relations
+(PostgreSQL 16's): catalogs that hold data or activity rather than metadata (`pg_stats`,
+`pg_stat_activity` and the other `pg_stat*` views, `pg_authid`, `pg_largeobject` and
+similar) are refused, and so are functions that run SQL text. Verified with psql 16, Metabase (pgjdbc) and
 SQLAlchemy + psycopg 3.
 
 !!! info "Known limit: names are visible through the gateway"
