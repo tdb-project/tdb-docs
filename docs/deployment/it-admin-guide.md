@@ -167,7 +167,7 @@ inside the image. Defaults in parentheses.
 |---|---|---|
 | `TDB_API_KEYS` | *(required)* | Comma-separated static API keys (`Authorization: Bearer <key>`), each with admin rights. From 0.25.0 there is no default, and TDB will not start with an example value, or when unset unless another login exists. |
 | `TDB_JWT_SECRET` | *(empty)* | HMAC secret for JWT auth. **Required** for JWT/OAuth login flows. |
-| `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD` | *(empty)* | Admin credentials for the login/OAuth consent flow. |
+| `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD` | *(empty)* | Admin credentials for the login/OAuth consent flow. From 0.38.0, ten failed attempts in a minute across the deployment close the password login until the minute ends (`429`), and every attempt is audited ([§6.5](#65-authentication-directory-integration)). |
 | `TDB_LICENSE` | *(empty)* | Runtime license token. **Takes precedence** over the baked file (commercial/renewals). |
 | `TDB_LICENSE_FILE` | `/app/license.jwt` | Path to the baked license token. |
 
@@ -411,6 +411,16 @@ From 0.22.0. Mount a policy file read-only and set `TDB_POLICIES_FILE`:
 - Row filters read **key attributes** (`PUT /v1/auth/keys/{id}/attributes`) or a JWT's
   `attributes` claim. Set them before handing out the key: a key missing one is refused.
 - A draft for your sources: `docker exec tdb python -m tdb.cli policy suggest <source>`.
+- **From 0.38.0, a key under a rule sees only what it may query** in `GET /v1/sources`, the
+  view lists and MCP errors; a refused source's record is `403` (`source_read`). Admin keys
+  see everything.
+- **From 0.38.1, SQL the rewrite cannot fully account for is refused for a key under a rule**,
+  including a parenthesised join (`FROM (a JOIN b) AS j`) and `PIVOT`/`UNPIVOT` on a table
+  (`policy_unclassified_table`). Earlier releases let both read past the rule: upgrade, and see
+  [Security & updates](../security/updates.md) for what to search the audit log for. Through
+  the wire gateway, catalog queries read only `information_schema` and an allow-list of
+  `pg_catalog` relations; a BI tool that reads `pg_stat_activity` or other statistics views
+  gets `policy_catalog_refused` for those.
 
 Full reference: [Column and row policies](../security/policies.md).
 
@@ -646,7 +656,17 @@ TDB authenticates **callers** via static API keys, JWT (HMAC, `TDB_JWT_SECRET`),
 **RBAC** (`read` / `readwrite` / `admin`) per API key, with optional MCP tool-level
 scoping. With [tenants](../security/tenants.md) on (0.33.0, Enterprise), the static keys and
 the admin login are the operator, which manages tenants and reads none, and a request carrying
-two `Authorization` headers is refused (400, with tenants off too). From 0.18.0, every audit entry written for an MCP request also records which AI
+two `Authorization` headers is refused (400, with tenants off too).
+
+**The admin password login (from 0.38.0)** has one budget for the whole deployment: after
+ten failed attempts in a minute, `POST /v1/auth/token` and the OAuth sign-in form both answer
+`429` (`Retry-After: 60`) until the minute ends, a correct password included. Every attempt is
+audited (`login`, `invalid_credentials`, `login_throttled`) without the typed username. The
+limit is per deployment because behind a proxy TDB cannot tell callers apart, so anyone who can
+reach the login can hold it closed: keep it off untrusted networks, or use
+[single sign-on](../auth/sso.md). API keys and SSO are not affected.
+
+From 0.18.0, every audit entry written for an MCP request also records which AI
 client made it and at what protocol version (`mcp_client`, `mcp_protocol`). Clients
 report these themselves, so treat them as a label, not proof of identity.
 
@@ -837,12 +857,16 @@ Run these after deploying.
   the old image until you are satisfied.
 - **Key rotation:** add and rotate API keys with the `/v1/auth/keys` admin API
   ([API keys](../auth/api-keys.md); the raw key is shown once); rotate `TDB_JWT_SECRET` (invalidates outstanding JWTs) on a schedule.
+- **Upgrading from 0.37.0 or earlier:** rotate every key that registered a source. Until
+  0.37.1 a source record held the registering key in full and any caller could read it
+  ([Security & updates](../security/updates.md)); old backups of `/app/data` still hold those keys.
 - **License renewal:** see [§5.5](#55-license).
 - **A source answers 503 "not accessible":** from 0.36.0 the application log has a
   `source_unreachable` line naming the source type and the driver's reason (wrong password,
   host unreachable, a role that cannot use the database). Before 0.36.0 it said nothing.
 - **Monitoring:** scrape `/metrics`; alert on `/health` and on `audit/verify` returning
-  `valid:false`. On **0.6.0 and later** three more signals are worth alerting on:
+  `valid:false`. From 0.38.0, alert on audit entries with `reason: login_throttled`: someone
+  is guessing the admin password, or holding the login closed. On **0.6.0 and later** three more signals are worth alerting on:
   `tdb_source_query_duration_seconds` p95 per `source_type` (a single slow source is
   visible without correlating against your database's own monitoring);
   `tdb_audit_append_duration_seconds` p95, which should be sub-millisecond **and flat as

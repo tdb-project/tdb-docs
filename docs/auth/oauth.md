@@ -305,4 +305,11 @@ Plain `http://` to a non-localhost host is rejected. This follows
 - PKCE is **required** for all authorization code flows — `plain` challenge method is rejected.
 - Authorization codes expire after 10 minutes and are single-use.
 - Code exchange is atomic (uses `BEGIN IMMEDIATE` transaction) — replay attacks are not possible.
-- All login forms use constant-time credential comparison with a 200 ms brute-force throttle.
+- All login forms use constant-time credential comparison with a 200 ms delay on a wrong password.
+- From 0.38.0, the admin password login (this form and `POST /v1/auth/token`) allows ten failed
+  attempts a minute across the whole deployment, then answers `429` (`Retry-After: 60`) until the
+  minute ends. Every attempt is audited (`login`, `invalid_credentials`, `login_throttled`), never
+  with the typed username. See [JWT](jwt.md) for why the limit is per deployment.
+- From 0.38.0 the sign-in form shows the redirect URI the access goes to, since a client's name is
+  whatever its author registered, and it cannot be framed or cached (`X-Frame-Options: DENY`,
+  `frame-ancestors 'none'`, `no-store`).

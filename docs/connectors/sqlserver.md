@@ -339,9 +339,12 @@ accepts the risk — see the [environment variables](../reference/environment-va
 
 ## Connection pooling
 
-TDB opens a **fresh connection per query** and closes it immediately after. There is
-no connection pool in the current release. For high-frequency query workloads, consider
-placing a connection pooler between TDB and SQL Server.
+TDB opens and closes a connection for each query, and the ODBC driver manager reuses the
+underlying session: pyodbc turns ODBC connection pooling on by default. Measured against
+SQL Server 2022, a connect and close cost 3.2 ms with it against 24.5 ms without. TDB sets
+manual commit on every connection it gets and rolls back after every query, and in the same
+test an uncommitted change did not carry into the reused session. `TDB_POOL_SIZE` does not
+apply to SQL Server.
 
 ---
 

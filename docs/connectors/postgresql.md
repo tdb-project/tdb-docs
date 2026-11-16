@@ -273,9 +273,14 @@ All three should be `false`. If a deployment genuinely must use such a role,
 
 ## Connection pooling
 
-TDB opens a **fresh connection per query** and closes it immediately after. There is
-no connection pool in the current release. For high-frequency query workloads, place
-a connection pooler (PgBouncer, RDS Proxy) between TDB and Postgres.
+By default TDB opens a **fresh connection per query** and closes it immediately after,
+so it holds nothing open on your server between requests. From 0.5.0 you can set
+`TDB_POOL_SIZE` to reuse connections instead (PostgreSQL only, off by default): each
+registered source keeps up to that many open, closes idle ones after 5 minutes, and a
+pooled session stays read-only across reuse exactly as a fresh one is. Count
+`TDB_POOL_SIZE × PostgreSQL sources × TDB processes` against `max_connections` first; see
+[connection pooling](../deployment/it-admin-guide.md#35-advanced) in the IT admin guide. A
+pooler of your own (PgBouncer, RDS Proxy) between TDB and Postgres also works.
 
 ---
 

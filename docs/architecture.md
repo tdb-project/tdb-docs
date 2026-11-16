@@ -49,12 +49,12 @@ same way.
 | 1 | **Origin check** | A request carrying a foreign browser `Origin` is refused (403, `invalid_origin`) | [MCP](api/mcp.md#browser-origins) |
 | 2 | **Licence** (enterprise) | An expired or invalid licence answers 403 `license_expired`, before any registry is read (from 0.35.0) | [IT guide](deployment/it-admin-guide.md) |
 | 2a | **Tenant** (Enterprise, opt-in) | The credential alone picks the tenant; every later step reads only that tenant's sources, keys, rules and audit log. Two `Authorization` headers are refused (400), with tenants off too | [Tenants](security/tenants.md) |
-| 3 | **Authentication** | API key, JWT or OAuth 2.1 bearer token; only `server/discover` and `ping` run without one (and `initialize` in community, and in enterprise before 0.37.0) | [Authentication](auth/overview.md) |
+| 3 | **Authentication** | API key, JWT or OAuth 2.1 bearer token; only `server/discover` and `ping` run without one (and `initialize` in community, and in enterprise before 0.37.0). The admin password login allows ten failures a minute per deployment, then `429`, and audits every attempt (enterprise, from 0.38.0). MCP requests run on worker threads, so a slow call never holds the others (from 0.38.0 / 0.18.1) | [Authentication](auth/overview.md) |
 | 4 | **Rate limit, role, tool scope** (enterprise) | Per-key rate limit; `read` / `readwrite` / `admin`; a key's `allowed_tools` limit what it may call and what `tools/list` shows | [RBAC](security/rbac.md) |
 | 5 | **Argument check** (MCP) | Tool arguments are checked against each tool's declared types; a bad Lean value is refused, never ignored. SQL the tools build quotes column names, and takes a number only as a plain numeric literal (from 0.35.0). Table and column names are checked against what the caller's policy shows, in any case, and an error names nothing else (from 0.36.1). Every string TDB writes into SQL is read back the way the source's engine reads it and refused unless it is exactly one string, and the statement the tools build must read as one `SELECT` (from 0.36.2) | [MCP](api/mcp.md) |
 | 6 | **Input filter** (enterprise MCP) | SQL carrying prompt-injection patterns is refused | [Prompt-injection filtering](api/mcp.md#prompt-injection-filtering) |
 | 7 | **Read-only validation** | One `SELECT` (or `WITH … SELECT`). Literals and comments are masked under **every engine dialect**, and all must pass; on CSV, Parquet and DuckDB, DuckDB's own parser must also see exactly one `SELECT` | [Query](api/query.md) |
-| 8 | **Column and row policy** (Mid-Market, opt-in) | With a policy file, a source it does not name is refused unless the file says otherwise. For a key with a rule, every table becomes a subquery of its allowed columns, masks and rows, so aggregates and joins see policy data. SQL TDB cannot fully account for is refused. A rule's `approval` block holds a query that reads named columns until one of the source's approvers decides (from 0.32.0); the requester then runs it | [Policies](security/policies.md), [Approvals](security/approvals.md) |
+| 8 | **Column and row policy** (Mid-Market, opt-in) | With a policy file, a source it does not name is refused unless the file says otherwise. For a key with a rule, every table becomes a subquery of its allowed columns, masks and rows, so aggregates and joins see policy data. SQL TDB cannot fully account for is refused: a reference it cannot classify by scope, and from 0.38.1 a parenthesised join or a `PIVOT`/`UNPIVOT` on a table. Listings and errors show the key only the sources and views it may query (from 0.38.0). A rule's `approval` block holds a query that reads named columns until one of the source's approvers decides (from 0.32.0); the requester then runs it | [Policies](security/policies.md), [Approvals](security/approvals.md) |
 | 9 | **Read-only session at the source** | Read-only is also enforced by the database session, not only by the validator. Privileged database roles are refused unless you opt in. Connection values cannot add connection attributes, and a SQL Server `driver` must be a driver's name, never a library path (from 0.35.0) | [PostgreSQL](connectors/postgresql.md#use-a-least-privileged-role) |
 | 10 | **Bounded execution** | The row ceiling bounds the fetch (memory), not only the reply; `truncated: true` says more rows existed; on database sources `TDB_QUERY_TIMEOUT` cancels the query at the source (enterprise) | [Query](api/query.md) |
 | 11 | **Locked file engine** (CSV, Parquet, DuckDB) | Each source's DuckDB engine can read only its own file: no extensions, no configuration changes | [Security updates](security/updates.md) |
@@ -63,7 +63,7 @@ same way.
 | 14 | **Lean Mode** (opt-in) | Shaped **after** the filter, so a compact format or a cut can't restore a redacted value | [Saving tokens](api/mcp.md#saving-tokens-lean-mode) |
 | 15 | **Audit** | One entry per request: who (key hint, AI client, protocol), what SQL, how many rows, the Lean settings served, the policy rule that applied and any approval it ran under. Enterprise signs it into a hash chain | [Audit log](security/audit.md) |
 
-The **wire gateway** runs steps 3, 4, 7 and 8 on every statement, forces each
+The **wire gateway** runs steps 3, 4, 7 and 8 on every statement (catalog queries from a policied key read only `information_schema` and an allow-list of `pg_catalog` relations, from 0.38.1), forces each
 transaction read-only at the source, and writes two audit entries per statement:
 one before it runs, one with the outcome. See the
 [wire gateway](integrations/postgres-wire.md).
@@ -114,6 +114,8 @@ Read this part before your security review does.
   HTTPS address, and client registration is open, so anyone who finds the URL sees the
   sign-in page. The admin login's token is admin; for anyone else use
   [single sign-on](auth/sso.md) ([IT admin guide](deployment/it-admin-guide.md#65-authentication-directory-integration)).
+  From 0.38.0 the password login allows ten failures a minute across the deployment, so
+  anyone who reaches it can also hold it closed for a minute at a time.
   Don't limit the address to Anthropic's range: the sign-in page is opened by the user's
   own browser.
 

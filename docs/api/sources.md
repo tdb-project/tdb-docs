@@ -164,6 +164,10 @@ was accepted.
 GET /v1/sources
 ```
 
+With a [policy file](../security/policies.md) (enterprise, from 0.38.0), a key under a rule
+is listed only the sources its policy lets it query. Admin keys, and deployments without a
+policy file, see every source.
+
 === "Bash"
 
     ```bash
@@ -264,7 +268,9 @@ GET /v1/sources/<source_id_or_name>
     in API responses. The real values are stored securely in the registry and used
     only at query time.
 
-Returns 404 if no source matches the name or UUID.
+Returns 404 if no source matches the name or UUID. With a policy file (enterprise, from
+0.38.0), a source the caller's policy refuses is `403`, audited as `source_read`; admin keys
+are exempt.
 
 ---
 
