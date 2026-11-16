@@ -77,6 +77,35 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-16 — Password login unlimited; listings past a policy; one MCP call held the server
+
+**Enterprise, fixed in 0.38.0; the MCP part also community, fixed in 0.18.1.** From the
+same security review of the code as 0.37.1; we know of no use of any of them.
+
+- **The administrator password login had no limit and no record** (every release up to
+  0.37.1). `POST /v1/auth/token` and the OAuth sign-in form cost a wrong guess 0.2 seconds
+  and nothing else, and neither a failed nor a successful admin sign-in was in the audit
+  log. From 0.38.0, ten failed attempts in a minute across the deployment close both until
+  the minute ends (`429`, `login_throttled`), and every attempt is audited (`login`,
+  `invalid_credentials`). The limit is per deployment, so someone who can reach the login
+  can hold it closed; API keys and SSO are unaffected. The sign-in form now names where
+  the access goes and cannot be shown inside another site's page.
+- **With a [policy file](policies.md), listings showed what the rule refuses** (0.22.0 to
+  0.37.1). `GET /v1/sources` and `GET /v1/sources/{id}` returned every source's name and
+  connection details (host, database user, file path; never passwords), the view lists
+  returned every view with its description and parameters, and MCP "not found" errors named every source. From
+  0.38.0 a key under a rule is told only about the sources it may query and the views on
+  them; a refused source's record is `403` (`source_read`).
+- **One slow MCP call held every other request** (both editions, every release). The MCP
+  endpoint checked the key and ran the query on the server's event loop, so while one ran,
+  nothing else was answered, health checks included, for up to `TDB_QUERY_TIMEOUT`
+  (enterprise; community has no timeout). From enterprise 0.38.0 and community 0.18.1 it
+  runs on a worker thread.
+
+**Action:** upgrade. If the password login has been reachable from an untrusted network,
+consider changing `TDB_ADMIN_PASSWORD`; earlier releases left no record of attempts. To see
+attempts from now on, search the audit log for `"action": "login"`.
+
 ### 2026-11-16 — A source record carried the key that registered it
 
 **Enterprise, every release up to 0.37.0; fixed in 0.37.1. Community is not affected:** it

@@ -122,7 +122,7 @@ Two fields describe the refusal:
 
 | Field | Description |
 |---|---|
-| `action` | What was attempted: `auth`, `authorize`, `query`, `register`, `ratelimit`, `mcp_auth`, `mcp_query`, `mcp_call`, `schema` (enterprise from 0.12.0, community from 0.18.0), and — enterprise — `view_list` or `view_run` |
+| `action` | What was attempted: `auth`, `authorize`, `query`, `register`, `ratelimit`, `mcp_auth`, `mcp_query`, `mcp_call`, `schema` (enterprise from 0.12.0, community from 0.18.0), and — enterprise — `view_list`, `view_run`, `login` (admin password login, from 0.38.0) or `source_read` (from 0.38.0) |
 | `reason` | Machine-readable cause — see the table below |
 
 | `reason` | Raised when |
@@ -132,6 +132,8 @@ Two fields describe the refusal:
 | `invalid_or_expired_token` | A JWT failed signature or expiry validation |
 | `insufficient_role_required_<role>_have_<role>` | RBAC refused the request (403) |
 | `rate_limit_exceeded` | The key's per-minute budget was exhausted (429) |
+| `invalid_credentials` | Enterprise, from 0.38.0: an admin password login (`POST /v1/auth/token` or the OAuth sign-in form) with the wrong username or password. The typed username is not recorded; `via` says which (`token`, `oauth`), and an OAuth attempt carries `client_id` |
+| `login_throttled` | Enterprise, from 0.38.0: ten admin password logins failed in this minute, across the deployment, so this attempt was refused unchecked (429) |
 | `limit_exceeds_max` | A request's `limit` was above the deployment's `TDB_MAX_ROWS` (enterprise): `POST /v1/query` from 0.2.0; MCP tools and view runs from 0.16.0 |
 | `sql_validation_failed` | The statement was not a permitted read-only `SELECT` — including, from community 0.7.2 / enterprise 0.12.0, SQL that some supported engine would read as more than one statement |
 | `prompt_injection_detected` | The prompt-injection filter rejected the input |

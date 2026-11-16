@@ -60,6 +60,8 @@ POST /v1/auth/token
 | `token_type` | Always `"bearer"` |
 | `expires_in` | Token lifetime in seconds |
 
+A wrong username or password is `401`. From 0.38.0, after **ten failed attempts in a minute across the whole deployment** (this endpoint and the OAuth sign-in form together), both answer `429` with `Retry-After: 60` until the minute ends, a correct password included. Every success, failure and refusal is in the [audit log](../security/audit.md) (`login`, `invalid_credentials`, `login_throttled`), never with the typed username. The limit is per deployment because behind a proxy TDB cannot tell callers apart, so anyone who can reach this endpoint can hold the password login closed: keep it off the public network, or use [single sign-on](sso.md). API keys and SSO are not affected.
+
 ---
 
 ## Use the token

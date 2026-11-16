@@ -39,6 +39,9 @@ for the entry format.
 | 409 | `max_result_rows` | A chain of pages has reached `TDB_MAX_RESULT_ROWS` (enterprise, from 0.31.0) | Aggregate or narrow the query, or raise the cap |
 | 409 | — | An audit export to the same destination is already running (enterprise) | Wait for it, or treat 409 as "still running" |
 | 422 | — | The request body failed validation (wrong type, value out of range; in community a `limit` over 1,000) | Read the `detail` array; it names the field |
+| 401 | `invalid_credentials` | `POST /v1/auth/token` or the OAuth sign-in form: wrong admin username or password (enterprise, audited from 0.38.0) | Check `TDB_ADMIN_USER` / `TDB_ADMIN_PASSWORD` |
+| 403 | `source_read` | `GET /v1/sources/{id}` on a source the caller's [policy](../security/policies.md) refuses (enterprise, from 0.38.0) | Use a key the policy allows on that source |
+| 429 | `login_throttled` | Ten failed admin password logins in this minute, across the deployment; a correct password is refused too until the minute ends (enterprise, from 0.38.0) | Wait for `Retry-After` (60 s). Repeated, someone is guessing: keep the login off the public network, or use [SSO](../auth/sso.md) |
 | 429 | `rate_limit_exceeded` | The key's per-minute budget is used up (DB-managed keys) | Retry after the `X-RateLimit-Reset` time |
 | 429 | `too_many_streams` | `TDB_MAX_STREAMS` streams are open in this process (enterprise, from 0.31.0) | Retry when one has finished |
 | 500 | `internal_error` | TDB or the source failed: unreachable source, out of memory. Not the caller's SQL | Check the source and the application log |
