@@ -77,6 +77,32 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-17 — One key could end other callers' PostgreSQL queries
+
+**Enterprise, every release with the PostgreSQL connector; fixed in 0.38.4. Community 0.18.2
+carries the same change (the validator is shared) but was not affected:** CSV sources have
+none of these functions. Found by a security review of the database connectors; we know of
+no use of it.
+
+Every caller of a source runs as the source's one database role, and PostgreSQL lets a role
+cancel or end its own sessions. Any key allowed to query a PostgreSQL source could run
+`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename = current_user`
+through REST, MCP, a stream, a view or the wire gateway, and end every other caller's
+running query on that source, gateway sessions included. It worked quoted, as a
+unicode-escaped identifier, and inside `query_to_xml(…)` or `ts_stat(…)`, which run SQL given
+as text. No data was exposed. A key under a column or row policy rule was already refused.
+Snowflake's `SYSTEM$CANCEL_…` and `SYSTEM$ABORT_…` functions have the same shape.
+
+From 0.38.4 the validator refuses SQL naming `pg_terminate_backend`, `pg_cancel_backend`,
+`query_to_xml…`, `ts_stat`, `ts_rewrite`, `SYSTEM$CANCEL_…`, `SYSTEM$ABORT_…`, or any `U&"…"`
+identifier, matched on the whole text (`400` / gateway `42501`, audited
+`sql_validation_failed`).
+
+**Action:** upgrade. On PostgreSQL, also revoke the two signal functions from `PUBLIC`
+([how](../connectors/postgresql.md#stop-callers-ending-each-others-queries)): that stops the
+call however it is written. To look back, search the audit log for queries naming those
+functions.
+
 ### 2026-11-17 — A MySQL user holding FILE through a role passed the role check
 
 **Enterprise, 0.12.0 to 0.38.2; fixed in 0.38.3. Community is not affected:** it has no

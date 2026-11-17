@@ -267,6 +267,23 @@ All four should be `false`. If a deployment genuinely must use such a role,
 `TDB_ALLOW_PRIVILEGED_DB_ROLE=true` turns the check off — see the
 [environment variables](../reference/environment-variables.md).
 
+### Stop callers ending each other's queries
+
+Every caller of a source runs as its one database role, and PostgreSQL lets a role
+cancel or end its own sessions. **From 0.38.4 TDB refuses SQL naming
+`pg_terminate_backend` or `pg_cancel_backend`**, and the functions that run SQL given as
+text (`query_to_xml…`, `ts_stat`, `ts_rewrite`), so one key cannot end another's query.
+A list of names cannot cover every way to call a function, so also take the right away
+in the database, which stops the call however it is made:
+
+```sql
+REVOKE EXECUTE ON FUNCTION pg_catalog.pg_terminate_backend(integer, bigint) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION pg_catalog.pg_cancel_backend(integer) FROM PUBLIC;
+```
+
+Run it as a superuser. It applies to every role in the database that has no explicit
+grant, so check first that nothing else you run relies on those functions.
+
 !!! warning "Upgrading a source registered as `postgres`"
     A source registered with the `postgres` superuser (common in development)
     is refused after upgrading to 0.12.0. Create a role as above and update the

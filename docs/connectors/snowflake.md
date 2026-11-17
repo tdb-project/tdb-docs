@@ -186,6 +186,10 @@ Two layers are used instead:
    no-SQL MCP tools, does not pass through the validator**, so there the role is the only
    limit. See [the 0.31.0 security update](../security/updates.md#2026-11-05-sql-injection-through-filter_source).
 
+From 0.38.4 the validator also refuses `SYSTEM$CANCEL_…` and `SYSTEM$ABORT_…`: every caller
+of a source runs as its one Snowflake user, so one key could otherwise cancel another's
+queries.
+
 See [Minimum required permissions](#minimum-required-database-permissions) for the
 full grant chain to set up a `tdb_reader` role.
 

@@ -350,6 +350,7 @@ source, DuckDB's own parser must also read the query as exactly one `SELECT`.
 | `SELECT data #>> '{a,b}' FROM t` | ✅ Postgres JSON operators |
 | `SELECT 1 /* outer /* inner */ still a comment */` | ✅ nested comments |
 | a query that one engine would read as two statements | ❌ `Only one statement per query is allowed` |
+| `SELECT pg_terminate_backend(pid) FROM pg_stat_activity` | ❌ `Function not allowed: pg_terminate_backend`, **from 0.38.4 / 0.18.2**. Also `pg_cancel_backend`, `query_to_xml…`, `ts_stat`, `ts_rewrite`, Snowflake `SYSTEM$CANCEL_…` / `SYSTEM$ABORT_…`, and any `U&"…"` identifier. Matched inside quotes and comments too, so a query whose text merely mentions one is refused |
 
 Both refusals are HTTP 400 and audited as `sql_validation_failed`. Ordinary SQL
 is unaffected; what is refused is SQL whose meaning depends on which engine
