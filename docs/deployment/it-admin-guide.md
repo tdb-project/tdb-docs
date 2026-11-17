@@ -188,6 +188,8 @@ inside the image. Defaults in parentheses.
 | `TDB_CURSOR_TTL` | `3600` | From 0.31.0. Seconds a page cursor stays valid. |
 | `TDB_STREAM_TIMEOUT` | `600` | From 0.31.0. Seconds one stream may run. It cannot be turned off. |
 | `TDB_MAX_STREAMS` | `4` | From 0.31.0. Streams one process serves at once; each holds its own source connection, so count them in your connection budget. |
+| `TDB_MAX_STREAMS_PER_CALLER` | `2` | From 0.38.5. Streams one caller may hold at once, never more than `TDB_MAX_STREAMS`. |
+| `TDB_STREAM_STALL_TIMEOUT` | `60` | From 0.38.5. Seconds a stream waits for its client before it is cut. |
 
 ### 3.3 Access, auth & API behaviour
 

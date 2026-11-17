@@ -244,19 +244,21 @@ curl -N -X POST http://localhost:8000/v1/query/stream \
 
 Everything that can be refused is refused before the first row, with the status codes on
 [Errors](../reference/errors.md). A later failure is one of: `max_result_rows` (the result
-reached `TDB_MAX_RESULT_ROWS`), `stream_timeout` (it ran past `TDB_STREAM_TIMEOUT`), or
-a source failure such as `query_failed`.
+reached `TDB_MAX_RESULT_ROWS`), `stream_timeout` (it ran past `TDB_STREAM_TIMEOUT`),
+`stream_stalled` (from 0.38.5: the client took nothing for `TDB_STREAM_STALL_TIMEOUT`; it is
+not told, since it is not reading), or a source failure such as `query_failed`.
 
 - **NDJSON needs unique column names**, and none called `_end` or `_error`: refused with
   400 `stream_column_names`. Name them with `AS`, or use CSV.
 - **A stream holds its source open.** On PostgreSQL an open read session stops vacuum on
   that database, which is why the timeout cannot be turned off. On a
   [DuckDB source](../connectors/duckdb.md) the file's owner cannot write until it ends.
-  A client that stops reading holds the session until the timeout. Streams use their own
-  connection, never the pool.
+  A client that stops reading is cut after `TDB_STREAM_STALL_TIMEOUT` (60 s, from 0.38.5;
+  before, it held the session until the timeout). Streams use their own connection, never
+  the pool.
 - **`TDB_MAX_STREAMS`** (4) bounds streams per process; past it, 429 `too_many_streams`.
-  The slots are shared, so one key can hold them all: keep streaming keys to callers you
-  trust, with [`allowed_tools`](../auth/api-keys.md).
+  From 0.38.5 one caller holds at most `TDB_MAX_STREAMS_PER_CALLER` (2) of them; past it,
+  429 `too_many_streams_for_caller`. Before, one key could hold every slot.
 - **Opening a CSV in a spreadsheet:** a cell starting with `=`, `+`, `-` or `@` can run as a
   formula. TDB writes values as they are, so treat a stream of untrusted data accordingly.
 - **Audit:** `query_started` before the query runs, refusing if it cannot be written, then

@@ -77,6 +77,27 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-17 — One key could hold every stream slot
+
+**Enterprise, 0.31.0 to 0.38.4; fixed in 0.38.5. Community is not affected:** it has no
+streaming. Found by a security review of streaming; we know of no use of it. Deployments that
+do not use `POST /v1/query/stream` are not affected.
+
+`TDB_MAX_STREAMS` (4) bounds the streams one process serves, but nothing bounded them per
+caller. A key allowed to query could open four streams over a large result and stop reading:
+each stream then waited on its client and held its slot until `TDB_STREAM_TIMEOUT` (600 s),
+so every other caller got `429 too_many_streams` for ten minutes, and four more requests
+renewed it. On PostgreSQL each held stream also kept a read transaction open, which stops
+vacuum. An agent that opens a stream and stops reading has the same effect, without intent.
+No data was exposed.
+
+From 0.38.5 one caller holds at most `TDB_MAX_STREAMS_PER_CALLER` (default 2) streams (`429
+too_many_streams_for_caller`), and a stream whose client takes nothing for
+`TDB_STREAM_STALL_TIMEOUT` (default 60 s) is cut and audited `stream_outcome: stream_stalled`.
+
+**Action:** upgrade. To look back, search the audit log for denials with reason
+`too_many_streams`.
+
 ### 2026-11-17 — One key could end other callers' PostgreSQL queries
 
 **Enterprise, every release with the PostgreSQL connector; fixed in 0.38.4. Community 0.18.2
