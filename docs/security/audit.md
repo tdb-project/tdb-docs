@@ -148,6 +148,8 @@ Two fields describe the refusal:
 | `wire_requires_read_role` | Wire gateway: the key or token is not `read`-role, or is a static admin key |
 | `row_cap_exceeded` | Wire gateway: a result exceeded `TDB_PG_MAX_ROWS`; the connection was closed |
 | `statement_after_transaction_end` | Wire gateway: a statement followed `COMMIT`/`ROLLBACK` in the same batch |
+| `unknown_statement`, `unknown_portal` | Wire gateway, from 0.38.2: a `Bind` or `Execute` named a prepared statement or portal TDB never recorded |
+| `policy_search_path` | Wire gateway, from 0.38.2: `SET search_path` while a policy file is loaded |
 | `privileged_db_role` | Enterprise, from 0.12.0: the source connects as a database role that can reach the database server's files or programs (see [connectors](../connectors/postgresql.md#use-a-least-privileged-role)) |
 | `missing_api_key` | An MCP request carried no bearer token |
 | `invalid_connection` | Registration: the `connection` block is not valid for the `source_type` |

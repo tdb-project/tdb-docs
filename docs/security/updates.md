@@ -77,6 +77,45 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-17 — A wire gateway session could write; a superuser role's members passed the role check
+
+**Enterprise; fixed in 0.38.2. Community is not affected:** it has no wire gateway and no
+database connectors. Found by a security review of the gateway's session code; we know of no
+use of any of them. Deployments that do not set `TDB_PG_PORT` are affected only by the
+second item.
+
+- **A gateway session could write (0.14.0 to 0.38.1).** PostgreSQL keeps a prepared
+  statement when a new one is prepared under the same name and fails, and when an earlier
+  error makes it skip a `Close`. TDB recorded the new statement anyway, so a `COMMIT`
+  prepared under a name could later run while TDB took it for a `SELECT`. That escaped the
+  rule that a batch ends at `COMMIT`. After `set_config('default_transaction_read_only',
+  'off', false)` in the same transaction, the statement after it ran read-write: any
+  function the source's database user may call that writes (`nextval()`, your own
+  functions). The same mismatch could audit one statement as another, without a
+  rate-limit charge. Tables stayed read-only to `INSERT`, `UPDATE` and `DELETE`, which
+  the validator refuses.
+- **A member of a superuser role passed the privileged-role check (0.12.0 to 0.38.1).** The
+  check read only the login role's own flag. A source registered with a role that is a
+  member of a superuser role was accepted. Through the gateway, `SELECT
+  set_config('role', '<that role>', false)` made the session superuser for the
+  statements after it, and `pg_read_file()` read the database server's files. REST and
+  MCP refused the function call (PostgreSQL checks it before `set_config` in the same
+  statement runs). Every PostgreSQL connection now refuses such a role.
+- **`search_path` moved a table under a policy (0.22.0 to 0.38.1).** On the gateway, a
+  key under a column or row rule could `SET search_path` to a schema the policy refuses
+  and read a same-named table there through a bare table name. The rule's columns and
+  masks still applied, to the other table.
+
+From 0.38.2 the gateway names statements and portals on the database itself and refuses a
+name it never recorded (`unknown_statement`, `unknown_portal`). While a policy file is
+loaded it refuses `SET search_path` (`policy_search_path`; `RESET` is allowed). A source
+whose role is a member of a superuser role is refused (`privileged_db_role`).
+
+**Action:** upgrade. If a source's database role is a member of a superuser role, sessions
+on it now fail: grant it only what it reads. To look back, search the audit log for gateway
+statements (`transport: pgwire`) that call `set_config`, and check the sequences and any
+writing functions the source's role may use.
+
 ### 2026-11-16 — A parenthesised join read past a column or row policy
 
 **Enterprise, 0.22.0 to 0.38.0; fixed in 0.38.1. Community is not affected:** it has no

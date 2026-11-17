@@ -91,6 +91,8 @@ client shows. Enterprise only.
 | `3D000` | — | No TDB source matches the database name | Use a registered PostgreSQL source's name as the database |
 | `42501` | `sql_validation_failed`, `privileged_db_role` | A statement was refused, or the source's role is privileged | As for REST |
 | `25001` | `statement_after_transaction_end` | A statement followed `COMMIT`/`ROLLBACK` in the same batch | Send it in a new batch |
+| `26000` / `34000` | `unknown_statement` / `unknown_portal` | From 0.38.2: a `Bind` or `Execute` named a prepared statement or portal TDB never recorded | Prepare it again; a driver error if it recurs |
+| `42P05` | — | From 0.38.2: a statement was prepared under a name already in use | Close the old statement first |
 | `53300` | — | `TDB_PG_MAX_CLIENTS` connections are already open | Close idle clients or raise the limit |
 | `53400` | `rate_limit_exceeded` | The key's rate limit | Slow down, or raise the key's limit |
 | `54000` | `row_cap_exceeded` | A result went over `TDB_PG_MAX_ROWS`; the connection is closed | Aggregate, or add `LIMIT` |
@@ -122,6 +124,7 @@ wire gateway, audited with the reason below. Under a rule the entry also carries
 | `policy_schema_unavailable` | TDB could not read the table's columns, so it cannot build the rewrite (fails closed) | Check the source is reachable |
 | `policy_unknown_caller` | TDB could not tell who is asking | Authenticate with an API key or JWT |
 | `policy_unsupported_source` | The source type has no policy support | Remove the source from the policy file |
+| `policy_search_path` | Gateway, from 0.38.2: `SET search_path` while a policy file is loaded | Use schema-qualified names, or `RESET search_path` |
 | `policy_catalog_refused` | Gateway: a catalog that holds data or activity (`pg_stats`, `pg_stat_activity` and similar); from 0.38.1, any `pg_catalog` relation outside the allow-list | Not available to policied keys |
 | `policy_annotation_change` | A non-admin key a policy restricts on this source tried to write or delete its annotations | Use an admin key |
 | `policy_registry_change` | A non-admin key a policy restricts tried to register or delete a source | Use an admin key |

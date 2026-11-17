@@ -133,6 +133,12 @@ re-checked before **every statement**: revoking a key ends its open sessions.
   - **Refused:** anything that could make the session writable or lift a
     limit, such as `SET default_transaction_read_only`, `SET ROLE`,
     `BEGIN READ WRITE` or `SET statement_timeout`.
+    From 0.38.2, `SET search_path` is refused while a policy file is loaded
+    (`policy_search_path`); `RESET search_path` is allowed.
+  - **Prepared statements and portals** are named on the database by TDB, from
+    0.38.2. A `Bind` or `Execute` naming one TDB never recorded is refused
+    (`26000` / `34000`, audited `unknown_statement` / `unknown_portal`), and
+    preparing a name already in use is `42P05`, as PostgreSQL would answer.
   - **Dropped:** a client's startup `options`.
 - A refused statement fails on the database too, so the client's transaction
   behaves exactly as PostgreSQL would: the batch is abandoned, and an open

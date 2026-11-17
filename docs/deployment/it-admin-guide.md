@@ -362,7 +362,7 @@ curl -fsS -X POST http://localhost:8000/v1/sources \
   with `SELECT` only; SQL Server `db_datareader`). This is your real guarantee — TDB's
   enforcement is defence-in-depth on top of it.
 - **From 0.12.0 TDB enforces part of this:** a source connecting as a role that can
-  reach the database server's files or programs — a PostgreSQL superuser, a MySQL user
+  reach the database server's files or programs — a PostgreSQL superuser (from 0.38.2 also a member of a superuser role), a MySQL user
   with `FILE`, SQL Server `sa` / `sysadmin` / `bulkadmin` — is refused on every query
   (403, audited `privileged_db_role`). A read-only session does not stop such a role
   reading host files, so every API key allowed to query the source would inherit that

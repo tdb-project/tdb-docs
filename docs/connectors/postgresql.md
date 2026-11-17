@@ -245,6 +245,8 @@ TDB does not need `CREATE`, `INSERT`, `UPDATE`, `DELETE`, or `TRUNCATE` permissi
 **From enterprise 0.12.0, TDB refuses to query through a role that can reach
 the database server's host**: a superuser, or a member of
 `pg_read_server_files`, `pg_write_server_files` or `pg_execute_server_program`.
+From 0.38.2, a member of any superuser role is refused too: it can make itself
+superuser with `set_config('role', …)`.
 Such a role can read server files with `pg_read_file()` even inside a
 read-only transaction, so every TDB key allowed to query the source — `read`
 included — would have that reach too. The check runs whenever TDB opens a
@@ -254,13 +256,14 @@ as `privileged_db_role`.
 Check a role before registering it:
 
 ```sql
-SELECT rolsuper,
+SELECT EXISTS (SELECT 1 FROM pg_roles s
+               WHERE s.rolsuper AND pg_has_role(current_user, s.oid, 'MEMBER')) AS superuser,
        pg_has_role(current_user, 'pg_read_server_files', 'MEMBER') AS read_files,
-       pg_has_role(current_user, 'pg_execute_server_program', 'MEMBER') AS run_programs
-FROM pg_roles WHERE rolname = current_user;
+       pg_has_role(current_user, 'pg_write_server_files', 'MEMBER') AS write_files,
+       pg_has_role(current_user, 'pg_execute_server_program', 'MEMBER') AS run_programs;
 ```
 
-All three should be `false`. If a deployment genuinely must use such a role,
+All four should be `false`. If a deployment genuinely must use such a role,
 `TDB_ALLOW_PRIVILEGED_DB_ROLE=true` turns the check off — see the
 [environment variables](../reference/environment-variables.md).
 
