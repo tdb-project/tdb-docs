@@ -244,12 +244,16 @@ TDB does not need `INSERT`, `UPDATE`, `DELETE`, `CREATE`, or any other privilege
 `SELECT … INTO OUTFILE`, and a read-only transaction stops neither — so every
 TDB key allowed to query the source would have that reach. A refused query
 returns **403** (MCP: a tool error) and is audited as `privileged_db_role`.
+From 0.38.3, `FILE` held through a role counts too: earlier releases read only
+the privileges granted to the user itself, so a user with `FILE` through a
+default role was served.
 
-Check before registering — the output must not mention `FILE` or
+Check before registering. Sign in as the user TDB will use and run the
+statement below; with its roles active, the output must not mention `FILE` or
 `ALL PRIVILEGES ON *.*`:
 
 ```sql
-SHOW GRANTS FOR CURRENT_USER();
+SHOW GRANTS;
 ```
 
 `TDB_ALLOW_PRIVILEGED_DB_ROLE=true` turns the check off for a deployment that

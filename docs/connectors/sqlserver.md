@@ -211,7 +211,9 @@ SQL Server has no session-level read-only flag equivalent to PostgreSQL's
    `autocommit=False`. After every query — including schema introspection and
    connection validation — the connection is **always rolled back** in the `finally`
    block. A write that somehow bypassed the validator would be rolled back and could
-   not persist.
+   not persist. One exception: a rollback does not undo a sequence's
+   `NEXT VALUE FOR`. That needs `UPDATE` on the sequence, which a `SELECT`-only
+   login does not have.
 
 The production recommendation is to compound these application-level safeguards with
 a database login that holds only `SELECT` permissions (see

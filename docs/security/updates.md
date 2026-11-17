@@ -77,6 +77,28 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-17 — A MySQL user holding FILE through a role passed the role check
+
+**Enterprise, 0.12.0 to 0.38.2; fixed in 0.38.3. Community is not affected:** it has no
+database connectors. Found by a security review of the database connectors; we know of no
+use of it. Deployments with no MySQL source are not affected.
+
+Since 0.12.0 TDB refuses a MySQL source whose user holds the `FILE` privilege, because
+`FILE` lets a `SELECT` read files on the database server with `LOAD_FILE()` and write them
+with `SELECT … INTO OUTFILE`, and a read-only transaction stops neither. The check read
+only the privileges granted to the user itself. A user that holds `FILE` through a role
+active at sign-in, such as a default role, passed, and every key allowed to query the
+source had that reach: within `secure_file_priv`, or anywhere the server may write when it
+is empty.
+
+From 0.38.3 the check reads the session's own grants, active roles included, and refuses
+such a user (`privileged_db_role`).
+
+**Action:** upgrade. To see whether a source was exposed, sign in as its user and run
+`SHOW GRANTS;`; if the output mentions `FILE` or `ALL PRIVILEGES ON *.*`, give the source a
+user with `SELECT` only, and search the audit log for its queries that call `LOAD_FILE` or
+`INTO OUTFILE`.
+
 ### 2026-11-17 — A wire gateway session could write; a superuser role's members passed the role check
 
 **Enterprise; fixed in 0.38.2. Community is not affected:** it has no wire gateway and no
