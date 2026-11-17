@@ -67,6 +67,10 @@ copying the file in.
 
 Do not load a file whose checksum does not match. Ask us for a new link.
 
+**With a SQL Server source:** rebuild your driver image from the new TDB image before
+step 4, and run that instead. TDB does not include Microsoft's ODBC driver; see
+[SQL Server prerequisites](../connectors/sqlserver.md#prerequisites).
+
 ## 4. Start the new version on the same data
 
 Use the **same** environment variables (`TDB_LICENSE`, `TDB_API_KEYS`, `TDB_JWT_SECRET`

@@ -44,9 +44,9 @@ lives in two files on a mounted volume (registry DB + audit log).
 | Kubernetes (optional) | Any conformant cluster **≥ 1.25**. We ship **no Helm chart or manifests** today — a reference Deployment is in [§4.3](#43-kubernetes-reference-only). |
 
 The image is based on `python:3.12-slim`. The only system library baked in is
-`unixodbc` (so the SQL Server connector can load). To actually *connect* to SQL
-Server you additionally need the **Microsoft ODBC Driver 18**, which is **not**
-in the image — see [§5.4](#54-sql-server-driver).
+`unixodbc` (so the SQL Server connector can load). **To connect to SQL Server you must
+add the Microsoft ODBC Driver 18 yourself, downloaded directly from Microsoft:** TDB does
+not include or redistribute it. See [§5.4](#54-sql-server-driver).
 
 ### 1.2 Hardware sizing (starting point — not an SLA)
 
@@ -507,21 +507,38 @@ Full reference: [Tenants](../security/tenants.md).
 
 ### 5.4 SQL Server driver
 
-The image ships `unixodbc` but **not** the Microsoft ODBC Driver 18. If you register a
-SQL Server source you must provide the driver. A source names it by its `odbcinst.ini` name
-(the default is `ODBC Driver 18 for SQL Server`); from 0.35.0 a path to the library is
-refused, because ODBC would load whatever library a path names. The cleanest path is to install it in a
-thin layer on top of our image:
+**TDB does not include or redistribute the Microsoft ODBC Driver 18 for SQL Server.** Get it
+directly from Microsoft, which means you accept [Microsoft's licence terms](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server)
+for it. Without it a SQL Server source registers, but every query fails with `500` and
+the log shows `Can't open lib 'ODBC Driver 18 for SQL Server'`.
+
+Build a thin image on top of ours (the recipe follows Microsoft's Debian steps; we check
+it against each release's image with a real SQL Server):
 
 ```dockerfile
-FROM <tdb-enterprise-image>
+FROM tdb-enterprise:vX.Y.Z
 USER root
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft.gpg \
- && curl -fsSL https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql.list \
- && apt-get update && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
- && rm -rf /var/lib/apt/lists/*
+# Microsoft ODBC Driver 18 for SQL Server, from Microsoft's own repository.
+# ACCEPT_EULA=Y accepts Microsoft's licence terms for the driver.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && . /etc/os-release \
+    && curl -fsSL -o /tmp/packages-microsoft-prod.deb \
+       "https://packages.microsoft.com/config/debian/${VERSION_ID}/packages-microsoft-prod.deb" \
+    && dpkg -i /tmp/packages-microsoft-prod.deb \
+    && rm /tmp/packages-microsoft-prod.deb \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 libgssapi-krb5-2 \
+    && apt-get purge -y curl \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 USER tdb
 ```
+
+Rebuild it from each new TDB image when you upgrade. A source names the driver by its
+`odbcinst.ini` name (the default, `ODBC Driver 18 for SQL Server`, is what this installs);
+from 0.35.0 a path to the library is refused, because ODBC would load whatever library a
+path names. Full detail: [SQL Server connector](../connectors/sqlserver.md#prerequisites).
 
 The connector defaults to `Encrypt=yes`. For self-signed SQL Server certs set
 `"trust_server_certificate": true` in the source's connection block (lab only).

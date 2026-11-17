@@ -8,44 +8,47 @@ configured schema) or **single-table** (scoped to one specific table).
 
 ## Prerequisites
 
-The connector uses **Microsoft ODBC Driver 18 for SQL Server**, which must be
-installed on the host running TDB before you can register a SQL Server source.
+!!! warning "TDB does not include the SQL Server driver"
+    The TDB Enterprise image does **not** contain the Microsoft ODBC Driver 18 for SQL Server,
+    and we do not redistribute it. Without it, a SQL Server source registers but every query
+    fails (`500`, logged as `Can't open lib 'ODBC Driver 18 for SQL Server'`). Download it
+    **directly from Microsoft**, which also means you accept
+    [Microsoft's licence terms](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server) for it yourself.
 
-=== "Ubuntu / Debian"
+Add the driver in a thin image of your own, built on the TDB image you received. The
+recipe follows [Microsoft's Debian install steps](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server) and keeps TDB's non-root user:
 
-    ```bash
-    # Add the Microsoft package repository
-    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
-    curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list \
-      | sudo tee /etc/apt/sources.list.d/mssql-release.list
+```dockerfile
+FROM tdb-enterprise:vX.Y.Z
+USER root
+# Microsoft ODBC Driver 18 for SQL Server, from Microsoft's own repository.
+# ACCEPT_EULA=Y accepts Microsoft's licence terms for the driver.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && . /etc/os-release \
+    && curl -fsSL -o /tmp/packages-microsoft-prod.deb \
+       "https://packages.microsoft.com/config/debian/${VERSION_ID}/packages-microsoft-prod.deb" \
+    && dpkg -i /tmp/packages-microsoft-prod.deb \
+    && rm /tmp/packages-microsoft-prod.deb \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 libgssapi-krb5-2 \
+    && apt-get purge -y curl \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+USER tdb
+```
 
-    sudo apt-get update
-    sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
-    ```
+```bash
+docker build -t tdb-enterprise-sqlserver:vX.Y.Z .
+docker run --rm --entrypoint odbcinst tdb-enterprise-sqlserver:vX.Y.Z -q -d
+# [ODBC Driver 18 for SQL Server]
+```
 
-=== "macOS"
-
-    ```bash
-    brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
-    brew update
-    HOMEBREW_ACCEPT_EULA=Y brew install msodbcsql18
-    ```
-
-=== "Docker"
-
-    Use a base image that already includes the driver, or add the install steps to
-    your `Dockerfile` before installing TDB:
-
-    ```dockerfile
-    FROM ubuntu:22.04
-    RUN apt-get update && apt-get install -y curl gnupg lsb-release && \
-        curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-          | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg && \
-        curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list \
-          > /etc/apt/sources.list.d/mssql-release.list && \
-        apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql18
-    # ... remainder of your TDB install
-    ```
+Run `tdb-enterprise-sqlserver:vX.Y.Z` wherever you ran `tdb-enterprise:vX.Y.Z`.
+**Rebuild it on every upgrade**, from the new TDB image. The build needs access to
+`packages.microsoft.com`; for an air-gapped host, build it where that is reachable and
+move the image with `docker save` / `docker load`, as you move the TDB image. We check this
+recipe against each release's image with a real SQL Server.
 
 ---
 
@@ -397,14 +400,12 @@ to resolve the instance, or pin a static port and use that in the `port` field.
 
 ### ODBC driver not found
 
-If TDB cannot find the driver, verify the driver name reported by your system:
+`Can't open lib 'ODBC Driver 18 for SQL Server'` in TDB's log means the image has no
+driver: build the image in [Prerequisites](#prerequisites). To list the drivers an image
+has:
 
 ```bash
-# Linux
-odbcinst -q -d
-
-# macOS
-/usr/local/etc/odbcinst.ini
+docker run --rm --entrypoint odbcinst <image> -q -d
 ```
 
 Set the `driver` field in the connection config to exactly match the name shown there. A path to the driver's library is refused; use the name.
