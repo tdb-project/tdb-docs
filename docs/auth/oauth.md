@@ -273,11 +273,17 @@ network. Every fetch is guarded:
 - the URL must be `https`, with a path, and no credentials, query, fragment or
   `.`/`..` segments;
 - every address the host resolves to must be public. Private, loopback,
-  link-local and cloud-metadata addresses are refused. TDB connects to the
+  link-local and cloud-metadata addresses are refused, including when carried
+  inside a NAT64 (`64:ff9b::/96`) address. TDB connects to the
   address it checked, and TLS still verifies the certificate against the
   hostname, so a name that re-resolves cannot redirect the fetch inward;
-- redirects are refused, and the fetch has a 5-second deadline and a 64 KiB
-  size limit;
+- redirects are refused, and the fetch has a 64 KiB size limit and a
+  5-second deadline for the whole fetch, connection and TLS included
+  (0.38.6 and later; before, the 5 seconds applied to each read);
+- at most 4 fetches run at once, because anyone can start one from the
+  authorization page. Past that, a request is refused at once
+  (`invalid_client`, logged with `reason=busy`) and the client can retry
+  (0.38.6 and later);
 - the document's `client_id` must equal its URL, it must describe a public
   client (no `client_secret`, `token_endpoint_auth_method` `none`), and its
   `redirect_uris` follow the [rules below](#redirect-uri-restrictions).

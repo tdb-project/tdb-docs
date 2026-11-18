@@ -77,6 +77,32 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-18 — Client metadata fetches could hold the server's worker threads
+
+**Enterprise, 0.18.0 to 0.38.5; fixed in 0.38.6. Community is not affected:** it has no
+OAuth. Found by a security review of Client ID Metadata Documents; we know of no use of it.
+Deployments that do not set `TDB_OAUTH_CIMD_HOSTS` (the default) are not affected.
+
+With `TDB_OAUTH_CIMD_HOSTS` set, the authorization page fetches a client's metadata from a
+URL the client names, on one of the allowed hosts. The page needs no credential, and each
+fetch holds one of the server's worker threads until it ends. Two things let that go on too
+long:
+
+- the 5-second limit applied to each read, not to the fetch, so a server on an allowed host
+  that sent its response a byte at a time held the thread for as long as it liked;
+- nothing bounded how many fetches ran at once. Each new URL started one, so a caller
+  sending many requests for an allowed host that was slow or not answering held every worker
+  thread, and REST and MCP requests waited behind them. In our test, 80 such requests delayed
+  `/health` by 2.5 seconds.
+
+No data was exposed. From 0.38.6 the whole fetch ends at the 5-second deadline, at most 4
+fetches run at once, and a request past that is refused at once (`invalid_client`, logged
+`oauth_cimd_refused … reason=busy`). NAT64 (`64:ff9b::/96`) and IPv4-compatible (`::/96`)
+IPv6 addresses are now checked by the IPv4 address they carry.
+
+**Action:** upgrade if you set `TDB_OAUTH_CIMD_HOSTS`. To look back, search the application
+log for `oauth_cimd_refused`.
+
 ### 2026-11-17 — One key could hold every stream slot
 
 **Enterprise, 0.31.0 to 0.38.4; fixed in 0.38.5. Community is not affected:** it has no
