@@ -173,6 +173,13 @@ with a key that has no permission to list sources.
 NULL from an empty string** — `table` and `csv` both render NULL as an empty
 cell, which is the correct display but is lossy.
 
+`table` shows a value as text: brackets print as written, and a control
+character (an escape sequence, a carriage return) is shown as `\u001b` and the
+like, so data cannot clear or rewrite your terminal. `csv` and `json` write the
+data exactly as returned, so redirect them to a file rather than reading raw
+bytes on a terminal (community 0.18.3 and enterprise 0.38.7 and later; before,
+brackets in data could be dropped and a value holding `[/b]` stopped the command).
+
 ```console
 $ tdb query "SELECT id, country FROM data" --output json
 [{"id": 1, "country": "UK"}, {"id": 2, "country": null}]

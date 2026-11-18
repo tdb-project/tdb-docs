@@ -77,6 +77,52 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-18 — A query could read a column held for approval without asking
+
+**Enterprise, 0.32.0 to 0.38.6; fixed in 0.38.7. Community is not affected:** it has no
+approvals. Found by a security review of approvals; we know of no use of it. Deployments
+whose policy file has no `approval` block are not affected.
+
+A rule's `approval` block holds a query that reads the columns it names until an approver
+decides. TDB works out which columns a query reads, and two shapes slipped past it:
+
+- a whole-row reference, `SELECT data FROM data` (or the table's alias), which returns
+  every column of the row as one value;
+- an alias column list, `SELECT * FROM data AS a(p, n, q)`, which renames the columns
+  before they are matched.
+
+Both returned the held columns at once, with no approval request. Column withholding,
+masking and row filters still applied: a caller saw only what its rule shows, but saw the
+held columns without anyone approving it. From 0.38.7 both shapes count as reading every
+column of the table, so the query waits for approval.
+
+Also in 0.38.7: a table or column name holding a line break (PostgreSQL allows one in a
+quoted identifier) could end a comment line in the draft from `tdb policy suggest` and add
+a key such as `unlisted_sources: allow` to it. Names in the draft's comments now show
+control characters as `\uXXXX`. Review a draft before loading it, as always.
+
+**Action:** upgrade if your policy file uses `approval`. To look back, search the audit log
+for `query` entries under a rule with an approval block whose SQL selects the table itself
+or gives the table a column list.
+
+### 2026-11-18 — `tdb query` printed data as terminal markup
+
+**Community 0.18.2 and earlier, enterprise 0.38.6 and earlier; fixed in community 0.18.3
+and enterprise 0.38.7.** Found by a security review of the CLI. Only the `tdb query`
+command is affected; the server, the API and MCP are not.
+
+`tdb query` printed values through a library that reads `[…]` as styling and passes
+escape sequences to the terminal. A value holding `[b]…[/b]` or `[x]` lost its brackets
+in table and `--output csv` output, a value holding `[/b]` stopped the command, and a
+value holding an escape sequence reached the terminal as it was, where it could clear the
+screen or rewrite what was printed before it. Anyone who can write to the queried data
+could do this to the person running the command. From 0.18.3 / 0.38.7 the table shows
+values as text with control characters made visible, and `--output csv` writes the data
+exactly.
+
+**Action:** upgrade the CLI. A CSV exported with `tdb query -o csv` from an earlier
+release may have lost square-bracketed text; export it again.
+
 ### 2026-11-18 — Client metadata fetches could hold the server's worker threads
 
 **Enterprise, 0.18.0 to 0.38.5; fixed in 0.38.6. Community is not affected:** it has no
