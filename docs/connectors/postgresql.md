@@ -273,6 +273,10 @@ Every caller of a source runs as its one database role, and PostgreSQL lets a ro
 cancel or end its own sessions. **From 0.38.4 TDB refuses SQL naming
 `pg_terminate_backend` or `pg_cancel_backend`**, and the functions that run SQL given as
 text (`query_to_xml…`, `ts_stat`, `ts_rewrite`), so one key cannot end another's query.
+From 0.38.8 the advisory-lock functions (`pg_advisory_*`, `pg_try_advisory_*`) are refused too:
+a session lock outlives a rollback, so a read could hold one against your own applications,
+and with `TDB_POOL_SIZE` set a pooled connection kept it after the query. The pool now
+releases every advisory lock when a connection comes back.
 A list of names cannot cover every way to call a function, so also take the right away
 in the database, which stops the call however it is made:
 

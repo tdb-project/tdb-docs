@@ -266,7 +266,7 @@ curl -s -H "Authorization: Bearer <KEY>" http://localhost:8000/v1/version
 ```
 
 ```json
-{"version": "0.38.7", "build_sha": "8ce2de6"}
+{"version": "0.38.8", "build_sha": "d08fd76"}
 ```
 
 This is the authoritative answer to "what am I running" — worth quoting in a
@@ -286,5 +286,5 @@ No authentication, and **not licence-gated** — this still answers when
 licence has lapsed.
 
 ```json
-{"product": "The Data-Bridge", "version": "0.38.7", "status": "running", "docs": "/docs"}
+{"product": "The Data-Bridge", "version": "0.38.8", "status": "running", "docs": "/docs"}
 ```

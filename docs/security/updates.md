@@ -77,6 +77,47 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-18 — A read could hold a lock the source's own applications wait on
+
+**Enterprise, every release with the PostgreSQL or MySQL connector; fixed in 0.38.8.
+Community 0.18.4 refuses the same functions** (its CSV sources have none of them; the check
+is shared). Found by a security review; we know of no use of it.
+
+PostgreSQL's session advisory locks (`pg_advisory_lock` and the rest) and MySQL's named
+locks (`GET_LOCK`) are held by a session, not a transaction, so a rollback does not release
+them. Many applications use them to serialise migrations and jobs. A key allowed to query
+could take one: with `TDB_POOL_SIZE` set, the pooled connection kept the lock after the
+query ended and returned to the pool, idle, where it stayed until the connection closed;
+through the wire gateway it lasted the client's session; on any other connection, until
+the query ended. Anything in your applications waiting on that lock waited too. No data
+was exposed.
+
+From 0.38.8 / 0.18.4 SQL naming `pg_advisory_*`, `pg_try_advisory_*`, `GET_LOCK`,
+`RELEASE_LOCK` or `RELEASE_ALL_LOCKS` is refused (matched inside quotes and comments too),
+and the pool releases every advisory lock when a connection comes back.
+
+**Action:** upgrade if a PostgreSQL or MySQL source's database uses advisory or named locks.
+To look back, search the audit log for those function names.
+
+### 2026-11-18 — A revoked key's stream ran on; an audit export could stop for good
+
+**Enterprise, 0.31.0 to 0.38.7 (streams) and 0.4.0 to 0.38.7 (export); fixed in 0.38.8.
+Community is not affected:** it has neither. Found by a security review.
+
+- **Revocation.** A stream checked its key when it started. A key revoked, or a sign-in
+  removed, while its stream ran kept receiving rows until the stream ended, up to
+  `TDB_STREAM_TIMEOUT` (600 s) and `TDB_MAX_RESULT_ROWS`. From 0.38.8 a stream re-checks
+  its credential and the licence every few seconds and ends with `credential_invalid`.
+- **Export.** An audit entry holds its statement whole, and the wire gateway accepts
+  statements up to 16 MiB. A key that sent enough long statements could fill one export
+  batch (100 entries) past Splunk HEC's default `max_content_length` (800 MiB). Splunk
+  refused it (413), the export stops at the first refused batch so that nothing is lost,
+  and every later run retried the same batch: nothing after it reached Splunk. (S3 objects
+  over 5 GB fail the same way.) From 0.38.8 a batch is also cut at 32 MiB.
+
+**Action:** upgrade. If `GET /v1/audit/export/status` shows a destination whose `last_run`
+keeps failing with HTTP 413, upgrading lets the export continue from where it stopped.
+
 ### 2026-11-18 — A query could read a column held for approval without asking
 
 **Enterprise, 0.32.0 to 0.38.6; fixed in 0.38.7. Community is not affected:** it has no

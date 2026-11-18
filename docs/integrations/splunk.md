@@ -6,7 +6,7 @@ TDB can push its audit log to Splunk via the HTTP Event Collector (HEC). This le
 
 ## How it works
 
-`POST /v1/audit/export` reads the TDB audit log file and sends each entry to your Splunk HEC endpoint as a structured event. Entries are batched (100 per request) and timestamped using the `ts` field from each audit entry.
+`POST /v1/audit/export` reads the TDB audit log file and sends each entry to your Splunk HEC endpoint as a structured event. Entries are batched (100 per request, and from 0.38.8 at most 32 MiB per request, so a batch of very long statements stays under HEC's `max_content_length`) and timestamped using the `ts` field from each audit entry.
 
 The export is **on-demand** — TDB does not stream to Splunk in real time. Schedule the export endpoint as a cron job, or call it from your SIEM pipeline on a fixed interval.
 

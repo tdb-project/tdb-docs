@@ -246,7 +246,9 @@ Everything that can be refused is refused before the first row, with the status 
 [Errors](../reference/errors.md). A later failure is one of: `max_result_rows` (the result
 reached `TDB_MAX_RESULT_ROWS`), `stream_timeout` (it ran past `TDB_STREAM_TIMEOUT`),
 `stream_stalled` (from 0.38.5: the client took nothing for `TDB_STREAM_STALL_TIMEOUT`; it is
-not told, since it is not reading), or a source failure such as `query_failed`.
+not told, since it is not reading), `credential_invalid` (from 0.38.8: the key was revoked or
+expired, or the licence lapsed, while the stream ran; checked every few seconds), or a source
+failure such as `query_failed`.
 
 - **NDJSON needs unique column names**, and none called `_end` or `_error`: refused with
   400 `stream_column_names`. Name them with `AS`, or use CSV.
@@ -353,6 +355,7 @@ source, DuckDB's own parser must also read the query as exactly one `SELECT`.
 | `SELECT 1 /* outer /* inner */ still a comment */` | ✅ nested comments |
 | a query that one engine would read as two statements | ❌ `Only one statement per query is allowed` |
 | `SELECT pg_terminate_backend(pid) FROM pg_stat_activity` | ❌ `Function not allowed: pg_terminate_backend`, **from 0.38.4 / 0.18.2**. Also `pg_cancel_backend`, `query_to_xml…`, `ts_stat`, `ts_rewrite`, Snowflake `SYSTEM$CANCEL_…` / `SYSTEM$ABORT_…`, and any `U&"…"` identifier. Matched inside quotes and comments too, so a query whose text merely mentions one is refused |
+| `SELECT pg_advisory_lock(42)` | ❌ `Function not allowed: pg_advisory_lock`, **from 0.38.8 / 0.18.4**. Also every `pg_advisory_*` and `pg_try_advisory_*` function and MySQL's `GET_LOCK`, `RELEASE_LOCK`, `RELEASE_ALL_LOCKS`: a session lock outlives the query and would hold up the source's own applications. Matched inside quotes and comments too |
 
 Both refusals are HTTP 400 and audited as `sql_validation_failed`. Ordinary SQL
 is unaffected; what is refused is SQL whose meaning depends on which engine
