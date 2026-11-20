@@ -299,8 +299,9 @@ including synchronous ones, so the field means the same thing either way:
 }
 ```
 
-`state` is `running`, `succeeded` or `failed`; `last_run` is `null` for a
-destination that has never exported.
+`state` is `running`, `succeeded`, `failed` or `disabled` (the destination is not
+configured, so nothing was sent; from 0.38.9, earlier releases said `succeeded`);
+`last_run` is `null` for a destination that has never exported.
 
 !!! warning "One run per destination at a time"
 
