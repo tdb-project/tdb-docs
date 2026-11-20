@@ -60,7 +60,14 @@ curl -X POST http://localhost:8000/v1/sources \
 | `table` | No | — | Omit to register the whole database |
 | `secure` | No | `false` | HTTPS |
 | `verify` | No | `true` | Verify the server certificate. Leave it on outside a test |
-| `ca_cert` | No | — | A CA bundle path inside the TDB container, for a private CA |
+| `ca_cert` | No | — | A CA bundle path inside the TDB container, for a private CA (see the warning below) |
+
+!!! warning "HTTPS needs a publicly trusted certificate in 0.39.0"
+    In 0.39.0 `ca_cert` and `verify` have no effect: TDB checks the server's certificate
+    against the public certificate authorities only. A server with a certificate from your
+    own CA registers, and then every query fails (`500`; the application log shows
+    `CERTIFICATE_VERIFY_FAILED`). Until this is fixed, use a publicly trusted certificate,
+    or plain HTTP (8123) on a network you control.
 
 Registering connects to nothing (as for every database source). The first query checks the
 user, and the schema endpoint and MCP `schema_source` list the database's tables **and
@@ -128,9 +135,10 @@ profile check.
 | `(U)Int8`–`(U)Int256` | number, exact (above 2^53 a JavaScript client loses digits, as for PostgreSQL `bigint`) |
 | `Float32/64` | number; `NaN` and infinities as the strings `"NaN"`, `"Infinity"` |
 | `Decimal` | string, exact |
-| `String`, `FixedString`, `LowCardinality(String)`, `Enum` | string (an `Enum` as its name) |
+| `String`, `LowCardinality(String)`, `Enum` | string (an `Enum` as its name) |
+| `FixedString` | base64 (the driver returns bytes; as binary on every engine) |
 | `Date`, `Date32` | `"2026-11-20"` |
-| `DateTime`, `DateTime64` | ISO 8601; with a time zone in the type, with its offset (`+05:30`) |
+| `DateTime`, `DateTime64` | ISO 8601. In a time zone other than the server's, with its offset (`+05:30`); in the server's own zone (UTC by default), with none |
 | `UUID`, `IPv4`, `IPv6` | string |
 | `Array`, `Tuple` (named), `Map`, `JSON` | array or object |
 | `Nullable(T)` | `T` or `null` |
@@ -143,10 +151,11 @@ yet carry them safely: `FINAL`, `SAMPLE`, `ARRAY JOIN`, `PREWHERE`, `LIMIT … B
 `SETTINGS`, `FORMAT`. ClickHouse functions outside the policy allow-list (such as
 `uniqExact`) are refused under a rule, as on every engine. A caller with no rule is not
 affected. The masks are `concat('***', right(toString(col), 4))` and
-`lower(hex(SHA256(toString(col))))`.
+`lower(hex(SHA256(toString(col))))`: the hash is of ClickHouse's own text for the value, so
+`Decimal` `7.50` hashes as `7.5` and does not match the same value hashed on PostgreSQL.
 
 Views and materialized views over a protected table are named in the policy check's
-warnings (`GET /v1/policies`).
+warnings (`GET /v1/policies?validate=true`).
 
 ## Not supported
 
