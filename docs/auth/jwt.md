@@ -17,7 +17,7 @@ TDB_JWT_EXPIRE_MINUTES=60           # Optional — token lifetime (default: 60 m
 Generate a secure secret:
 
 ```bash
-python -c "import secrets; print(secrets.token_hex(32))"
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 !!! warning "One admin identity for this login"
@@ -82,7 +82,7 @@ curl http://localhost:8000/v1/sources \
 TOKEN=$(curl -s -X POST http://localhost:8000/v1/auth/token \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"your-password"}' \
-  | python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 
 # 2. List sources
 curl http://localhost:8000/v1/sources \

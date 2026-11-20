@@ -143,7 +143,7 @@ TDB supports two registration modes:
   "id": "a1b2c3d4-e5f6-...",
   "name": "production_db",
   "source_type": "postgres",
-  "connection": { "host": "host.docker.internal", "port": 5432, "dbname": "production", "schema": "public" },
+  "connection": { "host": "host.docker.internal", "port": 5432, "dbname": "production", "user": "tdb_reader", "password": "***", "schema": "public" },
   "description": "Production Postgres — all tables",
   "tags": ["production"],
   "registered_by": "tdbk_...",
@@ -398,7 +398,7 @@ response shown above this section.
 
 For a key with a [policy rule](../security/policies.md) on the source, the response
 leaves out withheld columns and tables the rule does not name, and a masked column
-carries `"masked": "redact" | "partial" | "hash"`. The field is absent otherwise.
+carries `"masked": "redact" | "partial" | "hash"`. Otherwise `masked` is `null`.
 
 ### Suggested policies
 
@@ -426,6 +426,7 @@ See [Suggested policies](../security/policies.md#suggested-policies).
 | Status | Meaning |
 |---|---|
 | 404 | Source name or UUID not found |
+| 403 | Enterprise, under a [policy file](../security/policies.md): the caller's policy refuses this source |
 | 503 | Source is registered but the backend database is unreachable |
 
 !!! warning "Fixed in 0.7.0: this endpoint returned 500 for CSV sources"

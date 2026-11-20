@@ -11,30 +11,36 @@ tdb query       # run a read-only SQL query
 tdb policy suggest <source>   # enterprise: draft column policies for personal data
 ```
 
-!!! warning "The `tdb` command is not inside the Docker image"
-    The published container installs the runtime dependencies and serves the
-    app; it does **not** install the `tdb` console script, so
-    `docker exec … tdb query` will not work. If you followed the Docker
-    quickstart, drive the server with the [REST API](../api/query.md) — that is
-    the supported path, and the CLI is a convenience for source installs, not a
-    second interface.
+!!! warning "The `tdb` command is not inside the Docker images"
+    Neither image installs the `tdb` console script, so `docker exec … tdb query`
+    will not work.
 
-    To get the CLI, install from source:
+    - **Enterprise:** run the CLI as a module inside the container. It uses the
+      container's own `TDB_API_KEYS` unless you pass another key with `-e`:
 
-    ```bash
-    git clone https://github.com/tdb-project/tdb-community.git
-    cd tdb-community
-    pip install uv && uv sync
-    ```
+        ```bash
+        docker exec tdb python -m tdb.cli query "SELECT 1" --source orders
+        docker exec -e TDB_API_KEYS=<key> tdb python -m tdb.cli policy suggest orders
+        ```
 
-    It can then talk to **any** reachable TDB, including one running in a
-    container — point it with `TDB_URL`:
+    - **Community:** the image has no CLI entry point. Use the
+      [REST API](../api/query.md), or install the CLI from source:
 
-    ```bash
-    export TDB_URL=http://localhost:8000
-    export TDB_API_KEYS=your-key
-    tdb query "SELECT * FROM data"
-    ```
+        ```bash
+        git clone https://github.com/tdb-project/tdb-community.git
+        cd tdb-community
+        pip install uv && uv sync
+        ```
+
+        It can then talk to **any** reachable TDB, including one running in a
+        container. Point it with `TDB_URL` and run it through `uv run` (the
+        command is in `.venv/bin`, not on your `PATH`):
+
+        ```bash
+        export TDB_URL=http://localhost:8000
+        export TDB_API_KEYS=your-key
+        uv run tdb query "SELECT * FROM data"
+        ```
 
 ## Environment
 
@@ -142,8 +148,8 @@ When you omit it:
 Naming a source also **skips the source listing request**, so `tdb query` works
 with a key that has no permission to list sources.
 
-!!! warning "Changed behaviour"
-    Before this release, `tdb query` always used the **first registered source**
+!!! warning "Changed in community 0.5.0 / enterprise 0.9.0"
+    Before those releases, `tdb query` always used the **first registered source**
     and had no way to say otherwise. On a deployment with several sources every
     other one was unreachable from the CLI, and the result was indistinguishable
     from a correct one. If you relied on that implicit first-source behaviour
@@ -158,7 +164,7 @@ with a key that has no permission to list sources.
 - **Enterprise** — the ceiling is `TDB_MAX_ROWS` (default 1,000), which an
   operator can raise.
 
-!!! warning "Changed behaviour"
+!!! warning "Changed in community 0.5.0 / enterprise 0.9.0"
     The CLI used to clamp `--limit` to 1,000 before sending, so a larger value
     returned 1,000 rows that looked like a complete result — and on an
     enterprise deployment that had raised `TDB_MAX_ROWS`, the extra rows were

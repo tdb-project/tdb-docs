@@ -44,8 +44,8 @@ community 0.18.0 / enterprise 0.34.0; earlier releases echoed your input).
   "sql": "SELECT id, status, total FROM orders WHERE status = 'shipped'",
   "columns": ["id", "status", "total"],
   "rows": [
-    {"id": 1001, "status": "shipped", "total": 149.99},
-    {"id": 1002, "status": "shipped", "total": 59.00}
+    {"id": 1001, "status": "shipped", "total": "149.99"},
+    {"id": 1002, "status": "shipped", "total": "59.00"}
   ],
   "rows_returned": 2,
   "truncated": false,

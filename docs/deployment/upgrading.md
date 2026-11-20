@@ -37,12 +37,16 @@ curl -s -H "Authorization: Bearer <admin-key>" http://<host>:8000/v1/version
 ## 2. Back up
 
 Everything TDB keeps is in two places: the data directory mounted at `/app/data` and the
-audit log (`TDB_LOG_FILE`, usually in the same directory). Stop TDB, then copy the
-**whole** directory, hidden files included:
+audit log at `TDB_LOG_FILE`. The [IT admin guide](it-admin-guide.md#2-quick-deploy-single-container)
+puts the log in its own volume at `/app/logs`; with no `TDB_LOG_FILE` set it is
+`/app/tdb_audit.jsonl`, inside the container, and is lost when the container is replaced,
+so move it to a volume before you upgrade. `docker inspect tdb --format '{{json .Mounts}}'`
+lists your volumes. Stop TDB, then copy **each** directory whole, hidden files included:
 
 ```bash
 docker stop tdb
 sudo cp -a /srv/tdb/state /srv/tdb/state.backup-$(date +%F)   # your /app/data volume
+sudo cp -a /srv/tdb/logs  /srv/tdb/logs.backup-$(date +%F)    # your /app/logs volume (the audit log)
 ```
 
 - **`.tdb_secret_key`** is hidden (a dot file). Without it the database passwords TDB
@@ -83,8 +87,10 @@ version updates the registry in place.
     docker rename tdb tdb-previous            # keep the old container for a rollback
     docker run -d --name tdb --restart unless-stopped -p 8000:8000 \
       -v /srv/tdb/state:/app/data \
+      -v /srv/tdb/logs:/app/logs \
       -v /srv/tdb/data:/data:ro \
       -e TDB_LICENSE -e TDB_API_KEYS -e TDB_JWT_SECRET \
+      -e TDB_LOG_FILE=/app/logs/tdb_audit.jsonl \
       ...the rest of your settings... \
       tdb-enterprise:vX.Y.Z
     ```
@@ -139,8 +145,10 @@ docker rename tdb-previous tdb && docker start tdb
 ```
 
 Restoring the backup is the safe way back. Changes made on the new version (new keys,
-sources, audit entries) are lost with it; the audit entries the new version wrote are
-in the directory you replaced, so keep a copy of it if you need them.
+sources) are lost with it. Leave the audit log in place: the previous version continues
+the same chain, so the entries the new version wrote stay on record. (If your audit log
+is inside `/srv/tdb/state`, it is replaced with the rest; keep a copy of the directory
+you replace if you need those entries.)
 
 Starting the previous image on the data the new version used, without restoring, has also
 worked in our tests (0.32.0 and 0.36.1 after 0.37.0: keys, sources, stored passwords,

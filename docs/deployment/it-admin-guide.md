@@ -122,6 +122,7 @@ arrive the same way: [Upgrading](upgrading.md).
 The minimum viable run. **Generate real secrets — do not copy the placeholders.**
 
 ```bash
+mkdir -p tdb-data tdb-logs csv   # first: see the note below
 docker run -d --name tdb -p 8000:8000 \
   -e TDB_API_KEYS="$(python3 -c 'import secrets;print(secrets.token_urlsafe(32))')" \
   -e TDB_JWT_SECRET="$(python3 -c 'import secrets;print(secrets.token_hex(32))')" \
@@ -133,6 +134,12 @@ docker run -d --name tdb -p 8000:8000 \
   -v "$(pwd)/csv:/data:ro" \
   <image>
 ```
+
+**Create the host directories before `docker run`.** If one does not exist, Docker creates
+it owned by root, and TDB, which runs as uid 1000, cannot write there: the container exits
+at startup with `cannot open or write the registry database`. For a directory that
+already exists, `sudo chown -R 1000:1000 tdb-data tdb-logs`. Docker Compose with named
+volumes (§4.1) does not have this problem.
 
 What each mount is for:
 - `/app/data` — **persistent state** (SQLite registry DB + API-key store). **Must be

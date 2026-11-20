@@ -232,11 +232,14 @@ error message.
 
 ## Example: full setup
 
+The SQL below uses DuckDB's `strftime`, so `orders_db` here is a
+[DuckDB source](../connectors/duckdb.md) with an `orders` table. On another engine, use
+that engine's date functions.
+
 ```bash
 # 1. Create view files
-mkdir /etc/tdb/views
-
-cat > /etc/tdb/views/revenue_by_month.yml << 'EOF'
+sudo mkdir -p /etc/tdb/views
+sudo tee /etc/tdb/views/revenue_by_month.yml >/dev/null << 'EOF'
 name: revenue_by_month
 description: "Monthly revenue totals, optionally filtered by year"
 source: orders_db
@@ -254,8 +257,11 @@ parameters:
     default: "0"
 EOF
 
-# 2. Start TDB with the views directory
-TDB_VIEWS_DIR=/etc/tdb/views tdb serve
+# 2. Start TDB with the views directory mounted (plus your usual settings)
+docker run -d --name tdb -p 8000:8000 \
+  -e TDB_VIEWS_DIR=/etc/tdb/views -v /etc/tdb/views:/etc/tdb/views:ro \
+  ...the rest of your settings... \
+  tdb-enterprise:<version>
 
 # 3. List views
 curl -H "Authorization: Bearer <KEY>" http://localhost:8000/v1/views

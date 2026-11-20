@@ -198,15 +198,16 @@ You can use the source **name** (`production_db`) instead of the UUID.
     ```
 
 Expected response (database-wide source — all tables in the `public` schema).
-`source_id` echoes whatever ref you queried by — the name here; the UUID if you
-used the UUID. The `description` fields are `null` until you set
+`source_id` is the source's UUID whichever reference you used (from 0.34.0; earlier
+releases echoed it). `source_description` is the description from Step 2; the other
+`description` fields are `null` until you set
 [schema annotations](../api/sources.md#schema-annotations):
 
 ```json
 {
-  "source_id": "production_db",
+  "source_id": "a1b2c3d4-...",
   "source_name": "production_db",
-  "source_description": null,
+  "source_description": "Production Postgres — all tables",
   "columns": [],
   "tables": [
     {
@@ -313,7 +314,8 @@ Expected response:
 ```
 
 !!! info "Read-only enforcement"
-    TDB rejects any SQL that does not begin with `SELECT` or `WITH`, and any
+    TDB rejects any SQL that does not begin with `SELECT` or `WITH` (after any leading
+    comments), and any
     SQL containing a write keyword (see
     [what SQL is accepted](../api/query.md#what-sql-is-accepted)), at two levels:
     (1) the SQL validator, and (2) the Postgres `read_only = True` transaction flag.
@@ -446,7 +448,7 @@ successful response here means Claude Desktop or Cursor can use this source.
           "name": "query_source",
           "arguments": {
             "sql": "SELECT COUNT(*) AS total FROM customers",
-            "source_name": "customers"
+            "source_name": "production_db"
           }
         }
       }'
@@ -467,7 +469,7 @@ successful response here means Claude Desktop or Cursor can use this source.
           "name": "query_source",
           "arguments": {
             "sql": "SELECT COUNT(*) AS total FROM customers",
-            "source_name": "customers"
+            "source_name": "production_db"
           }
         }
       }'
@@ -483,7 +485,7 @@ Expected response:
     "content": [
       {
         "type": "text",
-        "text": "{\"source\": \"customers\", \"columns\": [\"total\"], \"rows\": [{\"total\": 1423}], \"rows_returned\": 1}"
+        "text": "{\"source\": \"production_db\", \"columns\": [\"total\"], \"rows\": [{\"total\": 1423}], \"rows_returned\": 1, \"truncated\": false}"
       }
     ]
   }

@@ -78,6 +78,15 @@ From 0.31.0.
 A stream near the top bucket was holding a read session for that long, which on
 PostgreSQL stops vacuum.
 
+### PostgreSQL wire gateway
+
+From 0.14.0, when [`TDB_PG_PORT`](../integrations/postgres-wire.md) is set.
+
+| Metric | Type | Labels | Description |
+|---|---|---|---|
+| `tdb_pgwire_sessions` | Gauge | — | Authenticated gateway sessions open now. Each holds a session on its source database; compare it with `TDB_PG_MAX_CLIENTS` and the source's `max_connections` |
+| `tdb_pgwire_refusals_total` | Counter | `reason` | Gateway connections and statements TDB refused, by the audit reason |
+
 ### Audit log
 
 | Metric | Type | Description |

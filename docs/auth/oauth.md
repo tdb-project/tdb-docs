@@ -46,7 +46,7 @@ is needed beyond pointing the client at the TDB base URL.
 
 ```bash
 # Verify discovery is working
-curl http://localhost:8000/.well-known/oauth-authorization-server | python -m json.tool
+curl http://localhost:8000/.well-known/oauth-authorization-server | python3 -m json.tool
 ```
 
 Expected output:

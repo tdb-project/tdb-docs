@@ -134,7 +134,7 @@ TDB is configured entirely through environment variables, passed with `-e` (or a
 TDB_API_KEYS=<output of: python3 -c "import secrets; print(secrets.token_hex(32))">  # Comma-separated
 
 # --- Required for JWT + OAuth ---
-TDB_JWT_SECRET=<64-char hex>              # python -c "import secrets; print(secrets.token_hex(32))"
+TDB_JWT_SECRET=<64-char hex>              # python3 -c "import secrets; print(secrets.token_hex(32))"
 TDB_ADMIN_USER=admin
 TDB_ADMIN_PASSWORD=<strong-password>
 
@@ -192,7 +192,17 @@ container restarts:
 | `/app/data/tdb_registry.db` | SQLite registry of registered sources |
 | `/app/tdb_audit.jsonl` | NDJSON audit log — one entry per query |
 
-The `-v "$(pwd)/data:/app/data"` flag in the run command above persists the registry.
+The `-v "$(pwd)/data:/app/data"` flag in the run command above persists the registry
+only. The audit log stays inside the container and is lost when the container is
+removed or replaced, an upgrade included. To keep it, create a second directory and
+point `TDB_LOG_FILE` into it:
+
+```bash
+mkdir -p logs   # before docker run, as for data
+# add to the docker run command:
+#   -e TDB_LOG_FILE=/app/logs/tdb_audit.jsonl -v "$(pwd)/logs:/app/logs"
+```
+
 Both paths are configurable (`TDB_REGISTRY_DB`, `TDB_LOG_FILE`).
 
 ---
