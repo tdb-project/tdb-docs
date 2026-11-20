@@ -3,7 +3,7 @@
  "info": {
   "title": "The Data-Bridge (TDB)",
   "description": "A secure, auditable API layer over your existing data sources. Register a data source once, query it anywhere.",
-  "version": "0.39.0"
+  "version": "0.39.1"
  },
  "paths": {
   "/v1/auth/token": {
@@ -1064,7 +1064,7 @@
      "Query"
     ],
     "summary": "Run a SQL query against a registered data source",
-    "description": "Execute a **read-only** SQL SELECT against a registered source.\n\n### Example\n```json\n{\n  \"source_id\": \"abc-123\",\n  \"sql\": \"SELECT * FROM orders LIMIT 50\",\n  \"limit\": 50\n}\n```\n\nUse the table name that matches the connector: CSV sources are exposed as\n`data`, while database connectors (Postgres, MySQL, SQL Server, Snowflake)\ntake the **actual table name** from the source's `connection.table` — the\nSQL is passed through to the database unchanged apart from an appended\n`LIMIT`, so there is no `data` alias for database sources.",
+    "description": "Execute a **read-only** SQL SELECT against a registered source.\n\n### Example\n```json\n{\n  \"source_id\": \"abc-123\",\n  \"sql\": \"SELECT * FROM orders LIMIT 50\",\n  \"limit\": 50\n}\n```\n\nUse the table name that matches the connector: CSV sources are exposed as\n`data`, while database connectors (Postgres, MySQL, SQL Server, Snowflake,\nClickHouse) take the **actual table name** from the source's\n`connection.table` — the SQL is passed through to the database unchanged\napart from an appended `LIMIT`, so there is no `data` alias for database\nsources.",
     "operationId": "run_query_v1_query_post",
     "security": [
      {

@@ -154,7 +154,7 @@ Two fields describe the refusal:
 | `missing_api_key` | An MCP request carried no bearer token |
 | `invalid_connection` | Registration: the `connection` block is not valid for the `source_type` |
 | `query_failed` | The engine rejected the query, for example a column that does not exist (from community 0.17.0 / enterprise 0.28.0). The engine's error text is in the application log only, because it can quote data |
-| `source_unavailable` | The source's file was missing or unreadable when the query ran (from community 0.17.0 / enterprise 0.28.0) |
+| `source_unavailable` | The source's file was missing or unreadable when the query ran (from community 0.17.0 / enterprise 0.28.0); or (enterprise 0.39.1) TDB could not connect to a database source, the reason in the application log as `source_unreachable` |
 | `internal_error` | The query failed for any other reason, including a driver error from a source that cannot be reached; see the application log (from community 0.17.0 / enterprise 0.28.0) |
 | `invalid_arguments` | An enterprise MCP tool or a view run refused its arguments: a column or function it does not know, or a view parameter that does not fit (from 0.28.0) |
 | `view_not_found` | A view run named a view that does not exist (enterprise, from 0.28.0) |

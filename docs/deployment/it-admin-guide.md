@@ -592,8 +592,8 @@ things differ from the other databases:
 
 ### 5.7 ClickHouse sources
 
-From **0.39.0**, over ClickHouse's HTTP interface (8123, or 8443 with `"secure": true`, which
-in 0.39.0 needs a publicly trusted certificate: `ca_cert` has no effect yet);
+From **0.39.0**, over ClickHouse's HTTP interface (8123, or 8443 with `"secure": true`; a
+certificate from your own CA needs `ca_cert` and **0.39.1**, which fixed it being ignored);
 tested against ClickHouse 26.8, **not yet against ClickHouse Cloud**. Two things to plan:
 
 - **The user: `SELECT` grants and no settings profile.** TDB sends `readonly=1` and its own

@@ -60,14 +60,14 @@ curl -X POST http://localhost:8000/v1/sources \
 | `table` | No | — | Omit to register the whole database |
 | `secure` | No | `false` | HTTPS |
 | `verify` | No | `true` | Verify the server certificate. Leave it on outside a test |
-| `ca_cert` | No | — | A CA bundle path inside the TDB container, for a private CA (see the warning below) |
+| `ca_cert` | No | — | A CA bundle path inside the TDB container, for a private CA (0.39.1; see below) |
 
-!!! warning "HTTPS needs a publicly trusted certificate in 0.39.0"
-    In 0.39.0 `ca_cert` and `verify` have no effect: TDB checks the server's certificate
-    against the public certificate authorities only. A server with a certificate from your
-    own CA registers, and then every query fails (`500`; the application log shows
-    `CERTIFICATE_VERIFY_FAILED`). Until this is fixed, use a publicly trusted certificate,
-    or plain HTTP (8123) on a network you control.
+!!! note "Your own certificate authority"
+    Give TDB its certificate with `ca_cert` (a path inside the TDB container). **On 0.39.0
+    `ca_cert` and `verify` had no effect**: only a publicly trusted certificate worked,
+    and every query on a server signed by your own CA failed. Fixed in **0.39.1**. A CA
+    certificate must carry the key-usage extension (`keyCertSign`): TDB's Python refuses
+    one without it, with `CA cert does not include key usage extension` in the log.
 
 Registering connects to nothing (as for every database source). The first query checks the
 user, and the schema endpoint and MCP `schema_source` list the database's tables **and
