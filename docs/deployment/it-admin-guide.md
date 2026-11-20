@@ -79,7 +79,7 @@ Notes that drive sizing:
   with `-p` (e.g. `-p 8000:8000`). **The server speaks plain HTTP** — terminate TLS in
   front of it (see [§7](#7-tls-ssl)).
 - **Egress** the host must allow: to each registered data source (e.g. Postgres 5432,
-  MySQL 3306, SQL Server 1433, Snowflake 443); to your private registry if pulling the
+  MySQL 3306, SQL Server 1433, Snowflake 443, ClickHouse 8123 or 8443 for HTTPS); to your private registry if pulling the
   image; and to your SIEM endpoint if you enable the Splunk exporter (HEC over 443/8088).
   If you enable [Client ID Metadata Documents](../auth/oauth.md#client-id-metadata-documents)
   (`TDB_OAUTH_CIMD_HOSTS`, off by default, 0.18.0 and later), allow HTTPS (443) to the
@@ -362,17 +362,21 @@ curl -fsS -X POST http://localhost:8000/v1/sources \
       }'
 ```
 
-- One registered source maps to **one table** (matches the CSV model). Need several
-  tables? Register several sources, or use named views.
+- **Omit `table` to register the whole database** (every table, joins across them);
+  include it to scope a source to one table. Either way the database user's grants are
+  the real boundary: the `table` key scopes what the schema endpoint lists, not what SQL
+  can read.
 - **Read-only is enforced at the engine level**, not just by SQL parsing: Postgres sets
   `connection.read_only = True`; MySQL uses a read-only transaction; SQL Server always
-  rolls back (autocommit off) and is fronted by the SELECT-only validator.
+  rolls back (autocommit off) and is fronted by the SELECT-only validator; ClickHouse
+  (from 0.39.0) gets `readonly=1` on every request.
 - **Best practice: give TDB a least-privilege, read-only DB login** (e.g. Postgres role
   with `SELECT` only; SQL Server `db_datareader`). This is your real guarantee — TDB's
   enforcement is defence-in-depth on top of it.
 - **From 0.12.0 TDB enforces part of this:** a source connecting as a role that can
   reach the database server's files or programs — a PostgreSQL superuser (from 0.38.2 also a member of a superuser role), a MySQL user
-  with `FILE`, SQL Server `sa` / `sysadmin` / `bulkadmin` — is refused on every query
+  with `FILE`, SQL Server `sa` / `sysadmin` / `bulkadmin`, a ClickHouse user with any grant
+  beyond `SELECT`/`SHOW` on its databases (from 0.39.0) — is refused on every query
   (403, audited `privileged_db_role`). A read-only session does not stop such a role
   reading host files, so every API key allowed to query the source would inherit that
   reach. Plan the role before upgrading; `TDB_ALLOW_PRIVILEGED_DB_ROLE=true` overrides.
@@ -585,6 +589,22 @@ things differ from the other databases:
 - **A role that cannot use the database or warehouse still signs in.** From 0.35.2
   registration checks the session's current database, schema and warehouse, and refuses
   the source as not accessible (503) instead of failing on every query later.
+
+### 5.7 ClickHouse sources
+
+From **0.39.0**, over ClickHouse's HTTP interface (8123, or 8443 with `"secure": true`);
+tested against ClickHouse 26.8, **not yet against ClickHouse Cloud**. Two things to plan:
+
+- **The user: `SELECT` grants and no settings profile.** TDB sends `readonly=1` and its own
+  timeout and row cap with every request. A profile that fixes `readonly` stops TDB setting
+  its limits; one that marks them `CHANGEABLE_IN_READONLY` lets a query lift them. TDB
+  refuses both (403), and `TDB_ALLOW_PRIVILEGED_DB_ROLE` does not change that. Never use the
+  built-in `default` user (it holds `ALL`).
+- **Some ClickHouse SQL is refused:** a `SETTINGS` or `FORMAT` clause and every table
+  function, for every caller; under a column or row policy also `FINAL`, `SAMPLE`,
+  `ARRAY JOIN`, `PREWHERE` and `LIMIT … BY`. Tell analysts before they meet a `400`/`403`.
+
+Setup and the full list: [ClickHouse](../connectors/clickhouse.md).
 
 For any database source, from 0.36.0 a 503 "not accessible" leaves a `source_unreachable`
 WARNING line in the application log with the driver's reason, password masked

@@ -60,7 +60,7 @@ hide:
 
 </div>
 
-Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, and
+Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse and
 CSV files — and every team now wants AI agents to query it. TDB makes that
 **existing, multi-source** data safely accessible **on your own infrastructure**,
 without moving it into a single cloud warehouse or routing it through a SaaS
@@ -180,7 +180,7 @@ copilot, and with a tamper-evident audit log you own.
 ## How it works
 
 ```
-Postgres · MySQL · SQL Server · Snowflake
+Postgres · MySQL · SQL Server · Snowflake · ClickHouse
       │
       │  read-only connection (per connector)
       ▼
