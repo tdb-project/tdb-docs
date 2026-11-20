@@ -103,6 +103,7 @@ nav:
     - Snowflake: connectors/snowflake.md
     - Parquet: connectors/parquet.md
     - DuckDB: connectors/duckdb.md
+    - ClickHouse: connectors/clickhouse.md
   - API Reference:
     - Sources: api/sources.md
     - Query: api/query.md

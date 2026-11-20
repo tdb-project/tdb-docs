@@ -187,6 +187,11 @@ Callers **without** a rule on the source are unaffected: no parsing, no allow-li
 Verified against real PostgreSQL, MySQL and SQL Server, and DuckDB (CSV, Parquet and,
 from 0.23.0, DuckDB database sources), and against a real Snowflake account (2026-11-10): the three masks, withheld columns, a row filter by attribute, the MCP tools, views and approvals, and these ways around a rule, each refused or masked: any case or quoting, `schema.table` and `database.schema.table`, `IDENTIFIER()`, `TABLE('…')`, time travel (`AT`, `BEFORE`), `RESULT_SCAN`, a CTE named like the table, `UNION`, a subquery, `information_schema`, `GET_DDL` and `SYSTEM$GET_TAG`.
 
+On **ClickHouse** (enterprise 0.39.0, against ClickHouse 26.8): the partial and hash masks, a
+withheld column, a row filter, a view over a protected table named in the warnings, and the
+clauses refused under a rule (`FINAL`, `SAMPLE`, `ARRAY JOIN`, `PREWHERE`, `LIMIT … BY`,
+`SETTINGS`, `FORMAT`; see [ClickHouse](../connectors/clickhouse.md#policies)).
+
 ### What a policied caller sees
 
 | Surface | Behaviour |

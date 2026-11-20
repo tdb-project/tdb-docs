@@ -32,7 +32,7 @@ localhost — see [TLS](deployment/it-admin-guide.md#7-tls-ssl).
 ```
  AI agents (MCP) ─┐
  Scripts (REST) ──┼──▶  TDB  ──read-only session──▶  PostgreSQL · MySQL · SQL Server
- BI tools (pgwire)┘      │                           Snowflake · CSV · Parquet · DuckDB
+ BI tools (pgwire)┘      │                Snowflake · ClickHouse · CSV · Parquet · DuckDB
                          └──▶ audit log (hash-chained, on your volume) ──▶ Splunk / S3
 ```
 

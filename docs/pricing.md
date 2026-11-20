@@ -62,7 +62,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Data sources**
 
-    - PostgreSQL, MySQL, SQL Server, Snowflake, Parquet files, DuckDB databases
+    - PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse, Parquet files, DuckDB databases
     - Unlimited simultaneous registered sources
 
     **Auth**
@@ -175,6 +175,7 @@ The commercial editions ship the same product except for the Mid-Market features
 | MySQL | ❌ | ✅ | ✅ | ✅ |
 | SQL Server | ❌ | ✅ | ✅ | ✅ |
 | Snowflake | ❌ | ✅ | ✅ | ✅ |
+| ClickHouse | ❌ | ✅ | ✅ | ✅ |
 | Parquet files | ❌ | ✅ | ✅ | ✅ |
 | DuckDB databases | ❌ | ✅ | ✅ | ✅ |
 | BigQuery, JSON and NDJSON files, MongoDB | ❌ | On request | On request | On request |

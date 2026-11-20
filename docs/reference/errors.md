@@ -117,6 +117,7 @@ wire gateway, audited with the reason below. Under a rule the entry also carries
 | `policy_no_rule` | No rule names this key or its role, and the source's `default` is `deny` | Add a rule for the key, or use a key that has one |
 | `policy_missing_attribute` | The key's rule has a row filter needing an attribute the caller lacks | Set it: `PUT /v1/auth/keys/{id}/attributes`, or the JWT `attributes` claim |
 | `policy_table_not_permitted` | The SQL reads a table, view or copy the caller's rule does not name | Query only the rule's tables, or add the table to the rule |
+| `policy_clause_not_supported` | On a ClickHouse source under a rule: `FINAL`, `SAMPLE`, `ARRAY JOIN`, `PREWHERE`, `LIMIT … BY`, `SETTINGS` or `FORMAT` (enterprise, from 0.39.0) | Rewrite without it, or read through a key with no rule; see [ClickHouse](../connectors/clickhouse.md#policies) |
 | `policy_function_not_allowed` | A function outside the allow-list for policied callers (functions that run SQL text or read files, among others) | Rewrite without it; ask us if an everyday function is missing |
 | `policy_unclassified_table` | A table expression TDB cannot place (a table function, a name passed as a string; from 0.38.1 a parenthesised join, or `PIVOT`/`UNPIVOT` on a table) | Name the table directly |
 | `policy_unparseable` | TDB could not parse the SQL, or it holds more than one statement | Simplify the SQL; send one statement |

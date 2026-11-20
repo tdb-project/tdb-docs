@@ -20,8 +20,8 @@ FastAPI/uvicorn process that exposes:
 - operational endpoints: `/health`, `/metrics` (Prometheus), `/` (version banner).
 
 It is **read-only middleware** in front of *your* data sources (CSV files and, in
-enterprise, PostgreSQL / MySQL / SQL Server / Snowflake, Parquet files and DuckDB
-database files). It does not copy or
+enterprise, PostgreSQL / MySQL / SQL Server / Snowflake / ClickHouse, Parquet files and
+DuckDB database files). It does not copy or
 warehouse your data — it proxies governed `SELECT`-only queries and writes an
 audit record for each one. Access is gated by a signed **license** (see the
 build/licensing playbook).
