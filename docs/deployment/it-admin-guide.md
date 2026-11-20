@@ -87,8 +87,11 @@ Notes that drive sizing:
   If you set an [approval webhook](../security/approvals.md#announcing-requests)
   (`TDB_APPROVAL_WEBHOOK_URL`, 0.32.0 and later), allow HTTPS to that one host.
 - **No inbound** connections are required other than to port 8000 from your API/MCP
-  clients (and the reverse proxy).
-- **Claude custom connectors** (claude.ai and Claude Desktop) are the exception: Anthropic's
+  clients (and the reverse proxy). **TDB needs no internet access** for Claude Desktop
+  (with the TDB extension) or Claude Code, which connect from the user's computer: see
+  [Claude in a private network](private-network.md).
+- **Claude custom connectors** (claude.ai, and custom connectors in Claude Desktop) are the
+  exception, and only if you choose them: Anthropic's
   cloud calls TDB, not the user's computer, so the MCP URL must be public HTTPS and reachable
   from Anthropic's addresses (`160.79.104.0/21`, per Anthropic's connector documentation)
   for MCP, discovery, registration and tokens, and from your users' browsers for the
@@ -716,6 +719,12 @@ reach the login can hold it closed: keep it off untrusted networks, or use
 From 0.18.0, every audit entry written for an MCP request also records which AI
 client made it and at what protocol version (`mcp_client`, `mcp_protocol`). Clients
 report these themselves, so treat them as a label, not proof of identity.
+
+**Claude without a public address.** Claude Desktop with the TDB extension, and Claude Code,
+connect from the user's computer with an API key per person (or, in Claude Code, single
+sign-on), so TDB can stay in a zone with no internet access:
+[Claude in a private network](private-network.md). The custom connectors below are for
+claude.ai on the web and mobile.
 
 **Claude custom connectors (tested 2026-11-13 on enterprise 0.37.0, and 2026-11-12 on 0.36.1).** Users add
 `https://<your TDB>/v1/mcp` in claude.ai or Claude Desktop; Claude registers itself

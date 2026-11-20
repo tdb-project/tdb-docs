@@ -110,8 +110,12 @@ Read this part before your security review does.
   file. Export to [Splunk](integrations/splunk.md) or [S3](integrations/s3.md) for a
   copy outside the host. The community audit log is not hash-chained.
 - **Traffic on the wire.** TDB doesn't terminate TLS; your proxy does.
-- **Who reaches a public sign-in page.** Claude's custom connectors need TDB at a public
-  HTTPS address, and client registration is open, so anyone who finds the URL sees the
+- **Who reaches a public sign-in page, if you publish one.** TDB does not need to be on the
+  internet: Claude Desktop (with the TDB extension) and Claude Code connect from the
+  user's own computer, so TDB can sit in a zone with no internet access at all
+  ([Claude in a private network](deployment/private-network.md)). Only claude.ai on the web
+  and mobile, and Claude's custom connectors, need TDB at a public HTTPS address. If you
+  publish it, client registration is open, so anyone who finds the URL sees the
   sign-in page. The admin login's token is admin; for anyone else use
   [single sign-on](auth/sso.md) ([IT admin guide](deployment/it-admin-guide.md#65-authentication-directory-integration)).
   From 0.38.0 the password login allows ten failures a minute across the deployment, so

@@ -58,7 +58,8 @@ Use the TDB extension:
 `query_source` (Community) or the Enterprise tools your key may use (all seven unless it
 has a [tool allow-list](../api/mcp.md#tool-allow-lists-per-api-key)) then appear in the
 tools list. The extension runs a small local bridge that forwards to TDB over HTTP, so it
-works with TDB on your own machine or private network.
+works with TDB on your own machine or private network, with no internet access for TDB
+([Claude in a private network](../deployment/private-network.md)).
 
 TDB's audit log names the client as
 `local-agent-mode-The Data-Bridge (TDB)/1.0.0 (via tdb-bridge/0.1.0)`: Claude Desktop

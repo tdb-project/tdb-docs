@@ -88,6 +88,7 @@ nav:
     - IT Administrator Guide: deployment/it-admin-guide.md
     - Kubernetes (Helm): deployment/kubernetes.md
     - Upgrading: deployment/upgrading.md
+    - Claude in a private network: deployment/private-network.md
     - Prometheus Metrics: observability/metrics.md
     - Performance: deployment/performance.md
   - Recipes:

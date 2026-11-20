@@ -78,7 +78,8 @@ Which route works depends on where TDB runs, because Claude Desktop's custom con
 are reached from **Anthropic's cloud, not from your computer**.
 
 **TDB on your machine or a private network:** use the TDB extension (`tdb.mcpb`), which
-connects with an API key, not OAuth. See
+connects with an API key, not OAuth. TDB then needs no internet access at all: see
+[Claude in a private network](../deployment/private-network.md). See
 [Claude Desktop setup →](../getting-started/ide-setup.md#claude-desktop). A `url` entry in
 `claude_desktop_config.json` does not work: that file is for local servers Claude Desktop
 starts itself.
