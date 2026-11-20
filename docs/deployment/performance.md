@@ -19,7 +19,8 @@ memory and then cuts it.
 | CSV, 200,000-row file | 30.9 MB | **0.01 MB** | community 0.4.4 |
 
 Every connector reads a bounded batch: a server-side cursor on PostgreSQL, an unbuffered
-cursor on MySQL, a limited fetch on SQL Server, Snowflake, CSV and Parquet. See
+cursor on MySQL, a limited fetch on SQL Server, Snowflake, CSV and Parquet, and on
+ClickHouse a block read that stops at the cap and closes the connection. See
 [capacity planning](it-admin-guide.md#8-performance-capacity).
 
 ## CSV and Parquet scale with concurrency

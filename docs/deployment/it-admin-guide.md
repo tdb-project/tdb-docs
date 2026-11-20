@@ -247,7 +247,7 @@ against different databases and cannot share sessions. Idle connections are
 closed after 5 minutes, so a burst does not hold its peak indefinitely, and
 pooled sessions remain read-only across reuse exactly as fresh ones are.
 
-PostgreSQL only in this release. MySQL, SQL Server and Snowflake ignore the
+PostgreSQL only in this release. MySQL, SQL Server, Snowflake and ClickHouse ignore the
 variable and continue to connect per query.
 
 **Sizing it by measurement rather than by guess (0.6.0 and later).** A pool that
@@ -834,14 +834,14 @@ What to expect qualitatively:
   that merely mentions the word, such as a `credit_limit` column — reaches the source
   uncapped. The *fetch* is therefore what enforces the ceiling: a server-side cursor on
   PostgreSQL, an unbuffered cursor on MySQL, a bounded fetch on SQL Server, Snowflake,
-  CSV, Parquet and DuckDB. A two-million-row query returning ten rows costs the TDB host under a
+  ClickHouse, CSV, Parquet and DuckDB. A two-million-row query returning ten rows costs the TDB host under a
   megabyte. **On 0.2.0 and earlier this was not true** — the full result set was read
   before being cut to the ceiling, so size those hosts for the largest result a
   permitted query can produce.
 - **A query cannot run forever (0.3.0 and later).** `TDB_QUERY_TIMEOUT` (default **30
   seconds**) is applied to every database source, and it is enforced *by the engine* —
   `statement_timeout`, `max_execution_time`, the ODBC query timeout,
-  `STATEMENT_TIMEOUT_IN_SECONDS` — so the database abandons the work rather than TDB
+  `STATEMENT_TIMEOUT_IN_SECONDS`, ClickHouse `max_execution_time` — so the database abandons the work rather than TDB
   merely abandoning the wait. A cancelled query returns **504** and is recorded in the
   audit log as a `query_timeout` denial. Set `TDB_QUERY_TIMEOUT=0` to disable it, which
   is what a deployment with genuinely long-running analytical queries will want. **On
@@ -853,7 +853,7 @@ What to expect qualitatively:
   long as it is allowed to run. Giving TDB its own read-only database role with a
   statement timeout and memory limits (PostgreSQL `statement_timeout` and `work_mem`,
   MySQL `max_execution_time`, SQL Server the query governor, Snowflake plus warehouse
-  sizing) remains worthwhile as defence in depth — it is enforced whatever TDB is
+  sizing, ClickHouse quotas and `max_memory_usage` set on the server side) remains worthwhile as defence in depth — it is enforced whatever TDB is
   configured to do, including by an operator who sets `TDB_QUERY_TIMEOUT=0`.
 - Single process/single writer — see the scaling caveat in [§4.3](#43-kubernetes-reference-only).
 

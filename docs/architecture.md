@@ -125,7 +125,7 @@ Read this part before your security review does.
 
 - `GET /v1/audit/verify` walks the hash chain (enterprise, admin role).
 - Every behaviour above is covered by tests that run in CI against real PostgreSQL,
-  MySQL and SQL Server. Snowflake is not in CI: it has been run by hand against a real
+  MySQL, SQL Server and (from 0.39.0) ClickHouse. Snowflake is not in CI: it has been run by hand against a real
   account (from 0.35.2: queries, the MCP tools, policies, views and approvals). The
   community edition is open source:
   [tdb-project/tdb-community](https://github.com/tdb-project/tdb-community).
