@@ -84,6 +84,7 @@ nav:
     - Enterprise — Installation: getting-started/installation.md
     - Enterprise — Quickstart: getting-started/quickstart.md
     - Connect an IDE / AI Tool (MCP): getting-started/ide-setup.md
+    - For forward-deployed engineers: getting-started/forward-deployed-engineers.md
   - Deployment:
     - IT Administrator Guide: deployment/it-admin-guide.md
     - Kubernetes (Helm): deployment/kubernetes.md

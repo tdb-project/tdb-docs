@@ -58,6 +58,15 @@ hide:
     [:octicons-arrow-right-24: IDE / AI tool setup](getting-started/ide-setup.md) ·
     [MCP reference](api/mcp.md)
 
+-   **Deploying it at a customer**
+
+    ---
+
+    For forward-deployed engineers: one governed data layer you set up the same way at
+    every engagement.
+
+    [:octicons-arrow-right-24: For forward-deployed engineers](getting-started/forward-deployed-engineers.md)
+
 </div>
 
 Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse and
