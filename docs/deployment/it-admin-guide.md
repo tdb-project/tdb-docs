@@ -41,7 +41,7 @@ lives in two files on a mounted volume (registry DB + audit log).
 | CPU arch | **Production / commercial image: `linux/amd64` (x86-64).** Trial and evaluation images are multi-arch (`linux/amd64` + `linux/arm64`), so they run natively on Apple Silicon Macs — `docker pull` selects your architecture automatically. If you need arm64 for a *production* deployment (e.g. AWS Graviton), tell us: it is a build-pipeline change, not a code change. |
 | Container engine | Docker Engine **≥ 20.10** (BuildKit era) or any OCI-compliant runtime (Podman ≥ 4 works). |
 | Compose (optional) | Docker Compose **v2** if you deploy via compose file. |
-| Kubernetes (optional) | Any conformant cluster **≥ 1.25**. We ship **no Helm chart or manifests** today — a reference Deployment is in [§4.3](#43-kubernetes-reference-only). |
+| Kubernetes (optional) | Any conformant cluster **≥ 1.25**. No Helm chart for the enterprise image yet — a reference Deployment is in [§4.3](#43-kubernetes-reference-only). The community edition has a [Helm chart](kubernetes.md). |
 
 The image is based on `python:3.12-slim`. The only system library baked in is
 `unixodbc` (so the SQL Server connector can load). **To connect to SQL Server you must
@@ -304,8 +304,9 @@ production. The image already declares a `HEALTHCHECK` against `/health`, so
 
 ### 4.3 Kubernetes (reference only)
 
-> **Reference only — not a supported artifact.** No official Helm chart or manifests
-> ship today. The manifest below is a minimal starting point to adapt to your cluster
+> **Reference only — not a supported artifact.** No Helm chart ships for the enterprise
+> image yet; the community edition's chart ([Kubernetes](kubernetes.md)) does not take the
+> licence, a pull secret, the wire-gateway port or the encryption key. The manifest below is a minimal starting point to adapt to your cluster
 > conventions; we do not support it as a deployment artifact. The supported single-host
 > path is Docker Compose ([§4.1](#41-docker-compose-recommended-for-a-single-host)).
 
