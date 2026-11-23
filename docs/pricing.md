@@ -62,7 +62,7 @@ This page shows exactly what each edition includes. **For pricing and a free 30-
 
     **Data sources**
 
-    - PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse, Parquet files, DuckDB databases
+    - PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse, MongoDB, Parquet files, DuckDB databases
     - Unlimited simultaneous registered sources
 
     **Auth**
@@ -176,9 +176,10 @@ The commercial editions ship the same product except for the Mid-Market features
 | SQL Server | ❌ | ✅ | ✅ | ✅ |
 | Snowflake | ❌ | ✅ | ✅ | ✅ |
 | ClickHouse | ❌ | ✅ | ✅ | ✅ |
+| MongoDB (collections up to a set size) | ❌ | ✅ | ✅ | ✅ |
 | Parquet files | ❌ | ✅ | ✅ | ✅ |
 | DuckDB databases | ❌ | ✅ | ✅ | ✅ |
-| BigQuery, JSON and NDJSON files, MongoDB | ❌ | On request | On request | On request |
+| BigQuery, JSON and NDJSON files | ❌ | On request | On request | On request |
 | Simultaneous sources | 1 | Unlimited | Unlimited | Unlimited |
 | **Auth** | | | | |
 | Static API key | ✅ | ✅ | ✅ | ✅ |
@@ -232,7 +233,7 @@ The commercial editions ship the same product except for the Mid-Market features
 These are designed for but not built. Each one is built when a customer needs it, and we
 publish no dates for them:
 
-- **Data sources:** BigQuery; JSON and NDJSON files; MongoDB.
+- **Data sources:** BigQuery; JSON and NDJSON files.
 - **Audit export:** Datadog and OpenTelemetry, beside the Splunk and S3 export that ship today.
 - **Sign-in:** SAML, beside the OIDC single sign-on that ships today.
 

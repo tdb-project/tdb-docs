@@ -15,6 +15,7 @@ for the entry format.
 | Status | Audit `reason` | What it means | What to do |
 |---|---|---|---|
 | 400 | `sql_validation_failed` | The SQL is not a single read-only `SELECT` (or `WITH … SELECT`) | Remove the write or the second statement. See [Query](../api/query.md) |
+| 400 | `collection_too_large` | A MongoDB collection holds more documents than `TDB_MONGO_MAX_DOCUMENTS`, or the query would copy more than `TDB_MONGO_MAX_BYTES` (enterprise, from 0.40.0). TDB refuses rather than answer from part of it | Register the source with a `filter` that narrows it, or raise the caps; see [MongoDB](../connectors/mongodb.md#narrowing-a-large-collection) |
 | 400 | `query_failed` | `Query failed: …` — the source rejected the SQL: unknown column or table, syntax error, a value that does not convert (from community 0.12.4 / enterprise 0.20.3) | Fix the SQL; the source's own message follows |
 | 400 | `limit_exceeds_max` | `limit` is above the deployment's row ceiling (`TDB_MAX_ROWS`, enterprise) | Lower `limit`, aggregate in SQL, or raise `TDB_MAX_ROWS` |
 | 400 | `page_key_has_nulls`, `page_key_not_unique`, `page_key_type`, `page_key_invalid`, `page_key_too_long`, `page_key_required` | The `page_key` could lose or repeat a row, or is malformed (enterprise, from 0.31.0) | See [Reading more than one page](../api/query.md#reading-more-than-one-page) |
@@ -66,7 +67,7 @@ protocol problems. The JSON-RPC codes are listed in
 **As a tool error** (HTTP 200, `isError: true`, a readable message in `content`): the
 same refusals as REST — `sql_validation_failed`, `sql_file_access`,
 `source_not_found`, `limit_exceeds_max`, `privileged_db_role`, `query_timeout`, `source_busy`,
-`query_failed`, `source_unavailable`, `internal_error` — plus:
+`query_failed`, `collection_too_large`, `source_unavailable`, `internal_error` — plus:
 
 | Audit `reason` | What it means | What to do |
 |---|---|---|

@@ -2,7 +2,7 @@
 
 ## The problem
 
-Your data already exists — scattered across PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse,
+Your data already exists — scattered across PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse, MongoDB,
 and CSV files. Now every team wants AI agents and assistants to query it.
 
 The hard part is doing that **safely**. Each source exposes data differently, and wiring

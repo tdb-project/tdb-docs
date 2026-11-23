@@ -16,7 +16,7 @@ audited endpoint. Next customer, same setup.
 
 | At each customer you need… | What TDB gives you |
 |---|---|
-| Access to whatever they run | One registration call per source: [PostgreSQL](../connectors/postgresql.md), [MySQL](../connectors/mysql.md), [SQL Server](../connectors/sqlserver.md), [Snowflake](../connectors/snowflake.md), [ClickHouse](../connectors/clickhouse.md), [DuckDB](../connectors/duckdb.md), [Parquet](../connectors/parquet.md) and CSV. The same REST, SQL and MCP interface whatever the engine |
+| Access to whatever they run | One registration call per source: [PostgreSQL](../connectors/postgresql.md), [MySQL](../connectors/mysql.md), [SQL Server](../connectors/sqlserver.md), [Snowflake](../connectors/snowflake.md), [ClickHouse](../connectors/clickhouse.md), [MongoDB](../connectors/mongodb.md), [DuckDB](../connectors/duckdb.md), [Parquet](../connectors/parquet.md) and CSV. The same REST, SQL and MCP interface whatever the engine |
 | An agent that can use it | Built-in [MCP tools](../api/mcp.md): query, schema, preview, filter, aggregate and named views. Tested as a Claude custom connector on claude.ai and Claude Desktop; plugins for [Claude Code and Claude Desktop](ide-setup.md) and an extension for VS Code |
 | Analysts and BI tools too | The [PostgreSQL wire gateway](../integrations/postgres-wire.md): psql, Metabase and DBeaver connect unchanged, governed and audited |
 | A yes from their security team | Read-only enforced, credentials encrypted at rest, privileged database roles refused, every query in a [signed, hash-chained audit log](../security/audit.md) with [Splunk](../integrations/splunk.md) and [S3](../integrations/s3.md) export. Hand the reviewers the [architecture and security model](../architecture.md) |
@@ -51,7 +51,7 @@ customer.
 - **Write.** TDB is read-only by design. An agent that writes back to the customer's
   database needs another path for that.
 - **Admin web UI.** Setup is the REST API and the CLI.
-- **Other sources.** BigQuery, MongoDB and JSON files are
+- **Other sources.** BigQuery and JSON files are
   [built on request](../pricing.md).
 
 ## Next

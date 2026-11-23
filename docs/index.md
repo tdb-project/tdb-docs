@@ -69,7 +69,7 @@ hide:
 
 </div>
 
-Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse and
+Your data is already scattered across PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse, MongoDB and
 CSV files — and every team now wants AI agents to query it. TDB makes that
 **existing, multi-source** data safely accessible **on your own infrastructure**,
 without moving it into a single cloud warehouse or routing it through a SaaS
@@ -85,7 +85,7 @@ copilot, and with a tamper-evident audit log you own.
 
     ---
 
-    PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse, Parquet files and DuckDB databases. Database-wide or single-table
+    PostgreSQL, MySQL, SQL Server, Snowflake, ClickHouse, MongoDB, Parquet files and DuckDB databases. Database-wide or single-table
     registration per source, and multiple simultaneous registered sources.
 
     [:octicons-arrow-right-24: All connectors](connectors/postgresql.md)
@@ -189,7 +189,7 @@ copilot, and with a tamper-evident audit log you own.
 ## How it works
 
 ```
-Postgres · MySQL · SQL Server · Snowflake · ClickHouse
+Postgres · MySQL · SQL Server · Snowflake · ClickHouse · MongoDB
       │
       │  read-only connection (per connector)
       ▼
@@ -238,7 +238,8 @@ Postgres · MySQL · SQL Server · Snowflake · ClickHouse
     [:octicons-arrow-right-24: Snowflake](connectors/snowflake.md)<br>
     [:octicons-arrow-right-24: Parquet](connectors/parquet.md)<br>
     [:octicons-arrow-right-24: DuckDB](connectors/duckdb.md)<br>
-    [:octicons-arrow-right-24: ClickHouse](connectors/clickhouse.md)
+    [:octicons-arrow-right-24: ClickHouse](connectors/clickhouse.md)<br>
+    [:octicons-arrow-right-24: MongoDB](connectors/mongodb.md)
 
 -   **Govern it**
 

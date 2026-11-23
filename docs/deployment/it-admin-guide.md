@@ -20,7 +20,7 @@ FastAPI/uvicorn process that exposes:
 - operational endpoints: `/health`, `/metrics` (Prometheus), `/` (version banner).
 
 It is **read-only middleware** in front of *your* data sources (CSV files and, in
-enterprise, PostgreSQL / MySQL / SQL Server / Snowflake / ClickHouse, Parquet files and
+enterprise, PostgreSQL / MySQL / SQL Server / Snowflake / ClickHouse / MongoDB, Parquet files and
 DuckDB database files). It does not copy or
 warehouse your data — it proxies governed `SELECT`-only queries and writes an
 audit record for each one. Access is gated by a signed **license** (see the
@@ -79,7 +79,7 @@ Notes that drive sizing:
   with `-p` (e.g. `-p 8000:8000`). **The server speaks plain HTTP** — terminate TLS in
   front of it (see [§7](#7-tls-ssl)).
 - **Egress** the host must allow: to each registered data source (e.g. Postgres 5432,
-  MySQL 3306, SQL Server 1433, Snowflake 443, ClickHouse 8123 or 8443 for HTTPS); to your private registry if pulling the
+  MySQL 3306, SQL Server 1433, Snowflake 443, ClickHouse 8123 or 8443 for HTTPS, MongoDB 27017, or DNS SRV and 27017 for Atlas); to your private registry if pulling the
   image; and to your SIEM endpoint if you enable the Splunk exporter (HEC over 443/8088).
   If you enable [Client ID Metadata Documents](../auth/oauth.md#client-id-metadata-documents)
   (`TDB_OAUTH_CIMD_HOSTS`, off by default, 0.18.0 and later), allow HTTPS (443) to the
@@ -610,6 +610,23 @@ tested against ClickHouse 26.8, **not yet against ClickHouse Cloud**. Two things
   `ARRAY JOIN`, `PREWHERE` and `LIMIT … BY`. Tell analysts before they meet a `400`/`403`.
 
 Setup and the full list: [ClickHouse](../connectors/clickhouse.md).
+
+### 5.8 MongoDB sources
+
+From **0.40.0**; tested against MongoDB 8, **not yet against MongoDB Atlas**. TDB copies the
+collections a query reads into its own engine and runs the SQL there, so plan for:
+
+- **Collection size.** A collection over `TDB_MONGO_MAX_DOCUMENTS` (100,000), or a query
+  copying more than `TDB_MONGO_MAX_BYTES` (256 MB of BSON), is refused (400
+  `collection_too_large`), never answered in part. Narrow a larger one with a registered
+  `filter`.
+- **Memory and time.** A query holds its copy in memory, about four times the BSON size,
+  until it ends: size the container for the number of concurrent MongoDB queries times
+  the copy. 100,000 documents of about 1 KB take about 3 s to copy.
+- **The user: the built-in `read` role.** A user that can write, directly or through an
+  inherited role, is refused (403). Reads default to `secondaryPreferred`.
+
+Setup and types: [MongoDB](../connectors/mongodb.md).
 
 For any database source, from 0.36.0 a 503 "not accessible" leaves a `source_unreachable`
 WARNING line in the application log with the driver's reason, password masked

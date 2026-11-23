@@ -106,6 +106,7 @@ nav:
     - Parquet: connectors/parquet.md
     - DuckDB: connectors/duckdb.md
     - ClickHouse: connectors/clickhouse.md
+    - MongoDB: connectors/mongodb.md
   - API Reference:
     - Sources: api/sources.md
     - Query: api/query.md
