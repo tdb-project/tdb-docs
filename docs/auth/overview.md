@@ -2,7 +2,25 @@
 
 TDB Enterprise supports three authentication mechanisms. People can also sign in through
 your identity provider, which issues them a JWT: see
-[Single sign-on and SCIM](sso.md) (Mid-Market, from 0.24.0). They are evaluated in
+[Single sign-on and SCIM](sso.md) (Mid-Market, from 0.24.0).
+
+## Which mechanism should I use?
+
+| Use case | Recommended | Edition |
+|---|---|---|
+| First-time setup, local testing | [Static env key](#mechanism-1-static-api-keys-env-var) | Community and commercial |
+| Production REST API integrations | [DB-managed key](api-keys.md) with expiry and rate limit | Commercial |
+| CI/CD pipelines | [DB-managed key](api-keys.md#rotate-a-key), rotated on a schedule | Commercial |
+| People signing in, each under their own name | [Single sign-on (OIDC) and SCIM](sso.md) | Mid-Market |
+| One administrator, without an identity provider | [JWT from the admin login](jwt.md) | Commercial |
+| Cursor; Claude or ChatGPT custom connector (public HTTPS) | [OAuth 2.1 with PKCE](oauth.md) | Commercial |
+| Claude Desktop or Claude Code with TDB on your network | API key, via the [TDB extension or plugin](../getting-started/ide-setup.md) | Community and commercial |
+
+The rest of this page explains how TDB checks each one.
+
+---
+
+TDB evaluates the three mechanisms in
 waterfall order on every authenticated request:
 
 ```
@@ -95,19 +113,6 @@ against TDB's built-in authorization server. Claude's connectors (claude.ai and 
 The result is a JWT access token used on subsequent MCP requests.
 
 See [OAuth 2.1 →](oauth.md)
-
----
-
-## Which mechanism should I use?
-
-| Use case | Recommended |
-|---|---|
-| First-time setup, local testing | Static env key |
-| Production REST API integrations | DB-managed key with expiry + rate limit |
-| Multi-user team access | JWT (one login per user) |
-| Cursor; Claude or ChatGPT custom connector (public HTTPS) | OAuth 2.1 PKCE |
-| Claude Desktop or Claude Code with TDB on your network | API key, via the [TDB extension or plugin](../getting-started/ide-setup.md) |
-| CI/CD pipelines | DB-managed key (rotate on schedule) |
 
 ---
 
