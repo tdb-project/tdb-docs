@@ -28,7 +28,7 @@ quick reference; details and JSON for each client follow.
 
 | Client | Config location | Top-level key | URL field | Native header/auth support |
 |---|---|---|---|---|
-| [Claude Desktop](#claude-desktop) | The TDB extension (`tdb.mcpb`); Settings → Extensions | — | Entered in the extension's settings | Yes — the extension adds the key |
+| [Claude Desktop](#claude-desktop) | The TDB extension (`tdb.mcpb`); Settings → Desktop app → Extensions | — | Entered in the extension's settings | Yes — the extension adds the key |
 | [Claude Code](#claude-code) | The TDB plugin, or `claude mcp add` (stored in `~/.claude.json`; `--scope project` writes `.mcp.json`) | `mcpServers` | `url` | Yes — `--header` |
 | [VS Code](#vs-code) | The TDB extension, or `.vscode/mcp.json` / user profile | `servers` (not `mcpServers`) | `url` | Yes — `headers`, plus `inputs` for secret prompting |
 | [Cursor](#cursor) | `.cursor/mcp.json` | `mcpServers` | `url` | Yes — `headers` |
@@ -50,10 +50,13 @@ Use the TDB extension:
 
 1. Download `tdb.mcpb` from the
    [latest tdb-connectors release](https://github.com/tdb-project/tdb-connectors/releases/latest)
-   and open it to install.
-2. In Settings → Extensions → **The Data-Bridge (TDB)**, enter the server URL
-   (`http://localhost:8000`) and your API key. Claude Desktop keeps the key in your
-   system's credential store.
+   and install it: double-click the file, or drag it onto the Claude Desktop window. From
+   the menus: Settings → **Desktop app** → **Manage** next to Extensions → **Advanced
+   settings** → **Install Extension…** (older versions: Settings → Extensions).
+2. When it asks, enter the server URL (`http://localhost:8000`, or the TDB host's
+   address) and your API key. Claude Desktop keeps the key in your system's credential
+   store. To change them later, open the extension **The Data-Bridge (TDB)** in the same
+   Extensions list.
 
 `query_source` (Community) or the Enterprise tools your key may use (all seven unless it
 has a [tool allow-list](../api/mcp.md#tool-allow-lists-per-api-key)) then appear in the
