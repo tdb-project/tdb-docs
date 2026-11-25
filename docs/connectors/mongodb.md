@@ -7,8 +7,10 @@ source.
 
 !!! info "What it has run against"
     MongoDB **8**, self-hosted, in TDB's CI on every change, including TLS with a private
-    certificate authority. **MongoDB Atlas has not been run**: it speaks the same protocol
-    over `mongodb+srv`, but until it has been tested we do not claim it.
+    certificate authority. **MongoDB Atlas** has been run once, on a free M0 cluster
+    (MongoDB 8.0, `mongodb+srv` with TLS): the read-only user check, a query with exact
+    decimals, timestamps and nested fields, the size cap, refusal of a user that can write,
+    and a wrong password. Atlas is not part of CI.
 
 ---
 

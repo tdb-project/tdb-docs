@@ -613,7 +613,7 @@ Setup and the full list: [ClickHouse](../connectors/clickhouse.md).
 
 ### 5.8 MongoDB sources
 
-From **0.40.0**; tested against MongoDB 8, **not yet against MongoDB Atlas**. TDB copies the
+From **0.40.0**; tested against MongoDB 8 in CI and once on MongoDB Atlas (M0). TDB copies the
 collections a query reads into its own engine and runs the SQL there, so plan for:
 
 - **Collection size.** A collection over `TDB_MONGO_MAX_DOCUMENTS` (100,000), or a query
