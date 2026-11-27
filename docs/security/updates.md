@@ -77,6 +77,14 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-27 — zlib CVE-2026-85091 in the image
+
+**Enterprise; fixed in 0.40.2.** Images up to 0.40.1 carry `zlib1g
+1:1.3.dfsg+really1.3.1-1+b1` from the Debian 13 base; 0.40.2 has the fixed
+`1:1.3.dfsg+really1.3.1-1+deb13u1`. TDB does not call the affected `gz*` file API (Python's
+`gzip` module does not use it), so we know of no way to reach it through TDB; upgrade so
+image scanners stop flagging it. No code or configuration change.
+
 ### 2026-11-27 — `/metrics` showed paths; ClickHouse callers could read each other's SQL; DuckDB-engine queries ignored the timeout
 
 **Enterprise; fixed in 0.40.1. Community is not affected** (it has no metrics, no
