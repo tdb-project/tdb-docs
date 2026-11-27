@@ -77,6 +77,36 @@ Edition's security policy and known design constraints, see the
 [`SECURITY.md`](https://github.com/tdb-project/tdb-community/blob/main/SECURITY.md)
 in the open-source repository.
 
+### 2026-11-27 — `/metrics` showed paths; ClickHouse callers could read each other's SQL; DuckDB-engine queries ignored the timeout
+
+**Enterprise; fixed in 0.40.1. Community is not affected** (it has no metrics, no
+ClickHouse and no query timeout). Found by a security review; we know of no use of them.
+
+- **`/metrics` labels.** `/metrics` needs no credential, and `tdb_requests_total` and
+  `tdb_request_latency_seconds` were labelled with the path each request sent, since the
+  metrics were added. Anyone who could reach `/metrics` saw the source and view names
+  callers asked for, and anyone who could reach TDB could add series without limit by
+  sending requests to new paths, unauthenticated, so memory and scrape size grew. From
+  0.40.1 the `endpoint` label is the route's template
+  (`/v1/sources/{source_id}/schema`), `<unmatched>` for a path no route serves, and the
+  `method` label is `OTHER` for a method TDB does not serve. If you
+  [serve TDB over HTTPS](../recipes/https-caddy.md) on a public address, keep `/metrics`
+  off it too.
+- **ClickHouse query history.** Every caller of a ClickHouse source shares its ClickHouse
+  user, and every ClickHouse user may read `system.user_query_log`, that user's own
+  queries with their values. A key with no [policy](policies.md) could read other
+  callers' SQL there (0.39.0 to 0.40.0); keys under a policy were already refused. From
+  0.40.1 a query naming the `system` database is refused, and the `system` database
+  cannot be registered.
+- **Timeout.** CSV, Parquet, DuckDB files and MongoDB's SQL step run in TDB's own engine,
+  which has no server to cancel a query, so `TDB_QUERY_TIMEOUT` did not stop them: one key
+  could hold server threads with a query that ran for hours. From 0.40.1 TDB stops the
+  query at the limit (`504`, audited `query_timeout`); on MongoDB the read and the SQL
+  share one limit.
+
+**Action:** upgrade. Replace a literal path in any dashboard or alert on these two metrics
+with the route's template.
+
 ### 2026-11-18 — A read could hold a lock the source's own applications wait on
 
 **Enterprise, every release with the PostgreSQL or MySQL connector; fixed in 0.38.8.

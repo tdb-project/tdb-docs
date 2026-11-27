@@ -27,6 +27,10 @@ docker run -d --name tdb --network tdb-net \
 
 ```
 tdb.example.com {
+	# /metrics needs no credential: scrape it on the private network, not here.
+	handle /metrics {
+		respond 404
+	}
 	reverse_proxy tdb:8000
 }
 ```

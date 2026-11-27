@@ -96,6 +96,7 @@ Whatever the user may do, TDB refuses these in a query on a ClickHouse source, a
 | A `SETTINGS` clause, anywhere in the query | A query must not change TDB's limits |
 | A `FORMAT` clause | TDB reads the result in its own format |
 | Every table function: `numbers()`, `merge()`, `view()`, `url()`, `file()`, … | `merge()` and `view()` name tables in a way a [policy](../security/policies.md) cannot see; the rest reach outside the database |
+| Any name in the `system` database, including `x IN system.t` and a table aliased `system` (from 0.40.1) | Every caller shares the source's ClickHouse user, and `system.user_query_log` holds that user's queries: other callers' SQL, with its values |
 | SQL TDB cannot parse as ClickHouse | Every check above depends on reading it |
 
 `ARRAY JOIN`, `FINAL`, `SAMPLE`, `PREWHERE`, `LIMIT … BY`, `WITH TOTALS`, lambdas and the

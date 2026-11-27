@@ -10,7 +10,9 @@ TDB exposes a Prometheus-compatible `/metrics` endpoint out of the box. Scrape i
 GET /metrics
 ```
 
-No authentication required. Restrict access via network policy in production — the endpoint is intentionally public so Prometheus can scrape it without credentials.
+No authentication required. Restrict access via network policy in production — the endpoint is intentionally public so Prometheus can scrape it without credentials. Behind a public proxy, keep `/metrics` off the public address (the [HTTPS recipe](../recipes/https-caddy.md) shows how).
+
+Labels hold only values TDB chose, never what a caller sent: from 0.40.1 a request's `endpoint` is the route's template (`/v1/sources/{source_id}/schema`), not the path with a source name in it.
 
 ```bash
 curl http://localhost:8000/metrics
@@ -26,7 +28,7 @@ The response is in standard Prometheus text exposition format.
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
-| `tdb_requests_total` | Counter | `method`, `endpoint`, `status_code` | Total HTTP requests, by method, path, and response status |
+| `tdb_requests_total` | Counter | `method`, `endpoint`, `status_code` | Total HTTP requests, by method, route, and response status. `endpoint` is the route's template, `<unmatched>` for a path no route serves; `method` is `OTHER` for a method TDB does not serve (from 0.40.1; before, the raw path and method) |
 | `tdb_request_latency_seconds` | Histogram | `method`, `endpoint` | Request latency in seconds |
 
 **Latency buckets:** 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s.
@@ -275,7 +277,7 @@ curl -s -H "Authorization: Bearer <KEY>" http://localhost:8000/v1/version
 ```
 
 ```json
-{"version": "0.40.0", "build_sha": "bd1bba8"}
+{"version": "0.40.1", "build_sha": "a82071f"}
 ```
 
 This is the authoritative answer to "what am I running" — worth quoting in a
@@ -295,5 +297,5 @@ No authentication, and **not licence-gated** — this still answers when
 licence has lapsed.
 
 ```json
-{"product": "The Data-Bridge", "version": "0.40.0", "status": "running", "docs": "/docs"}
+{"product": "The Data-Bridge", "version": "0.40.1", "status": "running", "docs": "/docs"}
 ```

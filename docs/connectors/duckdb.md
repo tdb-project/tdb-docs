@@ -109,8 +109,9 @@ MCP return the same values.
   `"truncated": true`.
 - **A [stream](../api/query.md#streaming-a-whole-result) keeps the file open** until it ends, up
   to `TDB_STREAM_TIMEOUT`, and the file's owner cannot write until then (from 0.31.0).
-- **No timeout.** Like CSV and Parquet, a DuckDB query runs in TDB's own engine, so
-  `TDB_QUERY_TIMEOUT` can't cancel it.
+- **Timeout.** A DuckDB query runs in TDB's own engine, which has no server to cancel it:
+  from 0.40.1 TDB interrupts it at `TDB_QUERY_TIMEOUT` (`504 query_timeout`), and the file
+  is released. Before 0.40.1 it ran until it finished.
 
 ---
 

@@ -156,11 +156,11 @@ passes. TDB still only reads, but enable access control.
 
 ## Timeouts
 
-`TDB_QUERY_TIMEOUT` (default 30 s) covers the copy: TDB keeps its own deadline while
-reading and closes the cursor when it passes, which stops the read on the server
-(`504 query_timeout`). MongoDB's `maxTimeMS` alone does not bound a read, because it
-counts only server time per batch. The query on the copy, after the copy, cannot be
-interrupted, as with CSV sources; the caps keep it small.
+`TDB_QUERY_TIMEOUT` (default 30 s) covers the copy and the query on it, as one limit: TDB
+keeps its own deadline while reading and closes the cursor when it passes, which stops the
+read on the server, and from 0.40.1 it interrupts the query on the copy when the rest runs
+out (`504 query_timeout`). MongoDB's `maxTimeMS` alone does not bound a read, because it
+counts only server time per batch. Before 0.40.1 the query on the copy had no limit.
 
 ## Policies
 

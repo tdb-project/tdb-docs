@@ -76,8 +76,9 @@ A Parquet source has the same protections as a CSV source:
   `403` and is audited as `sql_file_access`.
 - **Row cap.** `limit` and `TDB_MAX_ROWS` apply as on every source. A cut result reports
   `"truncated": true`.
-- **No timeout.** Like CSV, a Parquet query runs in TDB's own engine, so
-  `TDB_QUERY_TIMEOUT` cannot cancel it.
+- **Timeout.** A Parquet query runs in TDB's own engine, which has no server to cancel it:
+  from 0.40.1 TDB interrupts it at `TDB_QUERY_TIMEOUT` (`504 query_timeout`). Before
+  0.40.1 it ran until it finished.
 
 ---
 

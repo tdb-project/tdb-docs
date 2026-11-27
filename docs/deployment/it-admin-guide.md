@@ -874,9 +874,10 @@ What to expect qualitatively:
   audit log as a `query_timeout` denial. Set `TDB_QUERY_TIMEOUT=0` to disable it, which
   is what a deployment with genuinely long-running analytical queries will want. **On
   0.2.2 and earlier there was no timeout at all.**
-- **Two limits this does not remove.** **CSV, Parquet and DuckDB sources are not
-  interruptible** — they run in TDB's own DuckDB engine with no server to ask, so a long
-  query on them still runs to completion. And a
+- **CSV, Parquet, DuckDB and MongoDB too, from 0.40.1.** They run in TDB's own DuckDB
+  engine, with no server to ask, so TDB interrupts the query itself at the limit; before
+  0.40.1 a long query on them ran to completion.
+- **A limit this does not remove.** A
   timeout bounds *duration*, not *cost*: a heavy join still consumes the source for as
   long as it is allowed to run. Giving TDB its own read-only database role with a
   statement timeout and memory limits (PostgreSQL `statement_timeout` and `work_mem`,
